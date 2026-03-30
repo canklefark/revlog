@@ -2,23 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  LayoutDashboard,
-  CalendarDays,
-  Car,
-  Timer,
-  Settings,
-} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
-const navItems = [
-  { href: "/dashboard", label: "Dashboard", Icon: LayoutDashboard },
-  { href: "/events", label: "Events", Icon: CalendarDays },
-  { href: "/garage", label: "Garage", Icon: Car },
-  { href: "/times", label: "Times", Icon: Timer },
-  { href: "/settings", label: "Settings", Icon: Settings },
-] as const;
+import { NAV_ITEMS } from "@/lib/constants/navigation";
 
 interface DesktopSidebarProps {
   user: {
@@ -64,7 +50,7 @@ export function DesktopSidebar({ user, className }: DesktopSidebarProps) {
       </div>
 
       <nav className="flex flex-1 flex-col gap-1 p-3" aria-label="Main">
-        {navItems.map(({ href, label, Icon }) => {
+        {NAV_ITEMS.map(({ href, label, Icon }) => {
           const isActive = pathname === href || pathname.startsWith(href + "/");
           return (
             <Link

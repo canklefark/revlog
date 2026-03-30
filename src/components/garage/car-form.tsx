@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { Car } from "@prisma/client";
@@ -34,6 +35,7 @@ interface CarFormProps {
 const initialState: CarActionState = {};
 
 export function CarForm({ action, car }: CarFormProps) {
+  const router = useRouter();
   const [showMore, setShowMore] = useState(false);
 
   const purchaseDateDefault = car?.purchaseDate
@@ -280,9 +282,19 @@ export function CarForm({ action, car }: CarFormProps) {
 
       {state.error && <p className="text-sm text-destructive">{state.error}</p>}
 
-      <Button type="submit" disabled={isPending} className="w-full">
-        {isPending ? "Saving..." : car ? "Save Changes" : "Add Car"}
-      </Button>
+      <div className="flex gap-3 pt-2">
+        <Button type="submit" disabled={isPending}>
+          {isPending ? "Saving..." : car ? "Save Changes" : "Add Car"}
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => router.back()}
+          disabled={isPending}
+        >
+          Cancel
+        </Button>
+      </div>
     </form>
   );
 }

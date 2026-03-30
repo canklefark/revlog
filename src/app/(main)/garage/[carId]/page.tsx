@@ -24,6 +24,13 @@ export default async function CarDetailPage({
     notFound();
   }
 
+  const [modCount, modTotalResult, wishlistCount] = await Promise.all([
+    prisma.mod.count({ where: { carId } }),
+    prisma.mod.aggregate({ where: { carId }, _sum: { cost: true } }),
+    prisma.wishlistItem.count({ where: { carId } }),
+  ]);
+  const modTotal = modTotalResult._sum.cost ?? 0;
+
   const displayName = car.nickname
     ? car.nickname
     : `${car.year} ${car.make} ${car.model}`;
@@ -113,13 +120,46 @@ export default async function CarDetailPage({
 
       <div className="grid gap-6">
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle>Modifications</CardTitle>
+            <Button asChild variant="outline" size="sm">
+              <Link href={`/garage/${carId}/mods`}>View Mods</Link>
+            </Button>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Mod tracking coming soon.
-            </p>
+            {modCount > 0 ? (
+              <p className="text-sm text-muted-foreground">
+                {modCount} mod{modCount !== 1 ? "s" : ""}
+                {modTotal > 0
+                  ? ` · $${modTotal.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} total`
+                  : ""}
+              </p>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                No modifications logged yet.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle>Wishlist</CardTitle>
+            <Button asChild variant="outline" size="sm">
+              <Link href={`/garage/${carId}/wishlist`}>View Wishlist</Link>
+            </Button>
+          </CardHeader>
+          <CardContent>
+            {wishlistCount > 0 ? (
+              <p className="text-sm text-muted-foreground">
+                {wishlistCount} item{wishlistCount !== 1 ? "s" : ""} on the
+                wishlist
+              </p>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                No wishlist items yet.
+              </p>
+            )}
           </CardContent>
         </Card>
 

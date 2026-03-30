@@ -66,7 +66,7 @@ export function NextEventCard({ event }: NextEventCardProps) {
       ? `${Math.round(event.distanceFromHome)} mi · ${formatDriveTime(event.driveTimeMinutes)}`
       : event.distanceFromHome != null
         ? `${Math.round(event.distanceFromHome)} mi`
-        : "—";
+        : null;
 
   return (
     <Card>
@@ -107,10 +107,12 @@ export function NextEventCard({ event }: NextEventCardProps) {
         )}
 
         {/* Distance / Drive time */}
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <NavigationIcon className="size-4 shrink-0" aria-hidden="true" />
-          <span>{distanceDisplay}</span>
-        </div>
+        {distanceDisplay && (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <NavigationIcon className="size-4 shrink-0" aria-hidden="true" />
+            <span>{distanceDisplay}</span>
+          </div>
+        )}
 
         {/* Entry fee */}
         {event.entryFee != null && (

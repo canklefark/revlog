@@ -181,7 +181,7 @@ model Run {
   runNumber    Int
   rawTime      Float
   penalties    Json     @default("[]")
-  adjustedTime Float
+  adjustedTime Float?
   conditions   String[]
   tireSetup    String?
   notes        String?

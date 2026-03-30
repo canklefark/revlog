@@ -4,7 +4,7 @@ import { useActionState, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { format } from "date-fns";
-import { CalendarIcon, ChevronDownIcon } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Separator } from "@/components/ui/separator";
+import { CollapsibleSection } from "@/components/ui/collapsible-section";
 import { cn } from "@/lib/utils";
 import {
   EVENT_TYPES,
@@ -63,7 +64,6 @@ const initialState: EventActionState = {};
 export function EventForm({ cars, event }: EventFormProps) {
   const router = useRouter();
   const isEditing = !!event;
-  const [showMore, setShowMore] = useState(isEditing);
 
   const [createState, createDispatch, createPending] = useActionState(
     createEvent,
@@ -263,156 +263,139 @@ export function EventForm({ cars, event }: EventFormProps) {
 
       <Separator />
 
-      {/* More details toggle */}
-      <button
-        type="button"
-        onClick={() => setShowMore((v) => !v)}
-        className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-      >
-        <ChevronDownIcon
-          className={cn(
-            "size-4 transition-transform",
-            showMore && "rotate-180",
-          )}
-        />
-        {showMore ? "Hide" : "Show"} more details
-      </button>
-
-      {showMore && (
-        <div className="space-y-4">
-          <div className="space-y-1.5">
-            <Label htmlFor="organizingBody">Organizing body</Label>
-            <Input
-              id="organizingBody"
-              placeholder="SCCA Region Name"
-              {...register("organizingBody")}
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label>End date</Label>
-            <Controller
-              name="endDate"
-              control={control}
-              render={({ field }) => (
-                <DatePicker
-                  value={field.value}
-                  onChange={field.onChange}
-                  placeholder="Optional end date"
-                  hasError={false}
-                />
-              )}
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="venueName">Venue name</Label>
-            <Input
-              id="venueName"
-              placeholder="ORP, Mid-Ohio, etc."
-              {...register("venueName")}
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="address">Address</Label>
-            <Input
-              id="address"
-              placeholder="Street address or city"
-              {...register("address")}
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label>Registration deadline</Label>
-            <Controller
-              name="registrationDeadline"
-              control={control}
-              render={({ field }) => (
-                <DatePicker
-                  value={field.value}
-                  onChange={field.onChange}
-                  placeholder="Optional deadline"
-                  hasError={false}
-                />
-              )}
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="entryFee">Entry fee ($)</Label>
-            <Input
-              id="entryFee"
-              type="number"
-              min="0"
-              step="0.01"
-              placeholder="0.00"
-              {...register("entryFee")}
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="registrationUrl">Registration URL</Label>
-            <Input
-              id="registrationUrl"
-              type="url"
-              placeholder="https://motorsportreg.com/..."
-              {...register("registrationUrl")}
-            />
-            {serverErrors?.registrationUrl?.[0] && (
-              <p className="text-xs text-destructive">
-                {serverErrors.registrationUrl[0]}
-              </p>
-            )}
-          </div>
-
-          {cars.length > 0 && (
-            <div className="space-y-1.5">
-              <Label htmlFor="carId">Car</Label>
-              <Controller
-                name="carId"
-                control={control}
-                render={({ field }) => (
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger id="carId" className="w-full">
-                      <SelectValue placeholder="No car linked" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">No car linked</SelectItem>
-                      {cars.map((car) => (
-                        <SelectItem key={car.id} value={car.id}>
-                          {car.nickname
-                            ? `${car.nickname} (${car.year} ${car.make} ${car.model})`
-                            : `${car.year} ${car.make} ${car.model}`}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-            </div>
-          )}
-
-          <div className="space-y-1.5">
-            <Label htmlFor="runGroup">Run group / class</Label>
-            <Input
-              id="runGroup"
-              placeholder="STR, CAM-C, etc."
-              {...register("runGroup")}
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="notes">Notes</Label>
-            <Textarea
-              id="notes"
-              placeholder="Anything worth remembering..."
-              rows={3}
-              {...register("notes")}
-            />
-          </div>
+      <CollapsibleSection title="More Details" defaultOpen={isEditing}>
+        <div className="space-y-1.5">
+          <Label htmlFor="organizingBody">Organizing body</Label>
+          <Input
+            id="organizingBody"
+            placeholder="SCCA Region Name"
+            {...register("organizingBody")}
+          />
         </div>
-      )}
+
+        <div className="space-y-1.5">
+          <Label>End date</Label>
+          <Controller
+            name="endDate"
+            control={control}
+            render={({ field }) => (
+              <DatePicker
+                value={field.value}
+                onChange={field.onChange}
+                placeholder="Optional end date"
+                hasError={false}
+              />
+            )}
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="venueName">Venue name</Label>
+          <Input
+            id="venueName"
+            placeholder="ORP, Mid-Ohio, etc."
+            {...register("venueName")}
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="address">Address</Label>
+          <Input
+            id="address"
+            placeholder="Street address or city"
+            {...register("address")}
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <Label>Registration deadline</Label>
+          <Controller
+            name="registrationDeadline"
+            control={control}
+            render={({ field }) => (
+              <DatePicker
+                value={field.value}
+                onChange={field.onChange}
+                placeholder="Optional deadline"
+                hasError={false}
+              />
+            )}
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="entryFee">Entry fee ($)</Label>
+          <Input
+            id="entryFee"
+            type="number"
+            min="0"
+            step="0.01"
+            placeholder="0.00"
+            {...register("entryFee")}
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="registrationUrl">Registration URL</Label>
+          <Input
+            id="registrationUrl"
+            type="url"
+            placeholder="https://motorsportreg.com/..."
+            {...register("registrationUrl")}
+          />
+          {serverErrors?.registrationUrl?.[0] && (
+            <p className="text-xs text-destructive">
+              {serverErrors.registrationUrl[0]}
+            </p>
+          )}
+        </div>
+
+        {cars.length > 0 && (
+          <div className="space-y-1.5">
+            <Label htmlFor="carId">Car</Label>
+            <Controller
+              name="carId"
+              control={control}
+              render={({ field }) => (
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger id="carId" className="w-full">
+                    <SelectValue placeholder="No car linked" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">No car linked</SelectItem>
+                    {cars.map((car) => (
+                      <SelectItem key={car.id} value={car.id}>
+                        {car.nickname
+                          ? `${car.nickname} (${car.year} ${car.make} ${car.model})`
+                          : `${car.year} ${car.make} ${car.model}`}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+          </div>
+        )}
+
+        <div className="space-y-1.5">
+          <Label htmlFor="runGroup">Run group / class</Label>
+          <Input
+            id="runGroup"
+            placeholder="STR, CAM-C, etc."
+            {...register("runGroup")}
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="notes">Notes</Label>
+          <Textarea
+            id="notes"
+            placeholder="Anything worth remembering..."
+            rows={3}
+            {...register("notes")}
+          />
+        </div>
+      </CollapsibleSection>
 
       <div className="flex gap-3 pt-2">
         <Button type="submit" disabled={isPending}>
