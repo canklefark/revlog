@@ -1,7 +1,7 @@
 # RevLog — Development Status
 
 **Last updated:** 2026-03-30
-**Current phase:** Phase 2 in progress — WS-8 complete
+**Current phase:** Phase 2 in progress — WS-13 complete
 
 ---
 
@@ -63,6 +63,7 @@ card, input, label, select, dialog, separator, badge, dropdown-menu, calendar, p
 | ------------------------------------ | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | WS-7: Mod/Wishlist schema foundation | ✅     | `src/lib/constants/mod-categories.ts`, `src/lib/validations/mod.ts`                                                                                                    |
 | WS-8: Modifications log              | ✅     | `src/lib/actions/mod.ts`, `src/lib/queries/mods.ts`, `src/app/(main)/garage/[carId]/mods/`, `src/components/garage/mod-form.tsx`, `src/components/garage/mod-list.tsx` |
+| WS-13: URL paste / auto-fill         | ✅     | `src/lib/services/motorsportreg-scraper.ts`, `src/lib/actions/scrape.ts`, `src/components/events/url-autofill.tsx`, `src/components/events/event-form.tsx` (modified)  |
 
 ### Scope
 
@@ -71,7 +72,7 @@ card, input, label, select, dialog, separator, badge, dropdown-menu, calendar, p
 - [ ] Times tracker (run logging, adjusted time, penalty calculation)
 - [ ] Event session view (best run highlight, consistency meter)
 - [ ] Calendar view for events (month grid, color-coded chips)
-- [ ] URL paste / auto-fill for events (MotorsportReg Cheerio parser)
+- [x] URL paste / auto-fill for events (MotorsportReg Cheerio parser)
 - [ ] CSV export (per-section, zip bundle for multiple)
 
 ### Resolved decisions

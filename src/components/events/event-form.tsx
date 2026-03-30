@@ -35,6 +35,8 @@ import {
   updateEvent,
   type EventActionState,
 } from "@/lib/actions/event";
+import { UrlAutofill } from "@/components/events/url-autofill";
+import type { ScrapedEventData } from "@/lib/services/motorsportreg-scraper";
 import type { Car, Event } from "@prisma/client";
 
 interface EventFormProps {
@@ -82,6 +84,7 @@ export function EventForm({ cars, event }: EventFormProps) {
     register,
     control,
     handleSubmit,
+    setValue,
     formState: { errors },
     getValues,
   } = useForm<FormValues>({
@@ -122,6 +125,19 @@ export function EventForm({ cars, event }: EventFormProps) {
       router.push(`/events/${(state.data as Event).id}`);
     }
   }, [state, isEditing, router]);
+
+  function handleAutofill(data: Partial<ScrapedEventData>) {
+    if (data.name) setValue("name", data.name);
+    if (data.organizingBody) setValue("organizingBody", data.organizingBody);
+    if (data.startDate) setValue("startDate", data.startDate);
+    if (data.endDate) setValue("endDate", data.endDate);
+    if (data.venueName) setValue("venueName", data.venueName);
+    if (data.address) setValue("address", data.address);
+    if (data.entryFee != null) setValue("entryFee", String(data.entryFee));
+    if (data.registrationDeadline)
+      setValue("registrationDeadline", data.registrationDeadline);
+    if (data.registrationUrl) setValue("registrationUrl", data.registrationUrl);
+  }
 
   function onSubmit() {
     const values = getValues();
@@ -169,6 +185,13 @@ export function EventForm({ cars, event }: EventFormProps) {
         <p className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md px-3 py-2">
           {state.error}
         </p>
+      )}
+
+      {!isEditing && (
+        <>
+          <UrlAutofill onFill={handleAutofill} />
+          <Separator />
+        </>
       )}
 
       {/* Required fields */}
