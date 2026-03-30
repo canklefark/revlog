@@ -1,0 +1,136 @@
+"use server";
+
+import { prisma } from "@/lib/prisma";
+import { requireAuth } from "@/lib/auth-utils";
+import { updateProfileSchema } from "@/lib/validations/user";
+import { geocodeAddress } from "@/lib/services/geocode";
+
+export type UpdateProfileState = {
+  data?: {
+    id: string;
+    name: string | null;
+    email: string | null;
+    homeAddress: string | null;
+    timezone: string;
+    units: string;
+    seasonBudget: number | null;
+  };
+  error?: string;
+  fieldErrors?: Record<string, string[]>;
+};
+
+export async function updateProfile(
+  _prevState: UpdateProfileState,
+  formData: FormData,
+): Promise<UpdateProfileState> {
+  const userId = await requireAuth();
+
+  const raw = {
+    name: formData.get("name"),
+    homeAddress: formData.get("homeAddress") || undefined,
+    timezone: formData.get("timezone") || undefined,
+    units: formData.get("units") || undefined,
+    seasonBudget: formData.get("seasonBudget")
+      ? Number(formData.get("seasonBudget"))
+      : undefined,
+  };
+
+  const parsed = updateProfileSchema.safeParse(raw);
+  if (!parsed.success) {
+    return {
+      fieldErrors: parsed.error.flatten().fieldErrors as Record<
+        string,
+        string[]
+      >,
+    };
+  }
+
+  const { name, homeAddress, timezone, units, seasonBudget } = parsed.data;
+
+  // Geocode the home address when one is provided.
+  let homeLat: number | null = null;
+  let homeLng: number | null = null;
+
+  if (homeAddress) {
+    const coords = await geocodeAddress(homeAddress);
+    if (coords) {
+      homeLat = coords.lat;
+      homeLng = coords.lng;
+    }
+    // If geocoding returns null (no API key or error), we still save the
+    // address — the lat/lng fields will remain null.
+  }
+
+  try {
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        name,
+        homeAddress: homeAddress ?? null,
+        timezone: timezone ?? "America/New_York",
+        units: units ?? "imperial",
+        seasonBudget:
+          seasonBudget === undefined || seasonBudget === ""
+            ? null
+            : seasonBudget,
+        // Only overwrite lat/lng when a home address was submitted.
+        // If homeAddress is undefined (field not included in form), leave existing coords alone.
+        // If homeAddress is empty string (address cleared), wipe coords.
+        ...(homeAddress !== undefined
+          ? {
+              homeLat: homeAddress ? homeLat : null,
+              homeLng: homeAddress ? homeLng : null,
+            }
+          : {}),
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        homeAddress: true,
+        timezone: true,
+        units: true,
+        seasonBudget: true,
+      },
+    });
+
+    return { data: user };
+  } catch {
+    return { error: "Failed to update profile. Please try again." };
+  }
+}
+
+export type CalendarSettingsState = {
+  data?: { updated: true };
+  error?: string;
+};
+
+export async function updateCalendarSettings(
+  _prevState: CalendarSettingsState,
+  formData: FormData,
+): Promise<CalendarSettingsState> {
+  const userId = await requireAuth();
+
+  const calendarProvider = formData.get("calendarProvider");
+  const calendarId = formData.get("calendarId");
+  const calendarSyncEnabled = formData.get("calendarSyncEnabled");
+
+  try {
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        calendarProvider:
+          typeof calendarProvider === "string" ? calendarProvider : null,
+        calendarId:
+          typeof calendarId === "string" && calendarId.length > 0
+            ? calendarId
+            : null,
+        calendarSyncEnabled: calendarSyncEnabled === "true",
+      },
+    });
+
+    return { data: { updated: true } };
+  } catch {
+    return { error: "Failed to update calendar settings. Please try again." };
+  }
+}
