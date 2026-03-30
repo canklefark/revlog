@@ -7,6 +7,7 @@ import { getMaintenanceAlerts } from "@/lib/utils/maintenance-alerts";
 import { MaintenanceAlertBanner } from "@/components/garage/maintenance-alert-banner";
 import { MaintenanceList } from "@/components/garage/maintenance-list";
 import { Button } from "@/components/ui/button";
+import { ExportButton } from "@/components/shared/export-button";
 
 export default async function MaintenancePage({
   params,
@@ -45,12 +46,15 @@ export default async function MaintenancePage({
           </Link>
           <h1 className="text-2xl font-semibold">Maintenance Log</h1>
         </div>
-        <Button asChild size="sm">
-          <Link href={`/garage/${carId}/maintenance/new`}>
-            <PlusIcon />
-            Add Entry
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <ExportButton section="maintenance" carId={carId} />
+          <Button asChild size="sm">
+            <Link href={`/garage/${carId}/maintenance/new`}>
+              <PlusIcon />
+              Add Entry
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <MaintenanceAlertBanner alerts={alerts} carId={carId} />

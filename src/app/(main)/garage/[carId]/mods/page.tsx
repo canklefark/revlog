@@ -7,6 +7,7 @@ import { getModsByCategory } from "@/lib/queries/mods";
 import { ModList } from "@/components/garage/mod-list";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { ExportButton } from "@/components/shared/export-button";
 
 export default async function ModsPage({
   params,
@@ -38,12 +39,15 @@ export default async function ModsPage({
           </Link>
           <h1 className="text-2xl font-semibold">Modifications</h1>
         </div>
-        <Button asChild size="sm">
-          <Link href={`/garage/${carId}/mods/new`}>
-            <PlusIcon />
-            Add Mod
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <ExportButton section="mods" carId={carId} />
+          <Button asChild size="sm">
+            <Link href={`/garage/${carId}/mods/new`}>
+              <PlusIcon />
+              Add Mod
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {totalMods > 0 && (

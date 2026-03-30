@@ -7,6 +7,7 @@ import { getWishlistItems } from "@/lib/queries/wishlist";
 import { WishlistList } from "@/components/garage/wishlist-list";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { ExportButton } from "@/components/shared/export-button";
 
 export default async function WishlistPage({
   params,
@@ -34,12 +35,15 @@ export default async function WishlistPage({
           </Link>
           <h1 className="text-2xl font-semibold">Wishlist</h1>
         </div>
-        <Button asChild size="sm">
-          <Link href={`/garage/${carId}/wishlist/new`}>
-            <PlusIcon />
-            Add Item
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <ExportButton section="wishlist" carId={carId} />
+          <Button asChild size="sm">
+            <Link href={`/garage/${carId}/wishlist/new`}>
+              <PlusIcon />
+              Add Item
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {items.length > 0 && (

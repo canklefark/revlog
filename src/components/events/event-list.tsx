@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { EventCard } from "./event-card";
 import { EventFilters } from "./event-filters";
+import { ExportButton } from "@/components/shared/export-button";
 import type { Event } from "@prisma/client";
 
 interface EventListProps {
@@ -18,6 +19,7 @@ export function EventList({ events, total }: EventListProps) {
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <EventFilters />
         <div className="flex items-center gap-2">
+          <ExportButton section="events" />
           <Button asChild variant="outline" size="sm">
             <Link href="/events/calendar">
               <CalendarDaysIcon className="size-4 mr-1.5" />

@@ -4,6 +4,7 @@ import { requireAuth } from "@/lib/auth-utils";
 import { getAllRunsForUser } from "@/lib/queries/runs";
 import { formatLapTime } from "@/lib/utils/penalty-calc";
 import { TypeBadge } from "@/components/events/type-badge";
+import { ExportButton } from "@/components/shared/export-button";
 
 export default async function TimesPage() {
   const userId = await requireAuth();
@@ -12,7 +13,10 @@ export default async function TimesPage() {
   if (events.length === 0) {
     return (
       <div className="container mx-auto px-4 py-6 max-w-2xl">
-        <h1 className="text-2xl font-semibold mb-6">Times</h1>
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-semibold">Times</h1>
+          <ExportButton section="runs" />
+        </div>
         <div className="py-12 text-center text-muted-foreground">
           <p className="text-sm">No runs logged yet.</p>
           <p className="text-xs mt-1">
@@ -25,7 +29,10 @@ export default async function TimesPage() {
 
   return (
     <main className="container mx-auto px-4 py-6 max-w-2xl">
-      <h1 className="text-2xl font-semibold mb-6">Times</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-semibold">Times</h1>
+        <ExportButton section="runs" />
+      </div>
       <div className="space-y-4">
         {events.map((event) => {
           const validTimes = event.runs
