@@ -1,7 +1,7 @@
 # RevLog — Development Status
 
-**Last updated:** 2026-03-30  
-**Current phase:** Phase 1 complete, Phase 2 not started
+**Last updated:** 2026-03-30
+**Current phase:** Phase 2 in progress — WS-8 complete
 
 ---
 
@@ -48,26 +48,25 @@ card, input, label, select, dialog, separator, badge, dropdown-menu, calendar, p
 
 ---
 
-## Phase 2 — Garage & Tracking ⏳ NOT STARTED
+## Phase 2 — Garage & Tracking ⏳ IN PROGRESS
 
 ### Pre-work required before starting
 
 ```bash
-# 1. Schema migration
-# In prisma/schema.prisma, change:
-#   adjustedTime  Float
-# To:
-#   adjustedTime  Float?
-npx prisma migrate dev --name make_adjusted_time_nullable
-
-# 2. Install packages
-npm install cheerio jszip
-npm install --save-dev @types/cheerio
+# 1. Schema migration — DONE (20260330200024_make_adjusted_time_nullable)
+# 2. Install packages (cheerio/jszip — pending for URL parser workstream)
 ```
+
+### Workstreams
+
+| Workstream                           | Status | Key files                                                                                                                                                              |
+| ------------------------------------ | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| WS-7: Mod/Wishlist schema foundation | ✅     | `src/lib/constants/mod-categories.ts`, `src/lib/validations/mod.ts`                                                                                                    |
+| WS-8: Modifications log              | ✅     | `src/lib/actions/mod.ts`, `src/lib/queries/mods.ts`, `src/app/(main)/garage/[carId]/mods/`, `src/components/garage/mod-form.tsx`, `src/components/garage/mod-list.tsx` |
 
 ### Scope
 
-- [ ] Modifications log (13 categories, total cost display)
+- [x] Modifications log (13 categories, total cost display)
 - [ ] Upgrades wishlist with priority + "Move to Mods" action
 - [ ] Times tracker (run logging, adjusted time, penalty calculation)
 - [ ] Event session view (best run highlight, consistency meter)
@@ -172,10 +171,10 @@ npm install --save-dev @types/cheerio
 
 ## Schema Change Log
 
-| Migration             | Phase          | Description                                                                                                                  |
-| --------------------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `20260330174150_init` | Pre-Phase 1    | Initial schema: User, Account, Session, Car, Mod, WishlistItem, MaintenanceEntry, Event, AdditionalCost, Run, PenaltyDefault |
-| _(pending)_           | Before Phase 2 | Make `Run.adjustedTime` nullable (`Float?`)                                                                                  |
-| _(pending)_           | Before Phase 3 | Add `MaintenanceAudit` model                                                                                                 |
-| _(pending)_           | Before Phase 5 | Add `CarPhoto` model                                                                                                         |
-| _(pending)_           | Before Phase 6 | Add `Subscription` model, `User.tier` field                                                                                  |
+| Migration                                    | Phase          | Description                                                                                                                  |
+| -------------------------------------------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `20260330174150_init`                        | Pre-Phase 1    | Initial schema: User, Account, Session, Car, Mod, WishlistItem, MaintenanceEntry, Event, AdditionalCost, Run, PenaltyDefault |
+| `20260330200024_make_adjusted_time_nullable` | Phase 2        | Make `Run.adjustedTime` nullable (`Float?`)                                                                                  |
+| _(pending)_                                  | Before Phase 3 | Add `MaintenanceAudit` model                                                                                                 |
+| _(pending)_                                  | Before Phase 5 | Add `CarPhoto` model                                                                                                         |
+| _(pending)_                                  | Before Phase 6 | Add `Subscription` model, `User.tier` field                                                                                  |
