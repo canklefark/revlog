@@ -48,34 +48,46 @@ card, input, label, select, dialog, separator, badge, dropdown-menu, calendar, p
 
 ---
 
-## Phase 2 — Garage & Tracking ⏳ IN PROGRESS
+## Phase 2 — Garage & Tracking ✅ COMPLETE
 
-### Pre-work required before starting
+**Completed:** 2026-03-30
 
-```bash
-# 1. Schema migration — DONE (20260330200024_make_adjusted_time_nullable)
-# 2. Install packages (cheerio/jszip — pending for URL parser workstream)
-```
+### Pre-work
+
+- Schema migration `20260330200024_make_adjusted_time_nullable`: `Run.adjustedTime` is now `Float?`
+- Packages installed: `cheerio`, `jszip`, `@types/cheerio`
 
 ### Workstreams
 
-| Workstream                           | Status | Key files                                                                                                                                                                                                                                                                                             |
-| ------------------------------------ | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| WS-7: Mod/Wishlist schema foundation | ✅     | `src/lib/constants/mod-categories.ts`, `src/lib/validations/mod.ts`                                                                                                                                                                                                                                   |
-| WS-8: Modifications log              | ✅     | `src/lib/actions/mod.ts`, `src/lib/queries/mods.ts`, `src/app/(main)/garage/[carId]/mods/`, `src/components/garage/mod-form.tsx`, `src/components/garage/mod-list.tsx`                                                                                                                                |
-| WS-9: Upgrades wishlist              | ✅     | `src/lib/actions/wishlist.ts`, `src/lib/queries/wishlist.ts`, `src/app/(main)/garage/[carId]/wishlist/`, `src/app/(main)/garage/[carId]/wishlist/new/`, `src/app/(main)/garage/[carId]/wishlist/[itemId]/edit/`, `src/components/garage/wishlist-form.tsx`, `src/components/garage/wishlist-list.tsx` |
-| WS-10: Times tracker (Run CRUD)      | ✅     | `src/lib/actions/run.ts`, `src/lib/queries/runs.ts`, `src/app/(main)/times/page.tsx`, `src/app/(main)/events/[eventId]/runs/`, `src/components/times/`                                                                                                                                                |
-| WS-13: URL paste / auto-fill         | ✅     | `src/lib/services/motorsportreg-scraper.ts`, `src/lib/actions/scrape.ts`, `src/components/events/url-autofill.tsx`, `src/components/events/event-form.tsx` (modified)                                                                                                                                 |
+| Workstream                             | Status | Key files                                                                                                                                                                                                                                                                                                                      |
+| -------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| WS-7: Foundation (constants/utils/val) | ✅     | `src/lib/constants/mod-categories.ts`, `src/lib/constants/wishlist-priorities.ts`, `src/lib/constants/run-conditions.ts`, `src/lib/constants/penalty-types.ts`, `src/lib/validations/mod.ts`, `src/lib/validations/wishlist.ts`, `src/lib/validations/run.ts`, `src/lib/utils/penalty-calc.ts`, `src/lib/utils/consistency.ts` |
+| WS-8: Modifications log                | ✅     | `src/lib/actions/mod.ts`, `src/lib/queries/mods.ts`, `src/app/(main)/garage/[carId]/mods/`, `src/components/garage/mod-form.tsx`, `src/components/garage/mod-list.tsx`                                                                                                                                                         |
+| WS-9: Upgrades wishlist                | ✅     | `src/lib/actions/wishlist.ts`, `src/lib/queries/wishlist.ts`, `src/app/(main)/garage/[carId]/wishlist/`, `src/components/garage/wishlist-form.tsx`, `src/components/garage/wishlist-list.tsx`                                                                                                                                  |
+| WS-10: Times tracker (Run CRUD)        | ✅     | `src/lib/actions/run.ts`, `src/lib/queries/runs.ts`, `src/app/(main)/times/page.tsx`, `src/app/(main)/events/[eventId]/runs/`, `src/components/times/run-form.tsx`, `src/components/times/run-list.tsx`                                                                                                                        |
+| WS-11: Event session view              | ✅     | `src/app/(main)/events/[eventId]/session/page.tsx`, `src/components/times/session-summary.tsx`, `src/components/times/session-run-table.tsx`                                                                                                                                                                                   |
+| WS-12: Calendar view                   | ✅     | `src/app/(main)/events/calendar/page.tsx`, `src/components/events/calendar-view.tsx`                                                                                                                                                                                                                                           |
+| WS-13: URL paste / auto-fill           | ✅     | `src/lib/services/motorsportreg-scraper.ts`, `src/lib/actions/scrape.ts`, `src/components/events/url-autofill.tsx`                                                                                                                                                                                                             |
+| WS-14: CSV export                      | ✅     | `src/lib/services/csv-export.ts`, `src/app/api/export/[section]/route.ts`, `src/app/api/export/bundle/route.ts`, `src/components/shared/export-button.tsx`, `src/components/shared/export-all-button.tsx`                                                                                                                      |
 
 ### Scope
 
 - [x] Modifications log (13 categories, total cost display)
 - [x] Upgrades wishlist with priority + "Move to Mods" action
 - [x] Times tracker (run logging, adjusted time, penalty calculation)
-- [ ] Event session view (best run highlight, consistency meter)
-- [ ] Calendar view for events (month grid, color-coded chips)
+- [x] Event session view (best run highlight, consistency meter)
+- [x] Calendar view for events (month grid, color-coded chips)
 - [x] URL paste / auto-fill for events (MotorsportReg Cheerio parser)
-- [ ] CSV export (per-section, zip bundle for multiple)
+- [x] CSV export (per-section, zip bundle for multiple)
+
+### Packages added in Phase 2
+
+- `cheerio` + `@types/cheerio`
+- `jszip`
+
+### shadcn/ui components added in Phase 2
+
+- `checkbox` (run form DNF toggle)
 
 ### shadcn/ui components added in Phase 2
 
