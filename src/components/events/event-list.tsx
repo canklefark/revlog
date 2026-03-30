@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarPlusIcon } from "lucide-react";
+import { CalendarDaysIcon, CalendarPlusIcon } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { EventCard } from "./event-card";
@@ -17,12 +17,20 @@ export function EventList({ events, total }: EventListProps) {
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <EventFilters />
-        <Button asChild size="sm">
-          <Link href="/events/new">
-            <CalendarPlusIcon className="size-4 mr-1.5" />
-            Add event
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button asChild variant="outline" size="sm">
+            <Link href="/events/calendar">
+              <CalendarDaysIcon className="size-4 mr-1.5" />
+              Calendar
+            </Link>
+          </Button>
+          <Button asChild size="sm">
+            <Link href="/events/new">
+              <CalendarPlusIcon className="size-4 mr-1.5" />
+              Add event
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {total > 0 && (

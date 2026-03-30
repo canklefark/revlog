@@ -9,6 +9,7 @@ import {
   TimerIcon,
   ExternalLinkIcon,
   FileTextIcon,
+  PlusIcon,
 } from "lucide-react";
 import { requireAuth } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
@@ -38,6 +39,10 @@ export default async function EventDetailPage({
           model: true,
           nickname: true,
         },
+      },
+      runs: {
+        select: { id: true, adjustedTime: true },
+        orderBy: { runNumber: "asc" },
       },
     },
   });
@@ -202,6 +207,44 @@ export default async function EventDetailPage({
           eventId={eventId}
           currentStatus={event.registrationStatus}
         />
+      </div>
+
+      {/* Runs section */}
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+            Runs
+          </h2>
+          {event.car && (
+            <Button asChild variant="outline" size="sm">
+              <Link href={`/events/${eventId}/runs/new`}>
+                <PlusIcon className="size-4 mr-1" />
+                Add Run
+              </Link>
+            </Button>
+          )}
+        </div>
+        {event.runs.length > 0 ? (
+          <div className="flex items-center gap-3 text-sm">
+            <span className="text-muted-foreground">
+              {event.runs.length} run{event.runs.length !== 1 ? "s" : ""}
+            </span>
+            <Link
+              href={`/events/${eventId}/runs`}
+              className="text-primary hover:underline underline-offset-4 text-xs"
+            >
+              View runs
+            </Link>
+            <Link
+              href={`/events/${eventId}/session`}
+              className="text-primary hover:underline underline-offset-4 text-xs"
+            >
+              Session view
+            </Link>
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">No runs logged yet.</p>
+        )}
       </div>
 
       {/* Notes */}
