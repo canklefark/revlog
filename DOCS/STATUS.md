@@ -1,7 +1,7 @@
 # RevLog — Development Status
 
 **Last updated:** 2026-03-30
-**Current phase:** Phase 2 in progress — WS-10 complete
+**Current phase:** Phase 2 in progress — WS-9 complete
 
 ---
 
@@ -59,17 +59,18 @@ card, input, label, select, dialog, separator, badge, dropdown-menu, calendar, p
 
 ### Workstreams
 
-| Workstream                           | Status | Key files                                                                                                                                                              |
-| ------------------------------------ | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| WS-7: Mod/Wishlist schema foundation | ✅     | `src/lib/constants/mod-categories.ts`, `src/lib/validations/mod.ts`                                                                                                    |
-| WS-8: Modifications log              | ✅     | `src/lib/actions/mod.ts`, `src/lib/queries/mods.ts`, `src/app/(main)/garage/[carId]/mods/`, `src/components/garage/mod-form.tsx`, `src/components/garage/mod-list.tsx` |
-| WS-10: Times tracker (Run CRUD)      | ✅     | `src/lib/actions/run.ts`, `src/lib/queries/runs.ts`, `src/app/(main)/times/page.tsx`, `src/app/(main)/events/[eventId]/runs/`, `src/components/times/`                 |
-| WS-13: URL paste / auto-fill         | ✅     | `src/lib/services/motorsportreg-scraper.ts`, `src/lib/actions/scrape.ts`, `src/components/events/url-autofill.tsx`, `src/components/events/event-form.tsx` (modified)  |
+| Workstream                           | Status | Key files                                                                                                                                                                                                                                                                                             |
+| ------------------------------------ | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| WS-7: Mod/Wishlist schema foundation | ✅     | `src/lib/constants/mod-categories.ts`, `src/lib/validations/mod.ts`                                                                                                                                                                                                                                   |
+| WS-8: Modifications log              | ✅     | `src/lib/actions/mod.ts`, `src/lib/queries/mods.ts`, `src/app/(main)/garage/[carId]/mods/`, `src/components/garage/mod-form.tsx`, `src/components/garage/mod-list.tsx`                                                                                                                                |
+| WS-9: Upgrades wishlist              | ✅     | `src/lib/actions/wishlist.ts`, `src/lib/queries/wishlist.ts`, `src/app/(main)/garage/[carId]/wishlist/`, `src/app/(main)/garage/[carId]/wishlist/new/`, `src/app/(main)/garage/[carId]/wishlist/[itemId]/edit/`, `src/components/garage/wishlist-form.tsx`, `src/components/garage/wishlist-list.tsx` |
+| WS-10: Times tracker (Run CRUD)      | ✅     | `src/lib/actions/run.ts`, `src/lib/queries/runs.ts`, `src/app/(main)/times/page.tsx`, `src/app/(main)/events/[eventId]/runs/`, `src/components/times/`                                                                                                                                                |
+| WS-13: URL paste / auto-fill         | ✅     | `src/lib/services/motorsportreg-scraper.ts`, `src/lib/actions/scrape.ts`, `src/components/events/url-autofill.tsx`, `src/components/events/event-form.tsx` (modified)                                                                                                                                 |
 
 ### Scope
 
 - [x] Modifications log (13 categories, total cost display)
-- [ ] Upgrades wishlist with priority + "Move to Mods" action
+- [x] Upgrades wishlist with priority + "Move to Mods" action
 - [x] Times tracker (run logging, adjusted time, penalty calculation)
 - [ ] Event session view (best run highlight, consistency meter)
 - [ ] Calendar view for events (month grid, color-coded chips)

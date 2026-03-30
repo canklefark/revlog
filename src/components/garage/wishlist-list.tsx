@@ -1,0 +1,173 @@
+"use client";
+
+import Link from "next/link";
+import { useActionState, useEffect } from "react";
+import { toast } from "sonner";
+import {
+  PencilIcon,
+  Trash2Icon,
+  ArrowRightIcon,
+  ExternalLinkIcon,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  deleteWishlistItem,
+  moveWishlistToMod,
+  type WishlistActionState,
+} from "@/lib/actions/wishlist";
+import type { WishlistItem } from "@prisma/client";
+
+const PRIORITY_COLORS: Record<string, string> = {
+  High: "text-red-500",
+  Medium: "text-yellow-500",
+  Low: "text-muted-foreground",
+};
+
+const initialState: WishlistActionState = {};
+
+function DeleteWishlistForm({ itemId }: { itemId: string }) {
+  const [state, formAction, isPending] = useActionState(
+    deleteWishlistItem,
+    initialState,
+  );
+
+  useEffect(() => {
+    if (state.data) toast.success("Item removed from wishlist");
+    if (state.error) toast.error(state.error);
+  }, [state]);
+
+  return (
+    <form action={formAction}>
+      <input type="hidden" name="itemId" value={itemId} />
+      <Button
+        type="submit"
+        variant="ghost"
+        size="icon"
+        disabled={isPending}
+        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+        aria-label="Remove from wishlist"
+      >
+        <Trash2Icon className="size-4" />
+      </Button>
+    </form>
+  );
+}
+
+function MoveToModsForm({ itemId }: { itemId: string }) {
+  const [state, formAction, isPending] = useActionState(
+    moveWishlistToMod,
+    initialState,
+  );
+
+  useEffect(() => {
+    if (state.data) toast.success("Moved to Modifications");
+    if (state.error) toast.error(state.error);
+  }, [state]);
+
+  return (
+    <form action={formAction}>
+      <input type="hidden" name="itemId" value={itemId} />
+      <Button
+        type="submit"
+        variant="outline"
+        size="sm"
+        disabled={isPending}
+        className="text-xs h-7 gap-1"
+      >
+        <ArrowRightIcon className="size-3" />
+        {isPending ? "Moving..." : "Move to Mods"}
+      </Button>
+    </form>
+  );
+}
+
+interface WishlistListProps {
+  items: WishlistItem[];
+  carId: string;
+}
+
+export function WishlistList({ items, carId }: WishlistListProps) {
+  if (items.length === 0) {
+    return (
+      <div className="py-12 text-center text-muted-foreground">
+        <p className="text-sm">No wishlist items yet.</p>
+        <p className="text-xs mt-1">
+          Add items you want to install on this car.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {items.map((item) => (
+        <div
+          key={item.id}
+          className="rounded-lg border border-border bg-card p-3"
+        >
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="font-medium text-sm">{item.name}</p>
+                <span
+                  className={`text-xs font-medium ${PRIORITY_COLORS[item.priority] ?? "text-muted-foreground"}`}
+                >
+                  {item.priority}
+                </span>
+                {item.category && (
+                  <Badge variant="secondary" className="text-xs">
+                    {item.category}
+                  </Badge>
+                )}
+              </div>
+              <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                {item.estimatedCost != null && (
+                  <span className="text-xs text-muted-foreground">
+                    ~$
+                    {item.estimatedCost.toLocaleString("en-US", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </span>
+                )}
+                {item.sourceUrl && (
+                  <a
+                    href={item.sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-0.5 text-xs text-primary hover:underline underline-offset-4"
+                  >
+                    Source <ExternalLinkIcon className="size-3" />
+                  </a>
+                )}
+              </div>
+              {item.notes && (
+                <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                  {item.notes}
+                </p>
+              )}
+            </div>
+            <div className="flex items-center gap-1 shrink-0">
+              <Button
+                asChild
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground"
+                aria-label="Edit wishlist item"
+              >
+                <Link href={`/garage/${carId}/wishlist/${item.id}/edit`}>
+                  <PencilIcon className="size-4" />
+                </Link>
+              </Button>
+              <DeleteWishlistForm itemId={item.id} />
+            </div>
+          </div>
+          <div className="mt-2 pt-2 border-t border-border">
+            <MoveToModsForm itemId={item.id} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
