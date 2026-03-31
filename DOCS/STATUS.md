@@ -1,7 +1,7 @@
 # RevLog — Development Status
 
 **Last updated:** 2026-03-31
-**Current phase:** Phase 3 in progress — WS-17 complete
+**Current phase:** Phase 3 complete — Phase 4 next
 
 ---
 
@@ -100,35 +100,47 @@ card, input, label, select, dialog, separator, badge, dropdown-menu, calendar, p
 
 ---
 
-## Phase 3 — Analytics & Polish ⏳ IN PROGRESS
+## Phase 3 — Analytics & Polish ✅ COMPLETE
 
-**Last updated:** 2026-03-31
+**Completed:** 2026-03-31
 
-### Pre-work required before starting
+### Pre-work
 
-- Schema migration: add `MaintenanceAudit` model
+- ✅ Schema migration `20260331191406_pre_phase3_indexes_is_dnf_drop_penalty_defaults`: indexes, `Run.isDnf`, dropped `PenaltyDefault`
+- ✅ Schema migration `20260331194048_add_maintenance_audit`: `MaintenanceAudit` model
 
 ### Scope
 
-- [x] Performance analytics (progress charts, personal records, car comparison) — WS-17
-- [x] Consistency scoring (std dev of adjusted times) — WS-17
-- [x] Conditions analysis (best times by weather tags) — WS-17
-- [ ] Season progress widget + Recent runs widget (dashboard)
-- [ ] Maintenance snooze + audit trail
-- [ ] Additional costs per event (UI — model already exists)
-- [ ] Generic URL scraper (Firecrawl fallback)
+- [x] Performance analytics (progress charts, personal records, car comparison)
+- [x] Consistency scoring (std dev of adjusted times)
+- [x] Conditions analysis (best times by weather tags)
+- [x] Season progress widget + Recent runs widget (dashboard)
+- [x] Maintenance snooze + audit trail
+- [x] Additional costs per event (UI — model already existed)
+- [x] Generic URL scraper (direct fetch + Cheerio, Schema.org/OpenGraph)
 
-### WS-17: Analytics page
+### Workstreams
 
-| Item                                                  | Status | Key files                                                               |
-| ----------------------------------------------------- | ------ | ----------------------------------------------------------------------- |
-| TimesLayout + TimesNav tab nav                        | ✅     | `src/app/(main)/times/layout.tsx`, `src/components/times/times-nav.tsx` |
-| `/times/analytics` page + loading skeleton            | ✅     | `src/app/(main)/times/analytics/page.tsx`, `.../loading.tsx`            |
-| ProgressChart (LineChart, multi-car, date x-axis)     | ✅     | `src/components/analytics/progress-chart.tsx`                           |
-| ConditionsChart (horizontal BarChart)                 | ✅     | `src/components/analytics/conditions-chart.tsx`                         |
-| CarComparisonChart (grouped BarChart + rating badges) | ✅     | `src/components/analytics/car-comparison-chart.tsx`                     |
-| PRTable (server component, grouped by car)            | ✅     | `src/components/analytics/pr-table.tsx`                                 |
-| ConsistencyCard (server component, std dev + rating)  | ✅     | `src/components/analytics/consistency-card.tsx`                         |
+| Workstream                        | Status | Key files                                                                                                                                                                                                                                             |
+| --------------------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| WS-15: Schema migration           | ✅     | `prisma/schema.prisma`, `prisma/migrations/20260331194048_*`                                                                                                                                                                                          |
+| WS-16: Analytics query layer      | ✅     | `src/lib/queries/analytics.ts`, `src/types/analytics.ts`                                                                                                                                                                                              |
+| WS-17: Analytics page + charts    | ✅     | `src/app/(main)/times/layout.tsx`, `src/app/(main)/times/analytics/`, `src/components/times/times-nav.tsx`, `src/components/analytics/progress-chart.tsx`, `conditions-chart.tsx`, `car-comparison-chart.tsx`, `pr-table.tsx`, `consistency-card.tsx` |
+| WS-18: Dashboard widgets          | ✅     | `src/components/dashboard/season-progress-widget.tsx`, `src/components/dashboard/recent-runs-widget.tsx`, `src/app/(main)/dashboard/page.tsx`                                                                                                         |
+| WS-19: Maintenance snooze + audit | ✅     | `src/lib/actions/maintenance.ts`, `src/lib/validations/maintenance-snooze.ts`, `src/components/garage/maintenance-snooze-button.tsx`, `maintenance-alert-banner.tsx`, `maintenance-alert-card.tsx`, `maintenance-list.tsx`                            |
+| WS-20: Additional costs UI        | ✅     | `src/lib/actions/additional-cost.ts`, `src/lib/validations/additional-cost.ts`, `src/components/events/additional-costs-section.tsx`, `src/app/(main)/events/[eventId]/page.tsx`                                                                      |
+| WS-21: Generic URL scraper        | ✅     | `src/lib/services/generic-event-scraper.ts`, `src/lib/actions/scrape.ts`, `src/components/events/url-autofill.tsx`                                                                                                                                    |
+
+### Packages added in Phase 3
+
+_(none — Recharts was already installed)_
+
+### Key decisions made
+
+- Analytics at `/times/analytics` (tab under Times) — avoids 6th nav item on mobile
+- No Firecrawl: generic scraper uses direct `fetch` + Cheerio with Schema.org/OpenGraph heuristics
+- `MaintenanceAudit` records snooze/unsnooze events; audit trail UI deferred to a future phase
+- `AdditionalCost` ownership always verified through `Event.userId` join (model has no direct `userId`)
 
 ---
 

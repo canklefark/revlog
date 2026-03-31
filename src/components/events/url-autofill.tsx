@@ -38,17 +38,17 @@ export function UrlAutofill({ onFill }: UrlAutofillProps) {
         <p className="text-sm font-medium">Auto-fill from URL</p>
       </div>
       <p className="text-xs text-muted-foreground">
-        Paste a MotorsportReg event URL to auto-fill details.
+        Paste an event URL to auto-fill details.
       </p>
       <form action={formAction} className="flex gap-2">
         <Label htmlFor="autofill-url" className="sr-only">
-          MotorsportReg URL
+          Event URL
         </Label>
         <Input
           id="autofill-url"
           name="url"
           type="url"
-          placeholder="https://www.motorsportreg.com/events/..."
+          placeholder="https://..."
           className="flex-1"
         />
         <Button type="submit" variant="outline" size="sm" disabled={isPending}>

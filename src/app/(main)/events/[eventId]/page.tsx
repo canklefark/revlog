@@ -19,6 +19,7 @@ import { TypeBadge } from "@/components/events/type-badge";
 import { StatusBadge } from "@/components/events/status-badge";
 import { EventStatusUpdater } from "@/components/events/event-status-updater";
 import { DeleteEventButton } from "@/components/events/delete-event-button";
+import { AdditionalCostsSection } from "@/components/events/additional-costs-section";
 
 export default async function EventDetailPage({
   params,
@@ -43,6 +44,10 @@ export default async function EventDetailPage({
       runs: {
         select: { id: true, adjustedTime: true },
         orderBy: { runNumber: "asc" },
+      },
+      additionalCosts: {
+        select: { id: true, description: true, amount: true },
+        orderBy: { createdAt: "asc" as const },
       },
     },
   });
@@ -196,6 +201,14 @@ export default async function EventDetailPage({
             ? "Synced to calendar"
             : "Not synced to calendar (coming soon)"}
         </div>
+      </div>
+
+      {/* Additional costs */}
+      <div className="mb-6">
+        <AdditionalCostsSection
+          eventId={eventId}
+          costs={event.additionalCosts}
+        />
       </div>
 
       {/* Status updater */}
