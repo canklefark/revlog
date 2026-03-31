@@ -3,6 +3,7 @@ import { WrenchIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { MaintenanceAlert } from "@/lib/utils/maintenance-alerts";
+import { MaintenanceSnoozeButton } from "@/components/garage/maintenance-snooze-button";
 
 interface MaintenanceAlertCardProps {
   carName: string;
@@ -55,8 +56,18 @@ export function MaintenanceAlertCard({
       <CardContent className="pt-0">
         <ul className="space-y-1 mb-3">
           {visibleAlerts.slice(0, 3).map((alert) => (
-            <li key={alert.entry.id} className="text-xs text-muted-foreground">
-              {alert.reason}
+            <li
+              key={alert.entry.id}
+              className="flex items-center justify-between gap-2"
+            >
+              <span className="text-xs text-muted-foreground">
+                {alert.reason}
+              </span>
+              <MaintenanceSnoozeButton
+                entryId={alert.entry.id}
+                snoozedUntil={alert.entry.snoozedUntil}
+                carId={carId}
+              />
             </li>
           ))}
           {visibleAlerts.length > 3 && (

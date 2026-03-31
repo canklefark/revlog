@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import Link from "next/link";
 import { PencilIcon, Trash2Icon } from "lucide-react";
 import type { MaintenanceEntry } from "@prisma/client";
+import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -80,6 +81,11 @@ function EntryCard({
                 : alertLevel === "due"
                   ? "Due soon"
                   : "Upcoming"}
+            </Badge>
+          )}
+          {entry.snoozedUntil && entry.snoozedUntil > new Date() && (
+            <Badge variant="outline" className="text-xs text-muted-foreground">
+              Snoozed until {format(entry.snoozedUntil, "MMM d")}
             </Badge>
           )}
         </div>

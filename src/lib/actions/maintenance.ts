@@ -2,12 +2,17 @@
 
 import { revalidatePath } from "next/cache";
 import type { MaintenanceEntry } from "@prisma/client";
+import { addWeeks, addMonths } from "date-fns";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth-utils";
 import {
   createMaintenanceSchema,
   updateMaintenanceSchema,
 } from "@/lib/validations/maintenance";
+import {
+  snoozeMaintenanceSchema,
+  unsnoozeMaintenanceSchema,
+} from "@/lib/validations/maintenance-snooze";
 
 export type MaintenanceActionState = {
   data?: MaintenanceEntry | true;
@@ -205,5 +210,118 @@ export async function deleteMaintenance(
   });
 
   revalidatePath(`/garage/${existing.carId}/maintenance`);
+  return { data: true };
+}
+
+export async function snoozeMaintenance(
+  _prevState: MaintenanceActionState,
+  formData: FormData,
+): Promise<MaintenanceActionState> {
+  const userId = await requireAuth();
+
+  const raw = {
+    entryId: formData.get("entryId") as string,
+    duration: formData.get("duration") as string,
+    customDate: formData.get("customDate") as string | undefined,
+  };
+
+  const parsed = snoozeMaintenanceSchema.safeParse(raw);
+  if (!parsed.success) {
+    const flat = parsed.error.flatten();
+    return {
+      fieldErrors: flat.fieldErrors as Record<string, string[]>,
+      error: flat.formErrors[0] ?? "Validation failed",
+    };
+  }
+
+  const { entryId, duration, customDate } = parsed.data;
+
+  const entry = await prisma.maintenanceEntry.findUnique({
+    where: { id: entryId },
+    include: { car: { select: { userId: true, id: true } } },
+  });
+
+  if (!entry || entry.car.userId !== userId) {
+    return { error: "Not found" };
+  }
+
+  let snoozedUntil: Date;
+
+  if (duration === "1week") {
+    snoozedUntil = addWeeks(new Date(), 1);
+  } else if (duration === "2weeks") {
+    snoozedUntil = addWeeks(new Date(), 2);
+  } else if (duration === "1month") {
+    snoozedUntil = addMonths(new Date(), 1);
+  } else {
+    // custom
+    const parsed = new Date(customDate!);
+    if (isNaN(parsed.getTime())) {
+      return { error: "Invalid date" };
+    }
+    snoozedUntil = parsed;
+  }
+
+  await prisma.$transaction([
+    prisma.maintenanceEntry.update({
+      where: { id: entryId, car: { userId } },
+      data: { snoozedUntil },
+    }),
+    prisma.maintenanceAudit.create({
+      data: {
+        maintenanceEntryId: entryId,
+        action: "snoozed",
+        previousSnoozedUntil: entry.snoozedUntil,
+        newSnoozedUntil: snoozedUntil,
+      },
+    }),
+  ]);
+
+  revalidatePath(`/garage/${entry.car.id}/maintenance`);
+  revalidatePath("/dashboard");
+  return { data: true };
+}
+
+export async function unsnoozeMaintenance(
+  _prevState: MaintenanceActionState,
+  formData: FormData,
+): Promise<MaintenanceActionState> {
+  const userId = await requireAuth();
+
+  const raw = { entryId: formData.get("entryId") as string };
+
+  const parsed = unsnoozeMaintenanceSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { error: "Entry ID is required" };
+  }
+
+  const { entryId } = parsed.data;
+
+  const entry = await prisma.maintenanceEntry.findUnique({
+    where: { id: entryId },
+    include: { car: { select: { userId: true, id: true } } },
+  });
+
+  if (!entry || entry.car.userId !== userId) {
+    return { error: "Not found" };
+  }
+
+  await prisma.$transaction([
+    prisma.maintenanceEntry.update({
+      where: { id: entryId, car: { userId } },
+      data: { snoozedUntil: null },
+    }),
+    prisma.maintenanceAudit.create({
+      data: {
+        maintenanceEntryId: entryId,
+        action: "unsnoozed",
+        previousSnoozedUntil: entry.snoozedUntil,
+        newSnoozedUntil: null,
+      },
+    }),
+  ]);
+
+  revalidatePath(`/garage/${entry.car.id}/maintenance`);
+  revalidatePath("/dashboard");
   return { data: true };
 }

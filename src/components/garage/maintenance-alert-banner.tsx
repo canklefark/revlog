@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { AlertTriangleIcon } from "lucide-react";
 import type { MaintenanceAlert } from "@/lib/utils/maintenance-alerts";
+import { MaintenanceSnoozeButton } from "@/components/garage/maintenance-snooze-button";
 
 interface MaintenanceAlertBannerProps {
   alerts: MaintenanceAlert[];
@@ -51,12 +52,19 @@ export function MaintenanceAlertBanner({
                 className="flex items-center justify-between gap-3 flex-wrap"
               >
                 <span className="text-sm text-foreground">{alert.reason}</span>
-                <Link
-                  href={`/garage/${carId}/maintenance/new?serviceType=${encodeURIComponent(alert.entry.serviceType)}`}
-                  className="text-xs font-medium underline underline-offset-4 text-muted-foreground hover:text-foreground transition-colors shrink-0"
-                >
-                  Mark complete
-                </Link>
+                <div className="flex items-center gap-2 shrink-0">
+                  <MaintenanceSnoozeButton
+                    entryId={alert.entry.id}
+                    snoozedUntil={alert.entry.snoozedUntil}
+                    carId={carId}
+                  />
+                  <Link
+                    href={`/garage/${carId}/maintenance/new?serviceType=${encodeURIComponent(alert.entry.serviceType)}`}
+                    className="text-xs font-medium underline underline-offset-4 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Mark complete
+                  </Link>
+                </div>
               </li>
             ))}
           </ul>
