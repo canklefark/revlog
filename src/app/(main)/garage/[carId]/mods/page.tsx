@@ -20,7 +20,7 @@ export default async function ModsPage({
   const car = await prisma.car.findUnique({ where: { id: carId } });
   if (!car || car.userId !== userId) notFound();
 
-  const { grouped, totalCost } = await getModsByCategory(carId);
+  const { grouped, totalCost } = await getModsByCategory(carId, userId);
   const totalMods = Object.values(grouped).reduce(
     (sum, arr) => sum + arr.length,
     0,

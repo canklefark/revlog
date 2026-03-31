@@ -107,6 +107,7 @@ export async function createRun(
       rawTime: parsed.data.rawTime,
       penalties: parsed.data.penalties,
       adjustedTime: adjustedTime ?? undefined,
+      isDnf: parsed.data.isDnf,
       conditions: parsed.data.conditions,
       tireSetup: parsed.data.tireSetup,
       notes: parsed.data.notes,
@@ -196,7 +197,7 @@ export async function updateRun(
   const existingPenalties = existing.penalties as unknown as PenaltyItem[];
   const newPenalties =
     (parsed.data.penalties as PenaltyItem[] | undefined) ?? existingPenalties;
-  const newIsDnf = parsed.data.isDnf ?? existing.adjustedTime === null;
+  const newIsDnf = parsed.data.isDnf ?? existing.isDnf;
 
   const adjustedTime = calculateAdjustedTime(
     newRawTime,
@@ -223,6 +224,7 @@ export async function updateRun(
       ...(parsed.data.runNumber !== undefined && {
         runNumber: parsed.data.runNumber,
       }),
+      ...(parsed.data.isDnf !== undefined && { isDnf: parsed.data.isDnf }),
       adjustedTime: adjustedTime,
     },
   });

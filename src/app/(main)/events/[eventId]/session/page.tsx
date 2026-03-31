@@ -20,7 +20,7 @@ export default async function SessionPage({
   const event = await prisma.event.findUnique({ where: { id: eventId } });
   if (!event || event.userId !== userId) notFound();
 
-  const runs = await getRunsForEvent(eventId);
+  const runs = await getRunsForEvent(eventId, userId);
 
   if (runs.length === 0) {
     return (

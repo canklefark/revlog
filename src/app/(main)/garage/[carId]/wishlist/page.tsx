@@ -20,7 +20,7 @@ export default async function WishlistPage({
   const car = await prisma.car.findUnique({ where: { id: carId } });
   if (!car || car.userId !== userId) notFound();
 
-  const { items, estimatedTotal } = await getWishlistItems(carId);
+  const { items, estimatedTotal } = await getWishlistItems(carId, userId);
   const displayName = car.nickname ?? `${car.year} ${car.make} ${car.model}`;
 
   return (

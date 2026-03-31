@@ -22,7 +22,7 @@ export default async function EventRunsPage({
 
   if (!event || event.userId !== userId) notFound();
 
-  const runs = await getRunsForEvent(eventId);
+  const runs = await getRunsForEvent(eventId, userId);
 
   return (
     <main className="container mx-auto px-4 py-6 max-w-2xl">

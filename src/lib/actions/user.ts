@@ -67,8 +67,8 @@ export async function updateProfile(
       data: {
         name,
         homeAddress: homeAddress ?? null,
-        timezone: timezone ?? "America/New_York",
-        units: units ?? "imperial",
+        ...(timezone !== undefined && { timezone }),
+        ...(units !== undefined && { units }),
         seasonBudget:
           seasonBudget === undefined || seasonBudget === ""
             ? null

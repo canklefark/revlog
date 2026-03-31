@@ -11,7 +11,7 @@ export function calculateConsistency(
 
   const mean = valid.reduce((sum, t) => sum + t, 0) / valid.length;
   const variance =
-    valid.reduce((sum, t) => sum + (t - mean) ** 2, 0) / valid.length;
+    valid.reduce((sum, t) => sum + (t - mean) ** 2, 0) / (valid.length - 1);
   const stdDev = Math.sqrt(variance);
 
   let rating: ConsistencyResult["rating"];

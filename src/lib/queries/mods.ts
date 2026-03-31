@@ -1,12 +1,15 @@
 import { prisma } from "@/lib/prisma";
 import type { Mod } from "@prisma/client";
 
-export async function getModsByCategory(carId: string): Promise<{
+export async function getModsByCategory(
+  carId: string,
+  userId: string,
+): Promise<{
   grouped: Record<string, Mod[]>;
   totalCost: number;
 }> {
   const mods = await prisma.mod.findMany({
-    where: { carId },
+    where: { carId, car: { userId } },
     orderBy: [{ category: "asc" }, { createdAt: "desc" }],
   });
 

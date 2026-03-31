@@ -1,8 +1,8 @@
 import { prisma } from "@/lib/prisma";
 
-export async function getWishlistItems(carId: string) {
+export async function getWishlistItems(carId: string, userId: string) {
   const items = await prisma.wishlistItem.findMany({
-    where: { carId },
+    where: { carId, car: { userId } },
     orderBy: [{ createdAt: "desc" }],
   });
 

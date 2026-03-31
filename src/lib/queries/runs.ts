@@ -1,8 +1,8 @@
 import { prisma } from "@/lib/prisma";
 
-export async function getRunsForEvent(eventId: string) {
+export async function getRunsForEvent(eventId: string, userId: string) {
   return prisma.run.findMany({
-    where: { eventId },
+    where: { eventId, event: { userId } },
     orderBy: { runNumber: "asc" },
     include: {
       car: {
