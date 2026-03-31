@@ -1,7 +1,7 @@
 # RevLog — Development Status
 
-**Last updated:** 2026-03-30
-**Current phase:** Phase 2 in progress — WS-9 complete
+**Last updated:** 2026-03-31
+**Current phase:** Phase 3 in progress — WS-17 complete
 
 ---
 
@@ -100,7 +100,9 @@ card, input, label, select, dialog, separator, badge, dropdown-menu, calendar, p
 
 ---
 
-## Phase 3 — Analytics & Polish ⏳ NOT STARTED
+## Phase 3 — Analytics & Polish ⏳ IN PROGRESS
+
+**Last updated:** 2026-03-31
 
 ### Pre-work required before starting
 
@@ -108,13 +110,25 @@ card, input, label, select, dialog, separator, badge, dropdown-menu, calendar, p
 
 ### Scope
 
-- [ ] Performance analytics (progress charts, personal records, car comparison)
-- [ ] Consistency scoring (std dev of adjusted times)
-- [ ] Conditions analysis (best times by weather tags)
+- [x] Performance analytics (progress charts, personal records, car comparison) — WS-17
+- [x] Consistency scoring (std dev of adjusted times) — WS-17
+- [x] Conditions analysis (best times by weather tags) — WS-17
 - [ ] Season progress widget + Recent runs widget (dashboard)
 - [ ] Maintenance snooze + audit trail
 - [ ] Additional costs per event (UI — model already exists)
 - [ ] Generic URL scraper (Firecrawl fallback)
+
+### WS-17: Analytics page
+
+| Item                                                  | Status | Key files                                                               |
+| ----------------------------------------------------- | ------ | ----------------------------------------------------------------------- |
+| TimesLayout + TimesNav tab nav                        | ✅     | `src/app/(main)/times/layout.tsx`, `src/components/times/times-nav.tsx` |
+| `/times/analytics` page + loading skeleton            | ✅     | `src/app/(main)/times/analytics/page.tsx`, `.../loading.tsx`            |
+| ProgressChart (LineChart, multi-car, date x-axis)     | ✅     | `src/components/analytics/progress-chart.tsx`                           |
+| ConditionsChart (horizontal BarChart)                 | ✅     | `src/components/analytics/conditions-chart.tsx`                         |
+| CarComparisonChart (grouped BarChart + rating badges) | ✅     | `src/components/analytics/car-comparison-chart.tsx`                     |
+| PRTable (server component, grouped by car)            | ✅     | `src/components/analytics/pr-table.tsx`                                 |
+| ConsistencyCard (server component, std dev + rating)  | ✅     | `src/components/analytics/consistency-card.tsx`                         |
 
 ---
 
