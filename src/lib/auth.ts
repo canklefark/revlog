@@ -59,6 +59,19 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
   ],
   session: { strategy: "jwt" },
   callbacks: {
+    async signIn({ user, account }) {
+      if (
+        account?.provider === "google" &&
+        process.env.DISABLE_REGISTRATION === "true"
+      ) {
+        const existing = await prisma.user.findUnique({
+          where: { email: user.email! },
+          select: { id: true },
+        });
+        if (!existing) return false;
+      }
+      return true;
+    },
     session({ session, token }) {
       if (token.sub) session.user.id = token.sub;
       return session;

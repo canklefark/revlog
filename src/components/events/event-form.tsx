@@ -167,7 +167,7 @@ export function EventForm({ cars, event }: EventFormProps) {
 
     for (const field of fields) {
       const val = values[field];
-      if (val && val.trim() !== "") {
+      if (val && val.trim() !== "" && val !== "none") {
         fd.append(field, val);
       }
     }
@@ -385,7 +385,7 @@ export function EventForm({ cars, event }: EventFormProps) {
                     <SelectValue placeholder="No car linked" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">No car linked</SelectItem>
+                    <SelectItem value="none">No car linked</SelectItem>
                     {cars.map((car) => (
                       <SelectItem key={car.id} value={car.id}>
                         {car.nickname

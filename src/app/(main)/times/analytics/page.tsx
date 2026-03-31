@@ -1,3 +1,4 @@
+import dynamic from "next/dynamic";
 import { requireAuth } from "@/lib/auth-utils";
 import {
   getProgressData,
@@ -5,11 +6,31 @@ import {
   getConditionsAnalysis,
   getCarComparisonData,
 } from "@/lib/queries/analytics";
-import { ProgressChart } from "@/components/analytics/progress-chart";
-import { CarComparisonChart } from "@/components/analytics/car-comparison-chart";
-import { ConditionsChart } from "@/components/analytics/conditions-chart";
 import { PRTable } from "@/components/analytics/pr-table";
 import { ConsistencyCard } from "@/components/analytics/consistency-card";
+
+// Recharts uses ResizeObserver (browser-only) — disable SSR to prevent hydration mismatch
+const ProgressChart = dynamic(
+  () =>
+    import("@/components/analytics/progress-chart").then(
+      (m) => m.ProgressChart,
+    ),
+  { ssr: false },
+);
+const ConditionsChart = dynamic(
+  () =>
+    import("@/components/analytics/conditions-chart").then(
+      (m) => m.ConditionsChart,
+    ),
+  { ssr: false },
+);
+const CarComparisonChart = dynamic(
+  () =>
+    import("@/components/analytics/car-comparison-chart").then(
+      (m) => m.CarComparisonChart,
+    ),
+  { ssr: false },
+);
 
 export default async function AnalyticsPage() {
   const userId = await requireAuth();

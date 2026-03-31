@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useState, useTransition } from "react";
 import { LinkIcon, LoaderIcon } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -13,23 +13,26 @@ interface UrlAutofillProps {
   onFill: (data: Partial<ScrapedEventData>) => void;
 }
 
-const initialState: ScrapeActionState = {};
-
 export function UrlAutofill({ onFill }: UrlAutofillProps) {
-  const [state, formAction, isPending] = useActionState(
-    scrapeEventUrl,
-    initialState,
-  );
+  const [url, setUrl] = useState("");
+  const [isPending, startTransition] = useTransition();
 
-  useEffect(() => {
-    if (state.data && Object.keys(state.data).length > 0) {
-      onFill(state.data);
-      toast.success("Event details fetched");
-    }
-    if (state.error) {
-      toast.error(state.error);
-    }
-  }, [state]);
+  function handleFetch() {
+    if (!url) return;
+    const formData = new FormData();
+    formData.set("url", url);
+    startTransition(async () => {
+      const result = await scrapeEventUrl({} as ScrapeActionState, formData);
+      if (result.data && Object.keys(result.data).length > 0) {
+        onFill(result.data);
+        toast.success("Event details fetched");
+        setUrl("");
+      }
+      if (result.error) {
+        toast.error(result.error);
+      }
+    });
+  }
 
   return (
     <div className="rounded-lg border border-dashed border-border p-4 space-y-3">
@@ -40,25 +43,38 @@ export function UrlAutofill({ onFill }: UrlAutofillProps) {
       <p className="text-xs text-muted-foreground">
         Paste an event URL to auto-fill details.
       </p>
-      <form action={formAction} className="flex gap-2">
+      <div className="flex gap-2">
         <Label htmlFor="autofill-url" className="sr-only">
           Event URL
         </Label>
         <Input
           id="autofill-url"
-          name="url"
           type="url"
           placeholder="https://..."
           className="flex-1"
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              handleFetch();
+            }
+          }}
         />
-        <Button type="submit" variant="outline" size="sm" disabled={isPending}>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={isPending || !url}
+          onClick={handleFetch}
+        >
           {isPending ? (
             <LoaderIcon className="size-4 animate-spin" aria-hidden />
           ) : (
             "Fetch"
           )}
         </Button>
-      </form>
+      </div>
     </div>
   );
 }

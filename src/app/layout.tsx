@@ -9,6 +9,12 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 export const metadata: Metadata = {
   title: "RevLog",
   description: "Motorsport life organizer",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "RevLog",
+  },
 };
 
 export default function RootLayout({

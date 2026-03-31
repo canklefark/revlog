@@ -60,6 +60,10 @@ export async function registerAction(
   _prevState: AuthActionState,
   formData: FormData,
 ): Promise<AuthActionState> {
+  if (process.env.DISABLE_REGISTRATION === "true") {
+    return { error: "Registration is currently disabled." };
+  }
+
   const raw = {
     name: formData.get("name"),
     email: formData.get("email"),

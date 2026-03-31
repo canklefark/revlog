@@ -1,7 +1,7 @@
 # RevLog — Development Status
 
 **Last updated:** 2026-03-31
-**Current phase:** Phase 3 complete — Phase 4 next
+**Current phase:** Phase 4 complete — Phase 5 next
 
 ---
 
@@ -144,15 +144,39 @@ _(none — Recharts was already installed)_
 
 ---
 
-## Phase 4 — Ship It ⏳ NOT STARTED
+## Phase 4 — Ship It ✅ COMPLETE
+
+**Completed:** 2026-03-31
 
 ### Scope
 
-- [ ] Docker Compose packaging for Dokploy VPS deployment
-- [ ] `.env.example` + deployment documentation
-- [ ] `DISABLE_REGISTRATION` env flag for personal/friends use
-- [ ] PWA support (add-to-homescreen, asset caching)
-- [ ] Basic self-host README
+- [x] Docker Compose packaging for Dokploy VPS deployment
+- [x] `.env.example` + deployment documentation
+- [x] `DISABLE_REGISTRATION` env flag for personal/friends use
+- [x] PWA support (add-to-homescreen, asset caching)
+- [x] Basic self-host README
+
+### Workstreams
+
+| Workstream                     | Status | Key files                                                                                                                                                                                        |
+| ------------------------------ | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| WS-22: Dockerfile + standalone | ✅     | `Dockerfile`, `.dockerignore`, `docker/entrypoint.sh`, `next.config.ts`                                                                                                                          |
+| WS-23: DISABLE_REGISTRATION    | ✅     | `src/lib/actions/auth.ts`, `src/lib/auth.ts`, `src/app/(auth)/register/page.tsx`, `src/app/(auth)/login/page.tsx`, `src/components/auth/register-form.tsx`, `src/components/auth/login-form.tsx` |
+| WS-24: PWA                     | ✅     | `src/app/manifest.ts`, `src/app/sw.ts`, `src/app/layout.tsx`, `public/icon-*.png`                                                                                                                |
+| WS-25: Production Compose      | ✅     | `docker-compose.prod.yml`                                                                                                                                                                        |
+| WS-26: Docs                    | ✅     | `.env.example`, `README.md`                                                                                                                                                                      |
+
+### Packages added in Phase 4
+
+- `@serwist/next` + `serwist` (PWA / service worker)
+
+### Key decisions made
+
+- Serwist used for PWA (Workbox-based, actively maintained, Next.js App Router support)
+- Service worker disabled in development (`NODE_ENV === "development"`)
+- `DISABLE_REGISTRATION` gates: server action, Google OAuth `signIn` callback, and `/register` page redirect
+- `docker/entrypoint.sh` runs `prisma migrate deploy` before `node server.js`
+- Production compose uses `depends_on: condition: service_healthy` to wait for Postgres
 
 ---
 
