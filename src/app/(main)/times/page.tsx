@@ -12,9 +12,8 @@ export default async function TimesPage() {
 
   if (events.length === 0) {
     return (
-      <div className="container mx-auto px-4 py-6 max-w-2xl">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-semibold">Times</h1>
+      <div>
+        <div className="flex justify-end mb-4">
           <ExportButton section="runs" />
         </div>
         <div className="py-12 text-center text-muted-foreground">
@@ -28,9 +27,8 @@ export default async function TimesPage() {
   }
 
   return (
-    <main className="container mx-auto px-4 py-6 max-w-2xl">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold">Times</h1>
+    <div>
+      <div className="flex justify-end mb-4">
         <ExportButton section="runs" />
       </div>
       <div className="space-y-4">
@@ -88,6 +86,6 @@ export default async function TimesPage() {
           );
         })}
       </div>
-    </main>
+    </div>
   );
 }
