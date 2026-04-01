@@ -87,6 +87,7 @@ export function ProgressChart({ data }: ProgressChartProps) {
               stroke={AXIS_COLOR}
               tick={{ fontSize: 11 }}
               width={60}
+              domain={["dataMin - 2", "dataMax + 2"]}
             />
             <Tooltip
               formatter={(v) =>

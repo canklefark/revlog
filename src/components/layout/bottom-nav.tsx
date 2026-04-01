@@ -28,21 +28,30 @@ export function BottomNav({ className }: BottomNavProps) {
             key={href}
             href={href}
             className={cn(
-              "flex flex-1 flex-col items-center justify-center gap-1 py-2 text-xs transition-colors",
+              "flex flex-1 flex-col items-center justify-center py-2 text-xs transition-colors",
               isActive
                 ? "text-primary"
                 : "text-muted-foreground hover:text-foreground",
             )}
             aria-current={isActive ? "page" : undefined}
           >
-            <Icon
-              className={cn(
-                "h-5 w-5",
-                isActive ? "text-primary" : "text-muted-foreground",
-              )}
-              aria-hidden="true"
-            />
-            <span>{label}</span>
+            <div className="relative flex flex-col items-center justify-center gap-1 w-full">
+              <span
+                className={cn(
+                  "absolute top-0 left-1/2 -translate-x-1/2 h-0.5 w-8 rounded-full bg-primary transition-opacity",
+                  isActive ? "opacity-100" : "opacity-0",
+                )}
+                aria-hidden="true"
+              />
+              <Icon
+                className={cn(
+                  "h-5 w-5",
+                  isActive ? "text-primary" : "text-muted-foreground",
+                )}
+                aria-hidden="true"
+              />
+              <span className={cn(isActive && "font-semibold")}>{label}</span>
+            </div>
           </Link>
         );
       })}

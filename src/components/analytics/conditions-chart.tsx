@@ -53,7 +53,7 @@ export function ConditionsChart({ data }: ConditionsChartProps) {
       <CardContent>
         <ResponsiveContainer
           width="100%"
-          height={Math.max(200, data.length * 60)}
+          height={Math.min(300, Math.max(200, data.length * 60))}
         >
           <BarChart layout="vertical" data={data}>
             <CartesianGrid strokeDasharray="3 3" stroke={GRID_COLOR} />

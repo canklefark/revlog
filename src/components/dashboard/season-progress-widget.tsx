@@ -1,3 +1,4 @@
+import { TrendingUpIcon, TrendingDownIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import type { SeasonProgress } from "@/types/analytics";
@@ -39,15 +40,28 @@ export function SeasonProgressWidget({ data }: SeasonProgressWidgetProps) {
             </p>
 
             {improvementSeconds !== null && (
-              <p className="text-xs mt-1">
+              <p
+                className="text-xs mt-1"
+                title="Compared to your first event this season"
+              >
                 {improvementSeconds > 0 ? (
                   <span className="text-green-500">
-                    ▲ {Math.abs(improvementSeconds).toFixed(3)}s faster this
+                    <TrendingUpIcon
+                      className="size-3 inline mr-1"
+                      aria-hidden="true"
+                    />
+                    <span className="sr-only">Improvement:</span>
+                    {Math.abs(improvementSeconds).toFixed(3)}s faster this
                     season
                   </span>
                 ) : (
                   <span className="text-red-400">
-                    ▼ {Math.abs(improvementSeconds).toFixed(3)}s slower this
+                    <TrendingDownIcon
+                      className="size-3 inline mr-1"
+                      aria-hidden="true"
+                    />
+                    <span className="sr-only">Regression:</span>
+                    {Math.abs(improvementSeconds).toFixed(3)}s slower this
                     season
                   </span>
                 )}

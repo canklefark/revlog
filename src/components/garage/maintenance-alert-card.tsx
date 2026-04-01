@@ -1,5 +1,10 @@
 import Link from "next/link";
-import { WrenchIcon } from "lucide-react";
+import {
+  WrenchIcon,
+  AlertTriangleIcon,
+  ClockIcon,
+  InfoIcon,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { MaintenanceAlert } from "@/lib/utils/maintenance-alerts";
@@ -45,11 +50,25 @@ export function MaintenanceAlertCard({
             }
             className={`text-xs ${badgeClass}`}
           >
-            {worstLevel === "overdue"
-              ? "Overdue"
-              : worstLevel === "due"
-                ? "Due soon"
-                : "Upcoming"}
+            {worstLevel === "overdue" ? (
+              <>
+                <AlertTriangleIcon
+                  aria-hidden="true"
+                  className="size-3 mr-1 inline"
+                />
+                Overdue
+              </>
+            ) : worstLevel === "due" ? (
+              <>
+                <ClockIcon aria-hidden="true" className="size-3 mr-1 inline" />
+                Due soon
+              </>
+            ) : (
+              <>
+                <InfoIcon aria-hidden="true" className="size-3 mr-1 inline" />
+                Upcoming
+              </>
+            )}
           </Badge>
         </div>
       </CardHeader>
@@ -61,6 +80,19 @@ export function MaintenanceAlertCard({
               className="flex items-center justify-between gap-2"
             >
               <span className="text-xs text-muted-foreground">
+                {alert.level === "overdue" ? (
+                  <AlertTriangleIcon
+                    aria-hidden="true"
+                    className="size-3 mr-1 inline"
+                  />
+                ) : alert.level === "due" ? (
+                  <ClockIcon
+                    aria-hidden="true"
+                    className="size-3 mr-1 inline"
+                  />
+                ) : (
+                  <InfoIcon aria-hidden="true" className="size-3 mr-1 inline" />
+                )}
                 {alert.reason}
               </span>
               <MaintenanceSnoozeButton

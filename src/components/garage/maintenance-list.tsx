@@ -1,12 +1,20 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import Link from "next/link";
 import { PencilIcon, Trash2Icon } from "lucide-react";
 import type { MaintenanceEntry } from "@prisma/client";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   getAlertLevel,
   getAlertBadgeVariant,
@@ -29,21 +37,44 @@ function DeleteForm({ entryId }: { entryId: string }) {
     deleteMaintenance,
     deleteInitialState,
   );
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   return (
-    <form action={formAction}>
-      <input type="hidden" name="entryId" value={entryId} />
+    <>
       <Button
-        type="submit"
+        type="button"
         variant="ghost"
         size="icon"
-        disabled={isPending}
         className="size-8 text-muted-foreground hover:text-destructive"
         aria-label="Delete entry"
+        onClick={() => setConfirmOpen(true)}
       >
         <Trash2Icon className="size-4" />
       </Button>
-    </form>
+
+      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete maintenance entry?</DialogTitle>
+            <DialogDescription>
+              This will permanently delete this maintenance entry. This cannot
+              be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmOpen(false)}>
+              Cancel
+            </Button>
+            <form action={formAction}>
+              <input type="hidden" name="entryId" value={entryId} />
+              <Button type="submit" variant="destructive" disabled={isPending}>
+                {isPending ? "Deleting..." : "Delete"}
+              </Button>
+            </form>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 

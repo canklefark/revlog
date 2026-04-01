@@ -29,7 +29,7 @@ export function EventFilters() {
     } else {
       params.set(key, value);
     }
-    router.push(`${pathname}?${params.toString()}`);
+    router.replace(`${pathname}?${params.toString()}`);
   }
 
   return (

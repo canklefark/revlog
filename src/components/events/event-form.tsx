@@ -1,10 +1,9 @@
 "use client";
 
-import { useActionState, useState, useEffect } from "react";
+import { useActionState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,12 +16,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
 import { Separator } from "@/components/ui/separator";
 import { CollapsibleSection } from "@/components/ui/collapsible-section";
 import { cn } from "@/lib/utils";
@@ -443,7 +436,7 @@ export function EventForm({ cars, event }: EventFormProps) {
   );
 }
 
-// Internal date picker
+// Internal date picker — uses native input[type=date] for mobile OS picker
 interface DatePickerProps {
   value: string;
   onChange: (value: string) => void;
@@ -457,44 +450,19 @@ function DatePicker({
   placeholder,
   hasError,
 }: DatePickerProps) {
-  const [open, setOpen] = useState(false);
-
-  const selected = value ? new Date(value + "T00:00:00") : undefined;
-
-  function handleSelect(day: Date | undefined) {
-    onChange(day ? format(day, "yyyy-MM-dd") : "");
-    setOpen(false);
-  }
-
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          className={cn(
-            "flex h-9 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-colors",
-            "focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:border-ring",
-            "disabled:cursor-not-allowed disabled:opacity-50",
-            !value && "text-muted-foreground",
-            hasError && "border-destructive",
-          )}
-        >
-          <span>
-            {value
-              ? format(new Date(value + "T00:00:00"), "MMM d, yyyy")
-              : placeholder}
-          </span>
-          <CalendarIcon className="size-4 text-muted-foreground" />
-        </button>
-      </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start">
-        <Calendar
-          mode="single"
-          selected={selected}
-          onSelect={handleSelect}
-          initialFocus
-        />
-      </PopoverContent>
-    </Popover>
+    <input
+      type="date"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      className={cn(
+        "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-colors",
+        "focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:border-ring",
+        "disabled:cursor-not-allowed disabled:opacity-50",
+        !value && "text-muted-foreground",
+        hasError && "border-destructive",
+      )}
+    />
   );
 }
