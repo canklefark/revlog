@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import Link from "next/link";
+import { toast } from "sonner";
 import { PencilIcon, Trash2Icon } from "lucide-react";
 import type { MaintenanceEntry } from "@prisma/client";
 import { format } from "date-fns";
@@ -33,11 +34,16 @@ interface MaintenanceListProps {
 const deleteInitialState: MaintenanceActionState = {};
 
 function DeleteForm({ entryId }: { entryId: string }) {
-  const [, formAction, isPending] = useActionState(
+  const [state, formAction, isPending] = useActionState(
     deleteMaintenance,
     deleteInitialState,
   );
   const [confirmOpen, setConfirmOpen] = useState(false);
+
+  useEffect(() => {
+    if (state.data) toast.success("Entry deleted");
+    if (state.error) toast.error(state.error);
+  }, [state]);
 
   return (
     <>

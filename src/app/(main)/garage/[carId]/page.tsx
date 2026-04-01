@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PencilIcon } from "lucide-react";
+import { BackLink } from "@/components/shared/back-link";
+import { DeleteCarButton } from "@/components/garage/delete-car-button";
 
 export default async function CarDetailPage({
   params,
@@ -37,6 +39,7 @@ export default async function CarDetailPage({
 
   return (
     <main className="w-full">
+      <BackLink href="/garage" label="Garage" />
       <div className="flex items-start justify-between mb-6 gap-4">
         <div>
           <div className="flex items-center gap-2 flex-wrap">
@@ -52,12 +55,15 @@ export default async function CarDetailPage({
             </p>
           )}
         </div>
-        <Button asChild variant="outline" size="sm">
-          <Link href={`/garage/${carId}/edit`}>
-            <PencilIcon />
-            Edit
-          </Link>
-        </Button>
+        <div className="flex gap-2 shrink-0">
+          <Button asChild variant="outline" size="sm">
+            <Link href={`/garage/${carId}/edit`}>
+              <PencilIcon />
+              Edit
+            </Link>
+          </Button>
+          <DeleteCarButton carId={carId} displayName={displayName} />
+        </div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">

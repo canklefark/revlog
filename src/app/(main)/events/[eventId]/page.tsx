@@ -20,6 +20,7 @@ import { StatusBadge } from "@/components/events/status-badge";
 import { EventStatusUpdater } from "@/components/events/event-status-updater";
 import { DeleteEventButton } from "@/components/events/delete-event-button";
 import { AdditionalCostsSection } from "@/components/events/additional-costs-section";
+import { BackLink } from "@/components/shared/back-link";
 
 export default async function EventDetailPage({
   params,
@@ -64,6 +65,7 @@ export default async function EventDetailPage({
 
   return (
     <div className="w-full">
+      <BackLink href="/events" label="Events" />
       {/* Header */}
       <div className="flex items-start justify-between gap-4 mb-4">
         <div className="min-w-0">

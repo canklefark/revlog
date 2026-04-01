@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { Car } from "@prisma/client";
@@ -71,6 +72,12 @@ export function CarForm({ action, car }: CarFormProps) {
   const primaryUseValue = watch("primaryUse");
 
   const [state, formAction, isPending] = useActionState(action, initialState);
+
+  useEffect(() => {
+    if (!state) return;
+    if (state.error) toast.error(state.error);
+    if (state.data) toast.success(car ? "Car updated." : "Car added.");
+  }, [state, car]);
 
   const fieldError = (field: keyof CarFormInput): string | undefined => {
     const client = clientErrors[field];

@@ -1,11 +1,13 @@
 import { requireAuth } from "@/lib/auth-utils";
 import { ExportAllButton } from "@/components/shared/export-all-button";
+import { BackLink } from "@/components/shared/back-link";
 
 export default async function DataManagementPage() {
   await requireAuth();
 
   return (
     <div className="mx-auto max-w-2xl">
+      <BackLink href="/settings" label="Settings" />
       <h1 className="mb-6 text-2xl font-bold">Data Management</h1>
 
       <section className="space-y-4">

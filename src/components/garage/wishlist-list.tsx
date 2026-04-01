@@ -12,6 +12,17 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
   deleteWishlistItem,
   moveWishlistToMod,
   type WishlistActionState,
@@ -38,19 +49,39 @@ function DeleteWishlistForm({ itemId }: { itemId: string }) {
   }, [state]);
 
   return (
-    <form action={formAction}>
-      <input type="hidden" name="itemId" value={itemId} />
-      <Button
-        type="submit"
-        variant="ghost"
-        size="icon"
-        disabled={isPending}
-        className="h-8 w-8 text-muted-foreground hover:text-destructive"
-        aria-label="Remove from wishlist"
-      >
-        <Trash2Icon className="size-4" />
-      </Button>
-    </form>
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          disabled={isPending}
+          className="h-8 w-8 text-muted-foreground hover:text-destructive"
+          aria-label="Remove from wishlist"
+        >
+          <Trash2Icon className="size-4" />
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete item?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <form action={formAction}>
+            <input type="hidden" name="itemId" value={itemId} />
+            <AlertDialogAction
+              type="submit"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </form>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }
 

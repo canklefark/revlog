@@ -1,6 +1,8 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,7 +47,18 @@ export function MaintenanceForm({
   defaultValues,
   defaultServiceType,
 }: MaintenanceFormProps) {
+  const router = useRouter();
+  const isEdit = !!defaultValues?.id;
   const [state, formAction, isPending] = useActionState(action, initialState);
+
+  useEffect(() => {
+    if (!state) return;
+    if (state.error) toast.error(state.error);
+    if (state.data) {
+      toast.success(isEdit ? "Entry updated." : "Entry added.");
+      router.push(`/garage/${carId}/maintenance`);
+    }
+  }, [state, isEdit, carId, router]);
 
   const initialServiceType = (defaultValues?.serviceType ??
     defaultServiceType ??
@@ -66,8 +79,6 @@ export function MaintenanceForm({
     if (server?.length) return server[0];
     return undefined;
   };
-
-  const isEdit = !!defaultValues?.id;
 
   return (
     <form action={formAction} className="space-y-5">

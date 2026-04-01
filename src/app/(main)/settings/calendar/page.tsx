@@ -2,6 +2,7 @@ import { requireAuth } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 import { listUserCalendars } from "@/lib/services/calendar-sync";
 import { CalendarSettingsForm } from "./calendar-settings-form";
+import { BackLink } from "@/components/shared/back-link";
 
 export default async function CalendarSettingsPage() {
   const userId = await requireAuth();
@@ -28,6 +29,7 @@ export default async function CalendarSettingsPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
+      <BackLink href="/settings" label="Settings" />
       <h1 className="mb-2 text-2xl font-bold">Calendar Sync</h1>
       <p className="mb-6 text-sm text-muted-foreground">
         Connect Google Calendar to automatically sync events when you register.
