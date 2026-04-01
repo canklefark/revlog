@@ -38,18 +38,17 @@ export default async function DashboardPage() {
 
       <NextEventCard event={nextEvent} />
 
-      <SeasonProgressWidget data={seasonProgress} />
-
-      <BudgetSnapshot
-        spent={budgetSnapshot.spent}
-        budget={budgetSnapshot.budget}
-      />
+      <div className="grid gap-6 md:grid-cols-2">
+        <SeasonProgressWidget data={seasonProgress} />
+        <BudgetSnapshot
+          spent={budgetSnapshot.spent}
+          budget={budgetSnapshot.budget}
+        />
+      </div>
 
       <RecentRunsWidget runs={recentRuns} />
 
-      {maintenanceData.length > 0 && (
-        <MaintenanceAlertsWidget data={maintenanceData} />
-      )}
+      <MaintenanceAlertsWidget data={maintenanceData} />
 
       <EventsTimeline events={upcomingEvents} />
     </div>

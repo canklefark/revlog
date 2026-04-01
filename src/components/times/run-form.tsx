@@ -5,7 +5,7 @@ import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { PlusIcon, Trash2Icon } from "lucide-react";
+import { PlusIcon, Trash2Icon, CheckIcon, XIcon } from "lucide-react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -94,6 +94,7 @@ export function RunForm({
     control,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -149,6 +150,10 @@ export function RunForm({
     dispatch(fd);
   }
 
+  // Derive live parse state for rawTimeStr feedback
+  const rawTimeStr = watchedValues.rawTimeStr ?? "";
+  const parsedRawTime = parseLapTime(rawTimeStr);
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
       <div className="flex items-center justify-between">
@@ -177,6 +182,17 @@ export function RunForm({
             {errors.rawTimeStr.message}
           </p>
         )}
+        {rawTimeStr.length > 0 && parsedRawTime !== null ? (
+          <p className="text-xs text-green-500 flex items-center gap-1">
+            <CheckIcon className="size-3" aria-hidden="true" />
+            {formatLapTime(parsedRawTime)}
+          </p>
+        ) : rawTimeStr.length > 0 && parsedRawTime === null ? (
+          <p className="text-xs text-destructive flex items-center gap-1">
+            <XIcon className="size-3" aria-hidden="true" />
+            Invalid format — use m:ss.xxx or ss.xxx
+          </p>
+        ) : null}
       </div>
 
       <div className="flex items-center gap-2">
@@ -216,15 +232,19 @@ export function RunForm({
                 Add
               </Button>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-3">
               {fields.map((field, idx) => (
-                <div key={field.id} className="flex items-center gap-2">
+                <div
+                  key={field.id}
+                  className="rounded-lg border border-border bg-muted/30 p-3 space-y-3"
+                >
+                  {/* Row 1: type select full width */}
                   <Controller
                     name={`penalties.${idx}.type`}
                     control={control}
                     render={({ field: f }) => (
                       <Select value={f.value} onValueChange={f.onChange}>
-                        <SelectTrigger className="w-32">
+                        <SelectTrigger className="w-full h-10">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -237,37 +257,74 @@ export function RunForm({
                       </Select>
                     )}
                   />
-                  <Input
-                    type="number"
-                    min="0"
-                    step="1"
-                    className="w-16"
-                    {...register(`penalties.${idx}.count`, {
-                      valueAsNumber: true,
-                    })}
-                    placeholder="1"
-                  />
-                  <span className="text-xs text-muted-foreground">x</span>
-                  <Input
-                    type="number"
-                    min="0"
-                    step="0.1"
-                    className="w-16"
-                    {...register(`penalties.${idx}.secondsEach`, {
-                      valueAsNumber: true,
-                    })}
-                    placeholder="2"
-                  />
-                  <span className="text-xs text-muted-foreground">s</span>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => remove(idx)}
-                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                  >
-                    <Trash2Icon className="size-4" />
-                  </Button>
+
+                  {/* Row 2: count stepper + seconds + delete */}
+                  <div className="flex items-center gap-3">
+                    {/* Count stepper */}
+                    <div className="flex items-center gap-2">
+                      <Controller
+                        name={`penalties.${idx}.count`}
+                        control={control}
+                        render={({ field: f }) => (
+                          <>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="h-10 w-10 shrink-0"
+                              onClick={() =>
+                                f.onChange(Math.max(0, (f.value ?? 0) - 1))
+                              }
+                            >
+                              -
+                            </Button>
+                            <span className="w-8 text-center text-sm font-medium">
+                              {f.value ?? 0}
+                            </span>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="h-10 w-10 shrink-0"
+                              onClick={() => f.onChange((f.value ?? 0) + 1)}
+                            >
+                              +
+                            </Button>
+                          </>
+                        )}
+                      />
+                    </div>
+
+                    <span className="text-xs text-muted-foreground">x</span>
+
+                    {/* Seconds input */}
+                    <div className="flex items-center gap-1.5 flex-1">
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.1"
+                        className="h-10"
+                        {...register(`penalties.${idx}.secondsEach`, {
+                          valueAsNumber: true,
+                        })}
+                        placeholder="2"
+                      />
+                      <span className="text-xs text-muted-foreground shrink-0">
+                        s
+                      </span>
+                    </div>
+
+                    {/* Delete */}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => remove(idx)}
+                      className="h-10 w-10 text-muted-foreground hover:text-destructive ml-auto shrink-0"
+                    >
+                      <Trash2Icon className="size-4" />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>

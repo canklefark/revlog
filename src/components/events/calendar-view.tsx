@@ -55,9 +55,12 @@ export function CalendarView({ events }: CalendarViewProps) {
 
   const today = new Date();
 
+  // Days in the current month that have at least one event (for agenda list)
+  const daysWithEvents = days.filter((day) => getEventsForDay(day).length > 0);
+
   return (
     <div>
-      {/* Month navigation */}
+      {/* Month navigation — shared by both views */}
       <div className="flex items-center justify-between mb-4">
         <Button
           variant="ghost"
@@ -80,77 +83,125 @@ export function CalendarView({ events }: CalendarViewProps) {
         </Button>
       </div>
 
-      {/* Day-of-week headers */}
-      <div className="grid grid-cols-7 mb-1">
-        {DAYS.map((d) => (
-          <div
-            key={d}
-            className="text-center text-xs font-medium text-muted-foreground py-1"
-          >
-            {d}
+      {/* Mobile agenda list — visible below md breakpoint */}
+      <div className="md:hidden">
+        {daysWithEvents.length === 0 ? (
+          <p className="text-sm text-muted-foreground text-center py-8">
+            No events this month.
+          </p>
+        ) : (
+          <div>
+            {daysWithEvents.map((day) => {
+              const dayEvents = getEventsForDay(day);
+              return (
+                <div key={day.toISOString()}>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide py-2">
+                    {format(day, "EEEE, MMM d")}
+                  </p>
+                  <div className="space-y-1.5 pb-2">
+                    {dayEvents.map((event) => {
+                      const colors = EVENT_TYPE_COLORS[event.type as EventType];
+                      return (
+                        <Link
+                          key={event.id}
+                          href={`/events/${event.id}`}
+                          className="flex items-center justify-between w-full rounded-md border border-border px-3 py-2.5 hover:bg-muted/50 transition-colors"
+                        >
+                          <span className="text-sm font-medium truncate pr-3">
+                            {event.name}
+                          </span>
+                          <span
+                            className={`shrink-0 text-xs px-2 py-0.5 rounded ${
+                              colors?.bg ?? "bg-muted"
+                            } ${colors?.text ?? "text-foreground"}`}
+                          >
+                            {event.type}
+                          </span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
           </div>
-        ))}
+        )}
       </div>
 
-      {/* Calendar grid */}
-      <div className="grid grid-cols-7 border-l border-t border-border">
-        {/* Leading blank padding cells */}
-        {Array.from({ length: startPadding }).map((_, i) => (
-          <div
-            key={`pad-${i}`}
-            className="border-r border-b border-border min-h-[80px] bg-muted/20"
-          />
-        ))}
-
-        {/* Day cells */}
-        {days.map((day) => {
-          const dayEvents = getEventsForDay(day);
-          const isToday = isSameDay(day, today);
-
-          return (
+      {/* Desktop calendar grid — visible at md and up */}
+      <div className="hidden md:block">
+        {/* Day-of-week headers */}
+        <div className="grid grid-cols-7 mb-1">
+          {DAYS.map((d) => (
             <div
-              key={day.toISOString()}
-              className={`border-r border-b border-border min-h-[80px] p-1 ${
-                isToday ? "bg-muted/30" : ""
-              }`}
+              key={d}
+              className="text-center text-xs font-medium text-muted-foreground py-1"
             >
+              {d}
+            </div>
+          ))}
+        </div>
+
+        {/* Calendar grid */}
+        <div className="grid grid-cols-7 border-l border-t border-border">
+          {/* Leading blank padding cells */}
+          {Array.from({ length: startPadding }).map((_, i) => (
+            <div
+              key={`pad-${i}`}
+              className="border-r border-b border-border min-h-[80px] bg-muted/20"
+            />
+          ))}
+
+          {/* Day cells */}
+          {days.map((day) => {
+            const dayEvents = getEventsForDay(day);
+            const isToday = isSameDay(day, today);
+
+            return (
               <div
-                className={`text-xs font-medium mb-1 w-5 h-5 flex items-center justify-center rounded-full ${
-                  isToday
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground"
+                key={day.toISOString()}
+                className={`border-r border-b border-border min-h-[80px] p-1 ${
+                  isToday ? "bg-muted/30" : ""
                 }`}
               >
-                {format(day, "d")}
-              </div>
+                <div
+                  className={`text-xs font-medium mb-1 w-5 h-5 flex items-center justify-center rounded-full ${
+                    isToday
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  {format(day, "d")}
+                </div>
 
-              <div className="space-y-0.5">
-                {dayEvents.slice(0, 3).map((event) => {
-                  const colors = EVENT_TYPE_COLORS[event.type as EventType];
-                  return (
-                    <Link
-                      key={event.id}
-                      href={`/events/${event.id}`}
-                      className={`block truncate text-xs px-1 py-0.5 rounded ${
-                        colors?.bg ?? "bg-muted"
-                      } ${colors?.text ?? "text-foreground"} hover:opacity-80 transition-opacity`}
-                    >
-                      {event.name}
-                    </Link>
-                  );
-                })}
-                {dayEvents.length > 3 && (
-                  <p className="text-xs text-muted-foreground px-1">
-                    +{dayEvents.length - 3} more
-                  </p>
-                )}
+                <div className="space-y-0.5">
+                  {dayEvents.slice(0, 3).map((event) => {
+                    const colors = EVENT_TYPE_COLORS[event.type as EventType];
+                    return (
+                      <Link
+                        key={event.id}
+                        href={`/events/${event.id}`}
+                        className={`block truncate text-xs px-1 py-0.5 rounded ${
+                          colors?.bg ?? "bg-muted"
+                        } ${colors?.text ?? "text-foreground"} hover:opacity-80 transition-opacity`}
+                      >
+                        {event.name}
+                      </Link>
+                    );
+                  })}
+                  {dayEvents.length > 3 && (
+                    <p className="text-xs text-muted-foreground px-1">
+                      +{dayEvents.length - 3} more
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
 
-      {/* Legend */}
+      {/* Legend — always visible */}
       <div className="mt-4 flex flex-wrap gap-2">
         {(Object.keys(EVENT_TYPE_COLORS) as EventType[]).map((type) => {
           const colors = EVENT_TYPE_COLORS[type];
