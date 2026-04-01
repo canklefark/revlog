@@ -24,7 +24,7 @@ export default async function SessionPage({
 
   if (runs.length === 0) {
     return (
-      <main className="container mx-auto px-4 py-6 max-w-2xl">
+      <main className="w-full">
         <Link
           href={`/events/${eventId}`}
           className="text-xs text-muted-foreground hover:text-foreground transition-colors"
@@ -73,7 +73,7 @@ export default async function SessionPage({
   const dnfCount = runs.filter((r) => r.adjustedTime === null).length;
 
   return (
-    <main className="container mx-auto px-4 py-6 max-w-2xl">
+    <main className="w-full">
       <Link
         href={`/events/${eventId}`}
         className="text-xs text-muted-foreground hover:text-foreground transition-colors"

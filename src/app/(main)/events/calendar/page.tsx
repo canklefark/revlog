@@ -19,7 +19,7 @@ export default async function EventsCalendarPage() {
   });
 
   return (
-    <main className="container mx-auto px-4 py-6 max-w-4xl">
+    <main className="w-full">
       <div className="flex items-center justify-between mb-6 gap-4">
         <div>
           <div className="flex items-center gap-3 mb-1">

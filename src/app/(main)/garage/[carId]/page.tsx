@@ -36,7 +36,7 @@ export default async function CarDetailPage({
     : `${car.year} ${car.make} ${car.model}`;
 
   return (
-    <main className="container mx-auto px-4 py-6 max-w-4xl">
+    <main className="w-full">
       <div className="flex items-start justify-between mb-6 gap-4">
         <div>
           <div className="flex items-center gap-2 flex-wrap">
@@ -173,17 +173,6 @@ export default async function CarDetailPage({
           <CardContent>
             <p className="text-sm text-muted-foreground">
               Track service history and get alerts when maintenance is due.
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Events</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Linked events coming soon.
             </p>
           </CardContent>
         </Card>

@@ -25,7 +25,7 @@ export default async function EventRunsPage({
   const runs = await getRunsForEvent(eventId, userId);
 
   return (
-    <main className="container mx-auto px-4 py-6 max-w-2xl">
+    <main className="w-full">
       <div className="flex items-center justify-between mb-6 gap-4">
         <div>
           <Link

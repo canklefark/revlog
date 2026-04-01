@@ -13,7 +13,7 @@ export default async function GaragePage() {
   });
 
   return (
-    <main className="container mx-auto px-4 py-6 max-w-4xl">
+    <main className="w-full">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-semibold">My Garage</h1>
         <Button asChild>

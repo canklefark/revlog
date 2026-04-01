@@ -35,7 +35,7 @@ export default async function MaintenancePage({
   const displayName = car.nickname ?? `${car.year} ${car.make} ${car.model}`;
 
   return (
-    <main className="container mx-auto px-4 py-6 max-w-2xl">
+    <main className="w-full">
       <div className="flex items-center justify-between mb-6 gap-4">
         <div>
           <Link
