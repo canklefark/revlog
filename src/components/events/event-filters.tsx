@@ -24,7 +24,10 @@ export function EventFilters() {
 
   function updateFilter(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString());
-    if (value === "all" || value === "upcoming") {
+    const isDefault =
+      (key === "date" && value === "upcoming") ||
+      (key !== "date" && value === "all");
+    if (isDefault) {
       params.delete(key);
     } else {
       params.set(key, value);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState, startTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { format } from "date-fns";
@@ -35,6 +35,8 @@ import type { Car, Event } from "@prisma/client";
 interface EventFormProps {
   cars: Pick<Car, "id" | "year" | "make" | "model" | "nickname">[];
   event?: Event;
+  template?: Event;
+  defaultEventType?: string | null;
 }
 
 type FormValues = {
@@ -56,9 +58,19 @@ type FormValues = {
 
 const initialState: EventActionState = {};
 
-export function EventForm({ cars, event }: EventFormProps) {
+export function EventForm({
+  cars,
+  event,
+  template,
+  defaultEventType,
+}: EventFormProps) {
   const router = useRouter();
   const isEditing = !!event;
+
+  // Quick-add mode: only show name + type + date on create (default on)
+  const [isQuickMode, setIsQuickMode] = useState(!isEditing);
+  // Controlled open state for the details collapsible
+  const [detailsOpen, setDetailsOpen] = useState(isEditing);
 
   const [createState, createDispatch, createPending] = useActionState(
     createEvent,
@@ -73,6 +85,9 @@ export function EventForm({ cars, event }: EventFormProps) {
   const dispatch = isEditing ? updateDispatch : createDispatch;
   const isPending = isEditing ? updatePending : createPending;
 
+  // For default values: edit uses event, duplicate uses template, create uses defaults
+  const source = event ?? template;
+
   const {
     register,
     control,
@@ -82,26 +97,27 @@ export function EventForm({ cars, event }: EventFormProps) {
     getValues,
   } = useForm<FormValues>({
     defaultValues: {
-      name: event?.name ?? "",
-      type: event?.type ?? "",
-      organizingBody: event?.organizingBody ?? "",
+      name: source?.name ?? "",
+      type: source?.type ?? defaultEventType ?? "",
+      organizingBody: source?.organizingBody ?? "",
+      // Template: clear dates so user picks new ones. Edit: keep existing dates.
       startDate: event?.startDate
         ? format(new Date(event.startDate), "yyyy-MM-dd")
         : "",
       endDate: event?.endDate
         ? format(new Date(event.endDate), "yyyy-MM-dd")
         : "",
-      venueName: event?.venueName ?? "",
-      address: event?.address ?? "",
-      registrationStatus: event?.registrationStatus ?? "Interested",
+      venueName: source?.venueName ?? "",
+      address: source?.address ?? "",
+      registrationStatus: "Interested",
       registrationDeadline: event?.registrationDeadline
         ? format(new Date(event.registrationDeadline), "yyyy-MM-dd")
         : "",
-      entryFee: event?.entryFee != null ? String(event.entryFee) : "",
-      registrationUrl: event?.registrationUrl ?? "",
-      runGroup: event?.runGroup ?? "",
-      notes: event?.notes ?? "",
-      carId: event?.carId ?? "",
+      entryFee: source?.entryFee != null ? String(source.entryFee) : "",
+      registrationUrl: source?.registrationUrl ?? "",
+      runGroup: source?.runGroup ?? "",
+      notes: source?.notes ?? "",
+      carId: source?.carId ?? "",
     },
   });
 
@@ -121,6 +137,7 @@ export function EventForm({ cars, event }: EventFormProps) {
 
   function handleAutofill(data: Partial<ScrapedEventData>) {
     if (data.name) setValue("name", data.name);
+    if (data.type) setValue("type", data.type);
     if (data.organizingBody) setValue("organizingBody", data.organizingBody);
     if (data.startDate) setValue("startDate", data.startDate);
     if (data.endDate) setValue("endDate", data.endDate);
@@ -130,11 +147,24 @@ export function EventForm({ cars, event }: EventFormProps) {
     if (data.registrationDeadline)
       setValue("registrationDeadline", data.registrationDeadline);
     if (data.registrationUrl) setValue("registrationUrl", data.registrationUrl);
+
+    // Auto-open details section if optional fields were populated (unless in quick mode)
+    if (!isQuickMode) {
+      const hasOptionalData = !!(
+        data.organizingBody ||
+        data.endDate ||
+        data.venueName ||
+        data.address ||
+        data.registrationDeadline ||
+        data.entryFee != null ||
+        data.registrationUrl
+      );
+      if (hasOptionalData) setDetailsOpen(true);
+    }
   }
 
   function onSubmit() {
     const values = getValues();
-    // Validate required fields client-side
     const fd = new FormData();
 
     if (isEditing && event) {
@@ -165,7 +195,7 @@ export function EventForm({ cars, event }: EventFormProps) {
       }
     }
 
-    dispatch(fd);
+    startTransition(() => dispatch(fd));
   }
 
   const nameError = errors.name?.message ?? serverErrors?.name?.[0];
@@ -254,136 +284,21 @@ export function EventForm({ cars, event }: EventFormProps) {
           )}
         </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor="registrationStatus">Registration status *</Label>
-          <Controller
-            name="registrationStatus"
-            control={control}
-            render={({ field }) => (
-              <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger id="registrationStatus" className="w-full">
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  {REGISTRATION_STATUSES.map((s) => (
-                    <SelectItem key={s} value={s}>
-                      {s}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          />
-        </div>
-      </div>
-
-      <Separator />
-
-      <CollapsibleSection title="More Details" defaultOpen={isEditing}>
-        <div className="space-y-1.5">
-          <Label htmlFor="organizingBody">Organizing body</Label>
-          <Input
-            id="organizingBody"
-            placeholder="SCCA Region Name"
-            {...register("organizingBody")}
-          />
-        </div>
-
-        <div className="space-y-1.5">
-          <Label>End date</Label>
-          <Controller
-            name="endDate"
-            control={control}
-            render={({ field }) => (
-              <DatePicker
-                value={field.value}
-                onChange={field.onChange}
-                placeholder="Optional end date"
-                hasError={false}
-              />
-            )}
-          />
-        </div>
-
-        <div className="space-y-1.5">
-          <Label htmlFor="venueName">Venue name</Label>
-          <Input
-            id="venueName"
-            placeholder="ORP, Mid-Ohio, etc."
-            {...register("venueName")}
-          />
-        </div>
-
-        <div className="space-y-1.5">
-          <Label htmlFor="address">Address</Label>
-          <Input
-            id="address"
-            placeholder="Street address or city"
-            {...register("address")}
-          />
-        </div>
-
-        <div className="space-y-1.5">
-          <Label>Registration deadline</Label>
-          <Controller
-            name="registrationDeadline"
-            control={control}
-            render={({ field }) => (
-              <DatePicker
-                value={field.value}
-                onChange={field.onChange}
-                placeholder="Optional deadline"
-                hasError={false}
-              />
-            )}
-          />
-        </div>
-
-        <div className="space-y-1.5">
-          <Label htmlFor="entryFee">Entry fee ($)</Label>
-          <Input
-            id="entryFee"
-            type="number"
-            min="0"
-            step="0.01"
-            placeholder="0.00"
-            {...register("entryFee")}
-          />
-        </div>
-
-        <div className="space-y-1.5">
-          <Label htmlFor="registrationUrl">Registration URL</Label>
-          <Input
-            id="registrationUrl"
-            type="url"
-            placeholder="https://motorsportreg.com/..."
-            {...register("registrationUrl")}
-          />
-          {serverErrors?.registrationUrl?.[0] && (
-            <p className="text-xs text-destructive">
-              {serverErrors.registrationUrl[0]}
-            </p>
-          )}
-        </div>
-
-        {cars.length > 0 && (
+        {!isQuickMode && (
           <div className="space-y-1.5">
-            <Label htmlFor="carId">Car</Label>
+            <Label htmlFor="registrationStatus">Registration status *</Label>
             <Controller
-              name="carId"
+              name="registrationStatus"
               control={control}
               render={({ field }) => (
                 <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger id="carId" className="w-full">
-                    <SelectValue placeholder="No car linked" />
+                  <SelectTrigger id="registrationStatus" className="w-full">
+                    <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">No car linked</SelectItem>
-                    {cars.map((car) => (
-                      <SelectItem key={car.id} value={car.id}>
-                        {car.nickname
-                          ? `${car.nickname} (${car.year} ${car.make} ${car.model})`
-                          : `${car.year} ${car.make} ${car.model}`}
+                    {REGISTRATION_STATUSES.map((s) => (
+                      <SelectItem key={s} value={s}>
+                        {s}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -392,45 +307,186 @@ export function EventForm({ cars, event }: EventFormProps) {
             />
           </div>
         )}
+      </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor="runGroup">Run group / class</Label>
-          <Input
-            id="runGroup"
-            placeholder="STR, CAM-C, etc."
-            {...register("runGroup")}
-          />
+      {!isQuickMode && (
+        <>
+          <Separator />
+          <CollapsibleSection
+            title="More Details"
+            open={detailsOpen}
+            onOpenChange={setDetailsOpen}
+          >
+            <div className="space-y-1.5">
+              <Label htmlFor="organizingBody">Organizing body</Label>
+              <Input
+                id="organizingBody"
+                placeholder="SCCA Region Name"
+                {...register("organizingBody")}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>End date</Label>
+              <Controller
+                name="endDate"
+                control={control}
+                render={({ field }) => (
+                  <DatePicker
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="Optional end date"
+                    hasError={false}
+                  />
+                )}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="venueName">Venue name</Label>
+              <Input
+                id="venueName"
+                placeholder="ORP, Mid-Ohio, etc."
+                {...register("venueName")}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="address">Address</Label>
+              <Input
+                id="address"
+                placeholder="Street address or city"
+                {...register("address")}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label>Registration deadline</Label>
+              <Controller
+                name="registrationDeadline"
+                control={control}
+                render={({ field }) => (
+                  <DatePicker
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="Optional deadline"
+                    hasError={false}
+                  />
+                )}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="entryFee">Entry fee ($)</Label>
+              <Input
+                id="entryFee"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="0.00"
+                {...register("entryFee")}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="registrationUrl">Registration URL</Label>
+              <Input
+                id="registrationUrl"
+                type="url"
+                placeholder="https://motorsportreg.com/..."
+                {...register("registrationUrl")}
+              />
+              {serverErrors?.registrationUrl?.[0] && (
+                <p className="text-xs text-destructive">
+                  {serverErrors.registrationUrl[0]}
+                </p>
+              )}
+            </div>
+
+            {cars.length > 0 && (
+              <div className="space-y-1.5">
+                <Label htmlFor="carId">Car</Label>
+                <Controller
+                  name="carId"
+                  control={control}
+                  render={({ field }) => (
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger id="carId" className="w-full">
+                        <SelectValue placeholder="No car linked" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">No car linked</SelectItem>
+                        {cars.map((car) => (
+                          <SelectItem key={car.id} value={car.id}>
+                            {car.nickname
+                              ? `${car.nickname} (${car.year} ${car.make} ${car.model})`
+                              : `${car.year} ${car.make} ${car.model}`}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+              </div>
+            )}
+
+            <div className="space-y-1.5">
+              <Label htmlFor="runGroup">Run group / class</Label>
+              <Input
+                id="runGroup"
+                placeholder="STR, CAM-C, etc."
+                {...register("runGroup")}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="notes">Notes</Label>
+              <Textarea
+                id="notes"
+                placeholder="Anything worth remembering..."
+                rows={3}
+                {...register("notes")}
+              />
+            </div>
+          </CollapsibleSection>
+        </>
+      )}
+
+      <div className="flex items-center justify-between pt-2">
+        <div className="flex gap-3">
+          <Button type="submit" disabled={isPending}>
+            {isPending
+              ? isEditing
+                ? "Saving…"
+                : "Creating…"
+              : isEditing
+                ? "Save changes"
+                : isQuickMode
+                  ? "Quick Add"
+                  : "Create Event"}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => router.back()}
+            disabled={isPending}
+          >
+            Cancel
+          </Button>
         </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor="notes">Notes</Label>
-          <Textarea
-            id="notes"
-            placeholder="Anything worth remembering..."
-            rows={3}
-            {...register("notes")}
-          />
-        </div>
-      </CollapsibleSection>
-
-      <div className="flex gap-3 pt-2">
-        <Button type="submit" disabled={isPending}>
-          {isPending
-            ? isEditing
-              ? "Saving…"
-              : "Creating…"
-            : isEditing
-              ? "Save changes"
-              : "Create event"}
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => router.back()}
-          disabled={isPending}
-        >
-          Cancel
-        </Button>
+        {!isEditing && (
+          <button
+            type="button"
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+            onClick={() => {
+              setIsQuickMode((v) => !v);
+              if (isQuickMode) setDetailsOpen(false);
+            }}
+          >
+            {isQuickMode ? "Show all fields" : "Quick add"}
+          </button>
+        )}
       </div>
     </form>
   );

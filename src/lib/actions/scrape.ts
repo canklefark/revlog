@@ -6,6 +6,7 @@ import {
   type ScrapedEventData,
 } from "@/lib/services/motorsportreg-scraper";
 import { fetchAndParseGenericUrl } from "@/lib/services/generic-event-scraper";
+import { inferEventType } from "@/lib/utils/infer-event-type";
 
 export type ScrapeActionState = {
   data?: Partial<ScrapedEventData>;
@@ -34,14 +35,26 @@ export async function scrapeEventUrl(
   // 1. MotorsportReg-specific scraper (hostname-gated).
   if (parsedUrl.hostname.includes("motorsportreg.com")) {
     const data = await scrapeMotorsportReg(url.trim());
-    if (data && Object.keys(data).length > 0) return { data };
+    if (data && Object.keys(data).length > 0) {
+      return { data: withInferredType(data) };
+    }
   }
 
   // 2. Generic scraper for any event URL.
   const genericData = await fetchAndParseGenericUrl(url.trim());
   if (genericData && Object.keys(genericData).length > 0) {
-    return { data: genericData };
+    return { data: withInferredType(genericData) };
   }
 
   return { error: "Could not parse event details from that URL." };
+}
+
+function withInferredType(
+  data: Partial<ScrapedEventData>,
+): Partial<ScrapedEventData> {
+  if (!data.type && data.name) {
+    const inferred = inferEventType(data.name);
+    if (inferred) return { ...data, type: inferred };
+  }
+  return data;
 }

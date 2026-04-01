@@ -38,8 +38,8 @@ export function EventCard({ event }: EventCardProps) {
             </div>
             <div className="flex flex-col items-end gap-1 shrink-0 text-right">
               {event.entryFee != null && (
-                <div className="flex items-center gap-0.5 text-xs text-muted-foreground">
-                  <DollarSignIcon className="size-3" />
+                <div className="flex items-center gap-0.5 text-sm font-medium text-foreground">
+                  <DollarSignIcon className="size-3.5" />
                   <span>{event.entryFee.toFixed(0)}</span>
                 </div>
               )}

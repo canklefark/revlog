@@ -15,6 +15,7 @@ export default async function ProfilePage() {
       timezone: true,
       units: true,
       seasonBudget: true,
+      defaultEventType: true,
     },
   });
 

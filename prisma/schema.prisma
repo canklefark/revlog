@@ -19,6 +19,7 @@ model User {
   timezone             String               @default("America/New_York")
   units                String               @default("imperial")
   seasonBudget         Float?
+  defaultEventType     String?
   calendarProvider     String?
   calendarId           String?
   calendarSyncEnabled  Boolean              @default(false)

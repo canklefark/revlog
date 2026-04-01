@@ -10,6 +10,7 @@ import {
   ExternalLinkIcon,
   FileTextIcon,
   PlusIcon,
+  CopyIcon,
 } from "lucide-react";
 import { requireAuth } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
@@ -76,6 +77,12 @@ export default async function EventDetailPage({
           </div>
         </div>
         <div className="flex gap-2 shrink-0">
+          <Button asChild variant="outline" size="sm">
+            <Link href={`/events/new?from=${eventId}`}>
+              <CopyIcon className="size-4" />
+              Duplicate
+            </Link>
+          </Button>
           <Button asChild variant="outline" size="sm">
             <Link href={`/events/${eventId}/edit`}>
               <PencilIcon className="size-4" />

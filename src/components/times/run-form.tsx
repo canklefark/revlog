@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, startTransition } from "react";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
@@ -147,7 +147,7 @@ export function RunForm({
     fd.set("notes", values.notes ?? "");
     fd.set("isDnf", String(values.isDnf ?? false));
     if (isEdit && defaultValues?.id) fd.set("runId", defaultValues.id);
-    dispatch(fd);
+    startTransition(() => dispatch(fd));
   }
 
   // Derive live parse state for rawTimeStr feedback

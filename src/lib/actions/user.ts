@@ -14,6 +14,7 @@ export type UpdateProfileState = {
     timezone: string;
     units: string;
     seasonBudget: number | null;
+    defaultEventType: string | null;
   };
   error?: string;
   fieldErrors?: Record<string, string[]>;
@@ -33,6 +34,7 @@ export async function updateProfile(
     seasonBudget: formData.get("seasonBudget")
       ? Number(formData.get("seasonBudget"))
       : undefined,
+    defaultEventType: formData.get("defaultEventType") || undefined,
   };
 
   const parsed = updateProfileSchema.safeParse(raw);
@@ -45,7 +47,8 @@ export async function updateProfile(
     };
   }
 
-  const { name, homeAddress, timezone, units, seasonBudget } = parsed.data;
+  const { name, homeAddress, timezone, units, seasonBudget, defaultEventType } =
+    parsed.data;
 
   // Geocode the home address when one is provided.
   let homeLat: number | null = null;
@@ -73,6 +76,10 @@ export async function updateProfile(
           seasonBudget === undefined || seasonBudget === ""
             ? null
             : seasonBudget,
+        defaultEventType:
+          defaultEventType === undefined || defaultEventType === ""
+            ? null
+            : defaultEventType,
         // Only overwrite lat/lng when a home address was submitted.
         // If homeAddress is undefined (field not included in form), leave existing coords alone.
         // If homeAddress is empty string (address cleared), wipe coords.
@@ -91,6 +98,7 @@ export async function updateProfile(
         timezone: true,
         units: true,
         seasonBudget: true,
+        defaultEventType: true,
       },
     });
 

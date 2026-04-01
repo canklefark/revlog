@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { EVENT_TYPES } from "@/lib/constants/event-types";
 
 const TIMEZONES = [
   "America/New_York",
@@ -39,6 +40,7 @@ interface ProfileFormProps {
     timezone: string;
     units: string;
     seasonBudget: number | null;
+    defaultEventType: string | null;
   } | null;
 }
 
@@ -140,6 +142,29 @@ export function ProfileForm({ user }: ProfileFormProps) {
           defaultValue={user?.seasonBudget ?? ""}
           placeholder="Optional budget for the season"
         />
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="defaultEventType">Default Event Type</Label>
+        <Select
+          name="defaultEventType"
+          defaultValue={user?.defaultEventType ?? ""}
+        >
+          <SelectTrigger id="defaultEventType">
+            <SelectValue placeholder="None" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">None</SelectItem>
+            {EVENT_TYPES.map((t) => (
+              <SelectItem key={t} value={t}>
+                {t}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-muted-foreground">
+          Pre-selected when creating a new event.
+        </p>
       </div>
 
       <div className="flex justify-end">
