@@ -10,6 +10,9 @@ export const metadata: Metadata = {
   title: "RevLog",
   description: "Motorsport life organizer",
   manifest: "/manifest.webmanifest",
+  icons: {
+    apple: "/icon-192.png",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",

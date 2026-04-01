@@ -30,7 +30,7 @@ export default async function NewRunPage({
   const nextRunNumber = (event.runs[0]?.runNumber ?? 0) + 1;
 
   return (
-    <main className="container mx-auto px-4 py-6 max-w-xl">
+    <div className="max-w-2xl">
       <Link
         href={`/events/${eventId}/runs`}
         className="text-xs text-muted-foreground hover:text-foreground transition-colors"
@@ -44,6 +44,6 @@ export default async function NewRunPage({
         carId={event.car.id}
         defaultRunNumber={nextRunNumber}
       />
-    </main>
+    </div>
   );
 }

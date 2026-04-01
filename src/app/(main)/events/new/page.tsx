@@ -13,7 +13,7 @@ export default async function NewEventPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold mb-6">Add event</h1>
+      <h1 className="text-2xl font-semibold mb-6">Add Event</h1>
       <EventForm cars={cars} />
     </div>
   );

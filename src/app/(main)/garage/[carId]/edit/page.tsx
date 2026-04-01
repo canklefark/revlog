@@ -22,9 +22,9 @@ export default async function EditCarPage({
   }
 
   return (
-    <main className="container mx-auto px-4 py-6 max-w-2xl">
+    <div className="max-w-2xl">
       <h1 className="text-2xl font-semibold mb-6">Edit Car</h1>
       <CarForm action={updateCar} car={car as Car} />
-    </main>
+    </div>
   );
 }

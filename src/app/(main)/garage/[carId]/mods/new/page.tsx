@@ -19,7 +19,7 @@ export default async function NewModPage({
   const displayName = car.nickname ?? `${car.year} ${car.make} ${car.model}`;
 
   return (
-    <main className="container mx-auto px-4 py-6 max-w-xl">
+    <div className="max-w-2xl">
       <div className="mb-6">
         <Link
           href={`/garage/${carId}/mods`}
@@ -31,6 +31,6 @@ export default async function NewModPage({
       </div>
 
       <ModForm action={createMod} carId={carId} />
-    </main>
+    </div>
   );
 }

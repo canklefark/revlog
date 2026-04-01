@@ -8,7 +8,7 @@ export default async function DataManagementPage() {
   return (
     <div className="mx-auto max-w-2xl">
       <BackLink href="/settings" label="Settings" />
-      <h1 className="mb-6 text-2xl font-bold">Data Management</h1>
+      <h1 className="mb-6 text-2xl font-semibold">Data Management</h1>
 
       <section className="space-y-4">
         <div>

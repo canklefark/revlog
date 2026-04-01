@@ -46,7 +46,7 @@ export default async function SettingsPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <h1 className="mb-6 text-2xl font-bold">Settings</h1>
+      <h1 className="mb-6 text-2xl font-semibold">Settings</h1>
       <div className="flex flex-col gap-3">
         {settingsSections.map(({ href, Icon, title, description }) => (
           <Link key={href} href={href} className="block">

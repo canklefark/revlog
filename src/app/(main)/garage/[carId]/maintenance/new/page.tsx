@@ -27,7 +27,7 @@ export default async function NewMaintenancePage({
   const displayName = car.nickname ?? `${car.year} ${car.make} ${car.model}`;
 
   return (
-    <main className="container mx-auto px-4 py-6 max-w-xl">
+    <div className="max-w-2xl">
       <div className="mb-6">
         <Link
           href={`/garage/${carId}/maintenance`}
@@ -43,6 +43,6 @@ export default async function NewMaintenancePage({
         carId={carId}
         defaultServiceType={serviceType}
       />
-    </main>
+    </div>
   );
 }
