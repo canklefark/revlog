@@ -1,4 +1,3 @@
-import dynamic from "next/dynamic";
 import { requireAuth } from "@/lib/auth-utils";
 import {
   getProgressData,
@@ -8,29 +7,7 @@ import {
 } from "@/lib/queries/analytics";
 import { PRTable } from "@/components/analytics/pr-table";
 import { ConsistencyCard } from "@/components/analytics/consistency-card";
-
-// Recharts uses ResizeObserver (browser-only) — disable SSR to prevent hydration mismatch
-const ProgressChart = dynamic(
-  () =>
-    import("@/components/analytics/progress-chart").then(
-      (m) => m.ProgressChart,
-    ),
-  { ssr: false },
-);
-const ConditionsChart = dynamic(
-  () =>
-    import("@/components/analytics/conditions-chart").then(
-      (m) => m.ConditionsChart,
-    ),
-  { ssr: false },
-);
-const CarComparisonChart = dynamic(
-  () =>
-    import("@/components/analytics/car-comparison-chart").then(
-      (m) => m.CarComparisonChart,
-    ),
-  { ssr: false },
-);
+import { AnalyticsCharts } from "@/components/analytics/analytics-charts";
 
 export default async function AnalyticsPage() {
   const userId = await requireAuth();
@@ -58,15 +35,13 @@ export default async function AnalyticsPage() {
 
   return (
     <div className="space-y-6 mt-6">
-      <ProgressChart data={progressData} />
-      <div className="grid gap-6 md:grid-cols-2">
-        <ConsistencyCard records={personalRecords} />
-        <ConditionsChart data={conditionsData} />
-      </div>
+      <AnalyticsCharts
+        progressData={progressData}
+        conditionsData={conditionsData}
+        carComparisonData={carComparisonData}
+        consistencySlot={<ConsistencyCard records={personalRecords} />}
+      />
       <PRTable records={personalRecords} />
-      {carComparisonData.length >= 2 && (
-        <CarComparisonChart data={carComparisonData} />
-      )}
     </div>
   );
 }

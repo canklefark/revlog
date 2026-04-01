@@ -4,6 +4,7 @@ import withSerwist from "@serwist/next";
 const nextConfig: NextConfig = {
   reactCompiler: true,
   output: "standalone",
+  turbopack: {},
 };
 
 export default withSerwist({
