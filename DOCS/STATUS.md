@@ -180,6 +180,33 @@ _(none — Recharts was already installed)_
 
 ---
 
+## Phase 4.5 — Polish & Deploy ✅ COMPLETE
+
+**Completed:** 2026-04-01
+
+### Scope
+
+- [x] Auth env-gating: Google OAuth provider conditionally registered; Google button hidden when creds absent
+- [x] `AUTH_TRUST_HOST` / `AUTH_URL` documented in `.env.example` (required behind Dokploy reverse proxy)
+- [x] Security headers: X-Frame-Options, X-Content-Type-Options, Referrer-Policy, HSTS, Permissions-Policy
+- [x] Health check endpoint at `/api/health` (DB ping, no auth required)
+- [x] Settings/Appearance page: theme toggle (dark/light/system)
+- [x] Settings/Penalties page: static reference for default 2s/cone penalty
+- [x] Error boundary at `(main)` layout level
+- [x] Custom 404 page
+- [x] Loading skeletons for Times, Car detail, Settings
+- [x] Toast feedback on car form and maintenance form/delete
+- [x] Confirmation dialogs on run delete and wishlist delete (prevent accidental mobile taps)
+- [x] Back links on event detail, car detail, all settings sub-pages
+- [x] Delete Car button on car detail page (action existed but had no UI)
+- [x] Visual consistency: heading weights, title casing, form container padding, font-mono CSS fix, apple-touch-icon
+
+### Deployment method
+
+Dokploy VPS with Nixpacks auto-build (not Docker). Set `AUTH_URL` and `AUTH_TRUST_HOST=true` in Dokploy env config.
+
+---
+
 ## Phase 5 — Open Source Prep ⏳ NOT STARTED
 
 ### Pre-work required before starting
