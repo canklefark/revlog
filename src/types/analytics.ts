@@ -48,6 +48,12 @@ export type SeasonProgress = {
   improvementSeconds: number | null; // positive = got faster (first best - last best)
 };
 
+export interface ModMarker {
+  date: string; // full ISO string matching the eventDate x-axis key ("YYYY-MM-DDT00:00:00.000Z")
+  label: string; // mod name, truncated to 20 chars if needed
+  carLabel: string;
+}
+
 export type RecentRun = {
   id: string;
   runNumber: number;

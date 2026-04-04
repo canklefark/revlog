@@ -9,6 +9,7 @@ import type {
   CarComparisonSeries,
   SeasonProgress,
   RecentRun,
+  ModMarker,
 } from "@/types/analytics";
 
 // ---------------------------------------------------------------------------
@@ -378,6 +379,35 @@ export async function getSeasonProgress(
   }
 
   return { year, eventsCompleted, eventsRemaining, improvementSeconds };
+}
+
+// ---------------------------------------------------------------------------
+// getModMarkers
+// ---------------------------------------------------------------------------
+
+export async function getModMarkers(userId: string): Promise<ModMarker[]> {
+  const mods = await prisma.mod.findMany({
+    where: {
+      car: { userId },
+      installDate: { not: null },
+    },
+    select: {
+      installDate: true,
+      name: true,
+      car: { select: { nickname: true, year: true, make: true, model: true } },
+    },
+    orderBy: { installDate: "asc" },
+  });
+
+  return mods
+    .filter((m) => m.installDate != null)
+    .map((m) => ({
+      // Use full ISO string so it aligns with the eventDate x-axis key built
+      // via Date.toISOString() in progress-chart.tsx
+      date: m.installDate!.toISOString(),
+      label: m.name.length > 20 ? m.name.slice(0, 18) + "\u2026" : m.name,
+      carLabel: m.car.nickname ?? `${m.car.year} ${m.car.make} ${m.car.model}`,
+    }));
 }
 
 // ---------------------------------------------------------------------------

@@ -32,6 +32,16 @@ export async function getUpcomingEvents(userId: string, limit = 10) {
     },
     orderBy: { startDate: "asc" },
     take: limit,
+    include: {
+      car: {
+        select: {
+          year: true,
+          make: true,
+          model: true,
+          nickname: true,
+        },
+      },
+    },
   });
 }
 

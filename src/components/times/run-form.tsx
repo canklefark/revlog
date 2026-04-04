@@ -57,6 +57,7 @@ interface RunFormProps {
   carId: string;
   defaultRunNumber?: number;
   defaultValues?: Partial<Run>;
+  onSuccess?: () => void;
 }
 
 const initialState: RunActionState = {};
@@ -67,6 +68,7 @@ export function RunForm({
   carId,
   defaultRunNumber = 1,
   defaultValues,
+  onSuccess,
 }: RunFormProps) {
   const router = useRouter();
   const [state, dispatch, isPending] = useActionState(action, initialState);
@@ -127,8 +129,16 @@ export function RunForm({
 
   useEffect(() => {
     if (state.data) {
-      toast.success(isEdit ? "Run updated" : "Run added");
-      router.push(`/events/${eventId}/runs`);
+      if (state.isPB) {
+        toast.success("New Personal Best!");
+      } else {
+        toast.success(isEdit ? "Run updated" : "Run added");
+      }
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        router.push(`/events/${eventId}/runs`);
+      }
     }
     if (state.error) toast.error(state.error);
   }, [state]);

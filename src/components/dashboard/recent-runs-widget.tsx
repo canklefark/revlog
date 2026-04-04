@@ -22,7 +22,12 @@ export function RecentRunsWidget({ runs }: RecentRunsWidgetProps) {
       </CardHeader>
       <CardContent>
         {runs.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No runs logged yet.</p>
+          <div className="py-6 text-center">
+            <p className="text-sm text-muted-foreground">No runs logged yet.</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Open an event's session view to start logging times.
+            </p>
+          </div>
         ) : (
           <div className="space-y-3">
             {runs.map((run, index) => (

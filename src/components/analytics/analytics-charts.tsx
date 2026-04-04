@@ -6,6 +6,7 @@ import type {
   ProgressDataPoint,
   ConditionStats,
   CarComparisonSeries,
+  ModMarker,
 } from "@/types/analytics";
 
 // Recharts uses ResizeObserver (browser-only) — ssr: false must live in a Client Component
@@ -27,6 +28,7 @@ interface AnalyticsChartsProps {
   conditionsData: ConditionStats[];
   carComparisonData: CarComparisonSeries[];
   consistencySlot: React.ReactNode;
+  modMarkers?: ModMarker[];
 }
 
 export function AnalyticsCharts({
@@ -34,10 +36,11 @@ export function AnalyticsCharts({
   conditionsData,
   carComparisonData,
   consistencySlot,
+  modMarkers,
 }: AnalyticsChartsProps) {
   return (
     <>
-      <ProgressChart data={progressData} />
+      <ProgressChart data={progressData} modMarkers={modMarkers} />
       <div className="grid gap-6 md:grid-cols-2">
         {consistencySlot}
         <ConditionsChart data={conditionsData} />

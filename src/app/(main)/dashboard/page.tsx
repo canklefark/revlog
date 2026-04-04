@@ -1,12 +1,11 @@
 import { requireAuth } from "@/lib/auth-utils";
 import {
-  getNextEvent,
   getUpcomingEvents,
   getBudgetSnapshot,
   getMaintenanceAlertsForDashboard,
 } from "@/lib/queries/dashboard";
 import { getSeasonProgress, getRecentRuns } from "@/lib/queries/analytics";
-import { NextEventCard } from "@/components/dashboard/next-event-card";
+import { UpcomingEventsCard } from "@/components/dashboard/upcoming-events-card";
 import { BudgetSnapshot } from "@/components/dashboard/budget-snapshot";
 import { MaintenanceAlertsWidget } from "@/components/dashboard/maintenance-alerts-widget";
 import { EventsTimeline } from "@/components/dashboard/events-timeline";
@@ -17,14 +16,12 @@ export default async function DashboardPage() {
   const userId = await requireAuth();
 
   const [
-    nextEvent,
     upcomingEvents,
     budgetSnapshot,
     maintenanceData,
     seasonProgress,
     recentRuns,
   ] = await Promise.all([
-    getNextEvent(userId),
     getUpcomingEvents(userId),
     getBudgetSnapshot(userId),
     getMaintenanceAlertsForDashboard(userId),
@@ -36,7 +33,7 @@ export default async function DashboardPage() {
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold">Dashboard</h1>
 
-      <NextEventCard event={nextEvent} />
+      <UpcomingEventsCard events={upcomingEvents.slice(0, 3)} />
 
       <div className="grid gap-6 md:grid-cols-2">
         <SeasonProgressWidget data={seasonProgress} />

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { format } from "date-fns";
+import { TimerIcon } from "lucide-react";
 import { requireAuth } from "@/lib/auth-utils";
 import { getAllRunsForUser } from "@/lib/queries/runs";
 import { formatLapTime } from "@/lib/utils/penalty-calc";
@@ -16,11 +17,21 @@ export default async function TimesPage() {
         <div className="flex justify-end mb-4">
           <ExportButton section="runs" />
         </div>
-        <div className="py-12 text-center text-muted-foreground">
-          <p className="text-sm">No runs logged yet.</p>
-          <p className="text-xs mt-1">
-            Add runs to an event to track your times.
+        <div className="py-12 text-center">
+          <TimerIcon
+            className="mx-auto mb-3 size-8 text-muted-foreground"
+            aria-hidden="true"
+          />
+          <p className="text-sm text-muted-foreground">No runs logged yet.</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Open an event's session view to start logging your times.
           </p>
+          <Link
+            href="/events"
+            className="mt-3 inline-block text-sm font-medium underline underline-offset-4 text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Go to Events →
+          </Link>
         </div>
       </div>
     );

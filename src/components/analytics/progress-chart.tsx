@@ -10,10 +10,11 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
+  ReferenceLine,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatLapTime } from "@/lib/utils/penalty-calc";
-import type { ProgressDataPoint } from "@/types/analytics";
+import type { ProgressDataPoint, ModMarker } from "@/types/analytics";
 
 const CHART_COLORS = [
   "#3b82f6",
@@ -30,9 +31,10 @@ type ChartRow = Record<string, string | number>;
 
 interface ProgressChartProps {
   data: ProgressDataPoint[];
+  modMarkers?: ModMarker[];
 }
 
-export function ProgressChart({ data }: ProgressChartProps) {
+export function ProgressChart({ data, modMarkers }: ProgressChartProps) {
   if (data.length === 0) return null;
 
   // Collect all unique car labels in order of first appearance
@@ -112,6 +114,22 @@ export function ProgressChart({ data }: ProgressChartProps) {
                 stroke={CHART_COLORS[i % CHART_COLORS.length]}
                 dot={{ r: 3 }}
                 connectNulls
+              />
+            ))}
+            {(modMarkers ?? []).map((marker, i) => (
+              <ReferenceLine
+                key={i}
+                x={marker.date}
+                stroke="#ef4444"
+                strokeDasharray="3 3"
+                strokeOpacity={0.7}
+                label={{
+                  value: marker.label,
+                  position: "top",
+                  fontSize: 9,
+                  fill: "#ef4444",
+                  opacity: 0.8,
+                }}
               />
             ))}
           </LineChart>

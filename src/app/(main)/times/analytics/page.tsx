@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { BarChart2Icon } from "lucide-react";
 import { requireAuth } from "@/lib/auth-utils";
 import {
   getProgressData,
@@ -24,11 +26,22 @@ export default async function AnalyticsPage() {
 
   if (!hasData) {
     return (
-      <div className="py-12 text-center text-muted-foreground mt-6">
-        <p className="text-sm">No run data yet.</p>
-        <p className="text-xs mt-1">
-          Log runs on your events to see analytics.
+      <div className="py-12 text-center mt-6">
+        <BarChart2Icon
+          className="mx-auto mb-3 size-8 text-muted-foreground"
+          aria-hidden="true"
+        />
+        <p className="text-sm text-muted-foreground">No run data yet.</p>
+        <p className="text-xs text-muted-foreground mt-1">
+          Log runs on your events to see performance analytics, personal
+          records, and consistency trends.
         </p>
+        <Link
+          href="/events"
+          className="mt-3 inline-block text-sm font-medium underline underline-offset-4 text-muted-foreground hover:text-foreground transition-colors"
+        >
+          Go to Events →
+        </Link>
       </div>
     );
   }

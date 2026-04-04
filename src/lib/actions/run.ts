@@ -12,6 +12,7 @@ export type RunActionState = {
   data?: Run | true;
   error?: string;
   fieldErrors?: Record<string, string[]>;
+  isPB?: boolean;
 };
 
 function parseOptionalString(
@@ -115,8 +116,29 @@ export async function createRun(
   });
 
   revalidatePath(`/events/${eventId}/runs`);
+  revalidatePath(`/events/${eventId}/session`);
   revalidatePath("/times");
-  return { data: run };
+
+  // PB detection: check if this is a new personal best for this car + event type
+  let isPB = false;
+  if (adjustedTime !== null) {
+    const previousBest = await prisma.run.findFirst({
+      where: {
+        NOT: { id: run.id },
+        carId: parsed.data.carId,
+        isDnf: false,
+        adjustedTime: { not: null },
+        event: { userId, type: event.type },
+      },
+      orderBy: { adjustedTime: "asc" },
+      select: { adjustedTime: true },
+    });
+    isPB =
+      previousBest === null ||
+      adjustedTime < (previousBest.adjustedTime ?? Infinity);
+  }
+
+  return { data: run, isPB };
 }
 
 export async function updateRun(

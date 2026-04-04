@@ -15,6 +15,8 @@ interface SessionSummaryProps {
   dnfCount: number;
   totalPenalties: number;
   consistency: ConsistencyResult | null;
+  eventType: string;
+  cumulativeTime?: number;
 }
 
 export function SessionSummary({
@@ -23,12 +25,18 @@ export function SessionSummary({
   dnfCount,
   totalPenalties,
   consistency,
+  eventType,
+  cumulativeTime,
 }: SessionSummaryProps) {
+  const isAutocross = eventType === "Autocross";
+  const isRallyCross = eventType === "RallyCross";
+
   return (
     <div className="rounded-lg border border-border bg-card p-5">
+      {/* Primary time display */}
       <div className="text-center mb-5">
         <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-          Best Time
+          {isAutocross ? "Result" : "Best Time"}
         </p>
         {bestTime !== null ? (
           <p className="text-4xl font-mono font-bold tracking-tight">
@@ -36,6 +44,21 @@ export function SessionSummary({
           </p>
         ) : (
           <p className="text-2xl text-muted-foreground">—</p>
+        )}
+
+        {/* RallyCross: cumulative time below best */}
+        {isRallyCross && cumulativeTime != null && (
+          <div className="mt-2">
+            <p className="text-xs text-muted-foreground">
+              Cumulative:{" "}
+              <span className="font-mono font-semibold text-foreground">
+                {formatLapTime(cumulativeTime)}
+              </span>
+            </p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Placement is based on cumulative time
+            </p>
+          </div>
         )}
       </div>
 
@@ -71,8 +94,17 @@ export function SessionSummary({
       </div>
 
       {consistency && (
-        <p className="text-xs text-muted-foreground text-center mt-3">
+        <p
+          className={`text-xs text-center mt-3 ${
+            isRallyCross
+              ? "text-foreground font-medium"
+              : "text-muted-foreground"
+          }`}
+        >
           σ = {consistency.stdDev.toFixed(3)}s
+          {isAutocross && (
+            <span className="ml-1 text-muted-foreground">(informational)</span>
+          )}
         </p>
       )}
     </div>

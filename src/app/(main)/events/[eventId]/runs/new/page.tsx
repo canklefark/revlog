@@ -18,7 +18,12 @@ export default async function NewRunPage({
     include: {
       car: { select: { id: true } },
       runs: {
-        select: { runNumber: true },
+        select: {
+          runNumber: true,
+          conditions: true,
+          penalties: true,
+          tireSetup: true,
+        },
         orderBy: { runNumber: "desc" },
         take: 1,
       },
@@ -27,7 +32,15 @@ export default async function NewRunPage({
 
   if (!event || event.userId !== userId || !event.car) notFound();
 
-  const nextRunNumber = (event.runs[0]?.runNumber ?? 0) + 1;
+  const lastRun = event.runs[0] ?? null;
+  const nextRunNumber = (lastRun?.runNumber ?? 0) + 1;
+  const sessionDefaults = lastRun
+    ? {
+        conditions: lastRun.conditions,
+        penalties: lastRun.penalties,
+        tireSetup: lastRun.tireSetup,
+      }
+    : undefined;
 
   return (
     <div className="max-w-2xl">
@@ -43,6 +56,7 @@ export default async function NewRunPage({
         eventId={eventId}
         carId={event.car.id}
         defaultRunNumber={nextRunNumber}
+        defaultValues={sessionDefaults}
       />
     </div>
   );

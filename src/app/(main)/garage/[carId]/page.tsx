@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PencilIcon } from "lucide-react";
 import { BackLink } from "@/components/shared/back-link";
 import { DeleteCarButton } from "@/components/garage/delete-car-button";
+import { getMaintenanceAlerts } from "@/lib/utils/maintenance-alerts";
 
 export default async function CarDetailPage({
   params,
@@ -26,12 +27,22 @@ export default async function CarDetailPage({
     notFound();
   }
 
-  const [modCount, modTotalResult, wishlistCount] = await Promise.all([
-    prisma.mod.count({ where: { carId } }),
-    prisma.mod.aggregate({ where: { carId }, _sum: { cost: true } }),
-    prisma.wishlistItem.count({ where: { carId } }),
-  ]);
+  const [modCount, modTotalResult, wishlistCount, maintenanceEntries] =
+    await Promise.all([
+      prisma.mod.count({ where: { carId } }),
+      prisma.mod.aggregate({ where: { carId }, _sum: { cost: true } }),
+      prisma.wishlistItem.count({ where: { carId } }),
+      prisma.maintenanceEntry.findMany({
+        where: { carId, car: { userId } },
+      }),
+    ]);
   const modTotal = modTotalResult._sum.cost ?? 0;
+
+  const maintenanceAlerts = getMaintenanceAlerts(
+    maintenanceEntries,
+    car.currentOdometer,
+  );
+  const worstLevel = maintenanceAlerts[0]?.level ?? "none";
 
   const displayName = car.nickname
     ? car.nickname
@@ -46,6 +57,19 @@ export default async function CarDetailPage({
             <h1 className="text-2xl font-semibold">{displayName}</h1>
             {car.primaryUse && (
               <Badge variant="secondary">{car.primaryUse}</Badge>
+            )}
+            {worstLevel === "none" && (
+              <Badge className="bg-green-600 text-white hover:bg-green-600">
+                Race Ready
+              </Badge>
+            )}
+            {(worstLevel === "upcoming" || worstLevel === "due") && (
+              <Badge className="bg-amber-500 text-white hover:bg-amber-500">
+                Maintenance Due
+              </Badge>
+            )}
+            {worstLevel === "overdue" && (
+              <Badge variant="destructive">Not Race Ready</Badge>
             )}
           </div>
           {car.nickname && (

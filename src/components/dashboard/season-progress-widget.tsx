@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { TrendingUpIcon, TrendingDownIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -20,9 +21,17 @@ export function SeasonProgressWidget({ data }: SeasonProgressWidgetProps) {
       </CardHeader>
       <CardContent>
         {total === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            No events this season yet.
-          </p>
+          <div>
+            <p className="text-sm text-muted-foreground">
+              No events this season yet.
+            </p>
+            <Link
+              href="/events/new"
+              className="mt-2 inline-block text-sm font-medium underline underline-offset-4 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Add your first event →
+            </Link>
+          </div>
         ) : (
           <div className="space-y-2">
             <p className="text-sm text-muted-foreground">
