@@ -207,6 +207,41 @@ Dokploy VPS with Nixpacks auto-build (not Docker). Set `AUTH_URL` and `AUTH_TRUS
 
 ---
 
+## Phase 4.7 — UX Polish ✅ COMPLETE
+
+**Completed:** 2026-04-04
+
+### Scope
+
+- [x] Run form session memory — conditions/penalties/tireSetup inherited from previous run after run 1
+- [x] "New Personal Best!" toast when a created run beats the user's car+event-type best
+- [x] Bottom sheet + sticky FAB for run entry on session page (no more full-page navigation)
+- [x] Context-aware consistency display — Autocross labels best as "Result" (only time that counts), RallyCross shows cumulative time + prominent consistency
+- [x] After-session narrative — plain-English summary below session stats (PB delta, clean session, improvement trend)
+- [x] Venue history — "Your History at [Venue]" section on session page, showing all past events at the same venue with best times and delta
+- [x] Dashboard shows next 3 upcoming events instead of 1 (new `UpcomingEventsCard`)
+- [x] "Race Ready / Maintenance Due / Not Race Ready" status badge on car detail header
+- [x] Mod timeline on progress chart — dashed vertical lines at mod install dates
+- [x] Improved empty states: Times page, analytics page, dashboard widgets, session page
+
+### New files
+
+- `src/components/times/add-run-sheet.tsx` — Sheet + FAB wrapper
+- `src/components/times/session-narrative.tsx` — Plain-English session summary
+- `src/components/times/venue-history.tsx` — Venue history display
+- `src/components/dashboard/upcoming-events-card.tsx` — Multi-event dashboard card
+- `src/lib/queries/venue-history.ts` — Venue history query
+
+### Key decisions
+
+- Session memory passes `conditions`, `penalties`, `tireSetup` without `id` (avoids triggering edit mode in RunForm)
+- PB detection queries after `createRun` using car + event type scope; first non-DNF run at a type always fires `isPB: true`
+- Consistency de-emphasized for Autocross (shows "informational" label), prominently shown for RallyCross with cumulative time
+- Venue history matches on exact `venueName` string equality (typo normalization deferred)
+- `revalidatePath('/events/${eventId}/session')` added to `createRun` so sheet close refreshes run list
+
+---
+
 ## Phase 5 — Open Source Prep ⏳ NOT STARTED
 
 ### Pre-work required before starting
