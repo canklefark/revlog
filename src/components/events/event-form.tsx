@@ -498,7 +498,7 @@ export function EventForm({
               : "Creating…"
             : isEditing
               ? "Save changes"
-              : "Quick Add"}
+              : "Add Event"}
         </Button>
         <Button
           type="button"

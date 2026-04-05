@@ -185,6 +185,18 @@ export async function scrapeMotorsportReg(
       if (htmlTitle) result.name = htmlTitle;
     }
 
+    // ── Event type from hero ".organiser__meta a" ────────────────────────────
+    // MSR SSR renders: <a href="/calendar/hpde-driver-school/">HPDE</a> organized by
+    // This is more reliable than inferring from og:description text.
+    const organiserTypeText = $('[class*="organiser__meta"] a')
+      .first()
+      .text()
+      .trim();
+    if (organiserTypeText) {
+      const inferred = inferEventType(organiserTypeText);
+      if (inferred) result.type = inferred;
+    }
+
     // ── og:description — primary data source for MSR SPAs ────────────────────
     // MSR event pages include rich og:description with organizer, dates, and venue.
     // Example: "Jzilla Track Days on Saturday, June 6, 2026 - Sunday, June 7, 2026
@@ -198,7 +210,8 @@ export async function scrapeMotorsportReg(
       if (fromDesc.endDate) result.endDate = fromDesc.endDate;
       if (fromDesc.venueName) result.venueName = fromDesc.venueName;
       if (fromDesc.address) result.address = fromDesc.address;
-      if (fromDesc.type) result.type = fromDesc.type;
+      // Only use og:description type if hero didn't already give us one
+      if (!result.type && fromDesc.type) result.type = fromDesc.type;
     }
 
     // ── Dates (itemprop fallback for non-SPA MSR pages) ──────────────────────
