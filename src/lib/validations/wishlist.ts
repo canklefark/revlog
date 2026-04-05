@@ -5,6 +5,7 @@ import { WISHLIST_PRIORITIES } from "@/lib/constants/wishlist-priorities";
 export const createWishlistSchema = z.object({
   carId: z.string().min(1, "Car ID is required"),
   name: z.string().min(1, "Name is required"),
+  brand: z.string().optional(),
   category: z.enum(MOD_CATEGORIES).optional(),
   estimatedCost: z
     .number({ error: "Estimated cost must be a number" })
@@ -18,6 +19,7 @@ export const createWishlistSchema = z.object({
 export const updateWishlistSchema = z.object({
   itemId: z.string().min(1, "Item ID is required"),
   name: z.string().min(1, "Name is required").optional(),
+  brand: z.string().optional(),
   category: z.enum(MOD_CATEGORIES).optional(),
   estimatedCost: z
     .number({ error: "Estimated cost must be a number" })

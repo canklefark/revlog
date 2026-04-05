@@ -39,6 +39,7 @@ export async function createWishlistItem(
   const raw = {
     carId: formData.get("carId") as string,
     name: formData.get("name") as string,
+    brand: parseOptionalString(formData.get("brand")),
     category: parseOptionalString(formData.get("category")),
     estimatedCost: parseOptionalNumber(formData.get("estimatedCost")),
     priority: (formData.get("priority") as string) || "Medium",
@@ -67,6 +68,7 @@ export async function createWishlistItem(
     data: {
       carId: parsed.data.carId,
       name: parsed.data.name,
+      brand: parsed.data.brand ?? null,
       category: parsed.data.category ?? null,
       estimatedCost: parsed.data.estimatedCost,
       priority: parsed.data.priority,
@@ -88,6 +90,7 @@ export async function updateWishlistItem(
   const raw = {
     itemId: formData.get("itemId") as string,
     name: parseOptionalString(formData.get("name")),
+    brand: parseOptionalString(formData.get("brand")),
     category: parseOptionalString(formData.get("category")),
     estimatedCost: parseOptionalNumber(formData.get("estimatedCost")),
     priority: parseOptionalString(formData.get("priority")),
@@ -117,6 +120,9 @@ export async function updateWishlistItem(
     where: { id: parsed.data.itemId, car: { userId } },
     data: {
       ...(parsed.data.name !== undefined && { name: parsed.data.name }),
+      ...(parsed.data.brand !== undefined && {
+        brand: parsed.data.brand ?? null,
+      }),
       ...(parsed.data.category !== undefined && {
         category: parsed.data.category,
       }),

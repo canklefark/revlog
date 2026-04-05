@@ -89,6 +89,17 @@ export function WishlistForm({
       </div>
 
       <div className="space-y-1.5">
+        <Label htmlFor="brand">Brand</Label>
+        <Input
+          id="brand"
+          name="brand"
+          type="text"
+          placeholder="e.g. Wilwood, Hawk, OEM"
+          defaultValue={defaultValues?.brand ?? ""}
+        />
+      </div>
+
+      <div className="space-y-1.5">
         <Label htmlFor="priority">Priority</Label>
         <Select
           value={priority}

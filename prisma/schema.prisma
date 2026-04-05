@@ -106,6 +106,7 @@ model WishlistItem {
   id            String   @id @default(cuid())
   carId         String
   name          String
+  brand         String?
   category      String?
   estimatedCost Float?
   priority      String   @default("Medium")
