@@ -145,6 +145,8 @@ export function EventForm({
     if (data.organizingBody) setValue("organizingBody", data.organizingBody);
     if (data.startDate) setValue("startDate", data.startDate);
     if (data.endDate) setValue("endDate", data.endDate);
+    if (data.startTime) setValue("startTime", data.startTime);
+    if (data.endTime) setValue("endTime", data.endTime);
     if (data.venueName) setValue("venueName", data.venueName);
     if (data.address) setValue("address", data.address);
     if (data.entryFee != null) setValue("entryFee", String(data.entryFee));

@@ -1,6 +1,6 @@
 # RevLog — Development Status
 
-**Last updated:** 2026-03-31
+**Last updated:** 2026-04-05
 **Current phase:** Phase 4 complete — Phase 5 next
 
 ---
@@ -242,6 +242,37 @@ Dokploy VPS with Nixpacks auto-build (not Docker). Set `AUTH_URL` and `AUTH_TRUS
 
 ---
 
+## Phase 4.8 — Event Intake Improvements ✅ COMPLETE
+
+**Completed:** 2026-04-05
+
+### Scope
+
+- [x] MSR scraper extracts `startTime` / `endTime` from ISO datetime attributes
+- [x] MSR scraper improved fee extraction (`[itemprop="price"]`, `meta[itemprop="lowPrice"]`)
+- [x] MSR scraper adds registration deadline extraction (`[itemprop="doorTime"]`, close-text heuristic)
+- [x] Generic scraper extracts `startTime` / `endTime` from JSON-LD datetime strings
+- [x] Event form autofill wires up `startTime` / `endTime` from scraper results
+- [x] MSR org calendar bulk import — paste org URL → browse events → select → bulk create
+- [x] Deduplication by `registrationUrl` (already-imported events greyed out)
+- [x] "Import" button added to events list header
+
+### New files
+
+- `src/lib/services/motorsportreg-api.ts` — MSR org calendar API client + type mapping
+- `src/lib/actions/import.ts` — `fetchOrgEvents` + `bulkCreateEvents` server actions
+- `src/app/(main)/events/import/page.tsx` — Import page (server component)
+- `src/components/events/org-import.tsx` — Two-step import UI (client component)
+
+### Key decisions
+
+- Bulk import skips geocoding to avoid rate-limiting; users trigger it by editing events
+- MSR org calendar API used unauthenticated (`/rest/calendars/organization/{id}.json`); gracefully returns error on auth failure
+- Deduplication key: `registrationUrl` (stable MSR URL per event, already stored on Event model)
+- No schema changes needed — all required fields already exist on the Event model
+
+---
+
 ## Phase 5 — Open Source Prep ⏳ NOT STARTED
 
 ### Pre-work required before starting
@@ -280,10 +311,10 @@ Dokploy VPS with Nixpacks auto-build (not Docker). Set `AUTH_URL` and `AUTH_TRUS
 
 ## Open Questions
 
-| #   | Question                                       | Blocking                                      |
-| --- | ---------------------------------------------- | --------------------------------------------- |
-| 1   | MotorsportReg API availability                 | Phase 5 (Cheerio scraper is Phase 2 fallback) |
-| 2   | PWA depth: promote to full offline sync queue? | Phase 5                                       |
+| #   | Question                                       | Blocking                                                               |
+| --- | ---------------------------------------------- | ---------------------------------------------------------------------- |
+| 1   | MotorsportReg API availability (authenticated) | Phase 5 (unauthenticated org calendar already integrated in Phase 4.8) |
+| 2   | PWA depth: promote to full offline sync queue? | Phase 5                                                                |
 
 ---
 

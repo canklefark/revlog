@@ -16,6 +16,13 @@ function toIsoDateString(raw: string): string | undefined {
   }
 }
 
+/** Extract "HH:mm" from an ISO datetime string like "2026-05-15T08:00:00". */
+function toTimeString(raw: string): string | undefined {
+  const match = raw.match(/T(\d{2}:\d{2})/);
+  if (!match) return undefined;
+  return match[1];
+}
+
 interface JsonLdEvent {
   "@type"?: string | string[];
   name?: string;
@@ -123,10 +130,12 @@ export function parseGenericEventHtml(
       }
     }
 
-    // ── Start date ───────────────────────────────────────────────────────────
+    // ── Start date + time ────────────────────────────────────────────────────
     if (jsonLd?.startDate) {
       const iso = toIsoDateString(jsonLd.startDate);
       if (iso) result.startDate = iso;
+      const time = toTimeString(jsonLd.startDate);
+      if (time) result.startTime = time;
     }
 
     if (!result.startDate) {
@@ -151,10 +160,12 @@ export function parseGenericEventHtml(
       }
     }
 
-    // ── End date ─────────────────────────────────────────────────────────────
+    // ── End date + time ──────────────────────────────────────────────────────
     if (jsonLd?.endDate) {
       const iso = toIsoDateString(jsonLd.endDate);
       if (iso) result.endDate = iso;
+      const time = toTimeString(jsonLd.endDate);
+      if (time) result.endTime = time;
     }
 
     if (!result.endDate) {
