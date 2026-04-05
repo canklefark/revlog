@@ -311,29 +311,27 @@ export function EventForm({
           />
         </div>
 
-        {!isQuickMode && (
-          <div className="space-y-1.5">
-            <Label htmlFor="registrationStatus">Registration status *</Label>
-            <Controller
-              name="registrationStatus"
-              control={control}
-              render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger id="registrationStatus" className="w-full">
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {REGISTRATION_STATUSES.map((s) => (
-                      <SelectItem key={s} value={s}>
-                        {s}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            />
-          </div>
-        )}
+        <div className="space-y-1.5">
+          <Label htmlFor="registrationStatus">Registration status</Label>
+          <Controller
+            name="registrationStatus"
+            control={control}
+            render={({ field }) => (
+              <Select value={field.value} onValueChange={field.onChange}>
+                <SelectTrigger id="registrationStatus" className="w-full">
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  {REGISTRATION_STATUSES.map((s) => (
+                    <SelectItem key={s} value={s}>
+                      {s}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          />
+        </div>
       </div>
 
       {!isQuickMode && (
