@@ -25,7 +25,7 @@ export default async function EditEventPage({
   }
 
   return (
-    <div>
+    <div className="max-w-2xl mx-auto">
       <h1 className="text-2xl font-semibold mb-6">Edit Event</h1>
       <EventForm cars={cars} event={event} />
     </div>

@@ -35,7 +35,7 @@ export default async function NewEventPage({
   const heading = template ? "Duplicate Event" : "Add Event";
 
   return (
-    <div>
+    <div className="max-w-2xl mx-auto">
       <h1 className="text-2xl font-semibold mb-6">{heading}</h1>
       <EventForm
         cars={cars}

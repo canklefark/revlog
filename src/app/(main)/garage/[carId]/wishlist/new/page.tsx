@@ -19,7 +19,7 @@ export default async function NewWishlistPage({
   const displayName = car.nickname ?? `${car.year} ${car.make} ${car.model}`;
 
   return (
-    <div className="max-w-2xl">
+    <div className="max-w-2xl mx-auto">
       <Link
         href={`/garage/${carId}/wishlist`}
         className="text-xs text-muted-foreground hover:text-foreground transition-colors"

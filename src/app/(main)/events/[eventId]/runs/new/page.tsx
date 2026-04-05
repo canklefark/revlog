@@ -43,7 +43,7 @@ export default async function NewRunPage({
     : undefined;
 
   return (
-    <div className="max-w-2xl">
+    <div className="max-w-2xl mx-auto">
       <Link
         href={`/events/${eventId}/runs`}
         className="text-xs text-muted-foreground hover:text-foreground transition-colors"

@@ -22,7 +22,7 @@ export default async function EditCarPage({
   }
 
   return (
-    <div className="max-w-2xl">
+    <div className="max-w-2xl mx-auto">
       <h1 className="text-2xl font-semibold mb-6">Edit Car</h1>
       <CarForm action={updateCar} car={car as Car} />
     </div>
