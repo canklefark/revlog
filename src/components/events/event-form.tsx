@@ -69,8 +69,6 @@ export function EventForm({
   const router = useRouter();
   const isEditing = !!event;
 
-  // Quick-add mode: only show name + type + date on create (default on)
-  const [isQuickMode, setIsQuickMode] = useState(!isEditing);
   // Controlled open state for the details collapsible
   const [detailsOpen, setDetailsOpen] = useState(isEditing);
 
@@ -154,19 +152,17 @@ export function EventForm({
       setValue("registrationDeadline", data.registrationDeadline);
     if (data.registrationUrl) setValue("registrationUrl", data.registrationUrl);
 
-    // Auto-open details section if optional fields were populated (unless in quick mode)
-    if (!isQuickMode) {
-      const hasOptionalData = !!(
-        data.organizingBody ||
-        data.endDate ||
-        data.venueName ||
-        data.address ||
-        data.registrationDeadline ||
-        data.entryFee != null ||
-        data.registrationUrl
-      );
-      if (hasOptionalData) setDetailsOpen(true);
-    }
+    // Auto-open details section if optional fields were populated
+    const hasOptionalData = !!(
+      data.organizingBody ||
+      data.endDate ||
+      data.venueName ||
+      data.address ||
+      data.registrationDeadline ||
+      data.entryFee != null ||
+      data.registrationUrl
+    );
+    if (hasOptionalData) setDetailsOpen(true);
   }
 
   function onSubmit() {
@@ -334,203 +330,184 @@ export function EventForm({
         </div>
       </div>
 
-      {!isQuickMode && (
-        <>
-          <Separator />
-          <CollapsibleSection
-            title="More Details"
-            open={detailsOpen}
-            onOpenChange={setDetailsOpen}
-          >
-            <div className="space-y-1.5">
-              <Label htmlFor="organizingBody">Organizing body</Label>
-              <Input
-                id="organizingBody"
-                placeholder="SCCA Region Name"
-                {...register("organizingBody")}
-              />
-            </div>
+      <>
+        <Separator />
+        <CollapsibleSection
+          title="More Details"
+          open={detailsOpen}
+          onOpenChange={setDetailsOpen}
+        >
+          <div className="space-y-1.5">
+            <Label htmlFor="organizingBody">Organizing body</Label>
+            <Input
+              id="organizingBody"
+              placeholder="SCCA Region Name"
+              {...register("organizingBody")}
+            />
+          </div>
 
-            <div className="space-y-1.5">
-              <Label>End date</Label>
-              <Controller
-                name="endDate"
-                control={control}
-                render={({ field }) => (
-                  <DatePicker
-                    value={field.value}
-                    onChange={field.onChange}
-                    placeholder="Optional end date"
-                    hasError={false}
-                  />
-                )}
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="endTime">
-                End time{" "}
-                <span className="text-muted-foreground font-normal">
-                  (optional)
-                </span>
-              </Label>
-              <input
-                id="endTime"
-                type="time"
-                {...register("endTime")}
-                className={cn(
-                  "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-colors",
-                  "focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:border-ring",
-                  "disabled:cursor-not-allowed disabled:opacity-50",
-                )}
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="venueName">Venue name</Label>
-              <Input
-                id="venueName"
-                placeholder="ORP, Mid-Ohio, etc."
-                {...register("venueName")}
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="address">Address</Label>
-              <Input
-                id="address"
-                placeholder="Street address or city"
-                {...register("address")}
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label>Registration deadline</Label>
-              <Controller
-                name="registrationDeadline"
-                control={control}
-                render={({ field }) => (
-                  <DatePicker
-                    value={field.value}
-                    onChange={field.onChange}
-                    placeholder="Optional deadline"
-                    hasError={false}
-                  />
-                )}
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="entryFee">Entry fee ($)</Label>
-              <Input
-                id="entryFee"
-                type="number"
-                min="0"
-                step="0.01"
-                placeholder="0.00"
-                {...register("entryFee")}
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="registrationUrl">Registration URL</Label>
-              <Input
-                id="registrationUrl"
-                type="url"
-                placeholder="https://motorsportreg.com/..."
-                {...register("registrationUrl")}
-              />
-              {serverErrors?.registrationUrl?.[0] && (
-                <p className="text-xs text-destructive">
-                  {serverErrors.registrationUrl[0]}
-                </p>
-              )}
-            </div>
-
-            {cars.length > 0 && (
-              <div className="space-y-1.5">
-                <Label htmlFor="carId">Car</Label>
-                <Controller
-                  name="carId"
-                  control={control}
-                  render={({ field }) => (
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger id="carId" className="w-full">
-                        <SelectValue placeholder="No car linked" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">No car linked</SelectItem>
-                        {cars.map((car) => (
-                          <SelectItem key={car.id} value={car.id}>
-                            {car.nickname
-                              ? `${car.nickname} (${car.year} ${car.make} ${car.model})`
-                              : `${car.year} ${car.make} ${car.model}`}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
+          <div className="space-y-1.5">
+            <Label>End date</Label>
+            <Controller
+              name="endDate"
+              control={control}
+              render={({ field }) => (
+                <DatePicker
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder="Optional end date"
+                  hasError={false}
                 />
-              </div>
+              )}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="endTime">
+              End time{" "}
+              <span className="text-muted-foreground font-normal">
+                (optional)
+              </span>
+            </Label>
+            <input
+              id="endTime"
+              type="time"
+              {...register("endTime")}
+              className={cn(
+                "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-colors",
+                "focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:border-ring",
+                "disabled:cursor-not-allowed disabled:opacity-50",
+              )}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="venueName">Venue name</Label>
+            <Input
+              id="venueName"
+              placeholder="ORP, Mid-Ohio, etc."
+              {...register("venueName")}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="address">Address</Label>
+            <Input
+              id="address"
+              placeholder="Street address or city"
+              {...register("address")}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>Registration deadline</Label>
+            <Controller
+              name="registrationDeadline"
+              control={control}
+              render={({ field }) => (
+                <DatePicker
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder="Optional deadline"
+                  hasError={false}
+                />
+              )}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="entryFee">Entry fee ($)</Label>
+            <Input
+              id="entryFee"
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="0.00"
+              {...register("entryFee")}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="registrationUrl">Registration URL</Label>
+            <Input
+              id="registrationUrl"
+              type="url"
+              placeholder="https://motorsportreg.com/..."
+              {...register("registrationUrl")}
+            />
+            {serverErrors?.registrationUrl?.[0] && (
+              <p className="text-xs text-destructive">
+                {serverErrors.registrationUrl[0]}
+              </p>
             )}
+          </div>
 
+          {cars.length > 0 && (
             <div className="space-y-1.5">
-              <Label htmlFor="runGroup">Run group / class</Label>
-              <Input
-                id="runGroup"
-                placeholder="STR, CAM-C, etc."
-                {...register("runGroup")}
+              <Label htmlFor="carId">Car</Label>
+              <Controller
+                name="carId"
+                control={control}
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger id="carId" className="w-full">
+                      <SelectValue placeholder="No car linked" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">No car linked</SelectItem>
+                      {cars.map((car) => (
+                        <SelectItem key={car.id} value={car.id}>
+                          {car.nickname
+                            ? `${car.nickname} (${car.year} ${car.make} ${car.model})`
+                            : `${car.year} ${car.make} ${car.model}`}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
               />
             </div>
+          )}
 
-            <div className="space-y-1.5">
-              <Label htmlFor="notes">Notes</Label>
-              <Textarea
-                id="notes"
-                placeholder="Anything worth remembering..."
-                rows={3}
-                {...register("notes")}
-              />
-            </div>
-          </CollapsibleSection>
-        </>
-      )}
+          <div className="space-y-1.5">
+            <Label htmlFor="runGroup">Run group / class</Label>
+            <Input
+              id="runGroup"
+              placeholder="STR, CAM-C, etc."
+              {...register("runGroup")}
+            />
+          </div>
 
-      <div className="flex items-center justify-between pt-2">
-        <div className="flex gap-3">
-          <Button type="submit" disabled={isPending}>
-            {isPending
-              ? isEditing
-                ? "Saving…"
-                : "Creating…"
-              : isEditing
-                ? "Save changes"
-                : isQuickMode
-                  ? "Quick Add"
-                  : "Create Event"}
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => router.back()}
-            disabled={isPending}
-          >
-            Cancel
-          </Button>
-        </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="notes">Notes</Label>
+            <Textarea
+              id="notes"
+              placeholder="Anything worth remembering..."
+              rows={3}
+              {...register("notes")}
+            />
+          </div>
+        </CollapsibleSection>
+      </>
 
-        {!isEditing && (
-          <button
-            type="button"
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-            onClick={() => {
-              setIsQuickMode((v) => !v);
-              if (isQuickMode) setDetailsOpen(false);
-            }}
-          >
-            {isQuickMode ? "Show all fields" : "Quick add"}
-          </button>
-        )}
+      <div className="flex gap-3 pt-2">
+        <Button type="submit" disabled={isPending}>
+          {isPending
+            ? isEditing
+              ? "Saving…"
+              : "Creating…"
+            : isEditing
+              ? "Save changes"
+              : "Quick Add"}
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => router.back()}
+          disabled={isPending}
+        >
+          Cancel
+        </Button>
       </div>
     </form>
   );
