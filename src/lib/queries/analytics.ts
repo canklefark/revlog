@@ -397,17 +397,16 @@ export async function getModMarkers(userId: string): Promise<ModMarker[]> {
       car: { select: { nickname: true, year: true, make: true, model: true } },
     },
     orderBy: { installDate: "asc" },
+    take: 200,
   });
 
-  return mods
-    .filter((m) => m.installDate != null)
-    .map((m) => ({
-      // Use full ISO string so it aligns with the eventDate x-axis key built
-      // via Date.toISOString() in progress-chart.tsx
-      date: m.installDate!.toISOString(),
-      label: m.name.length > 20 ? m.name.slice(0, 18) + "\u2026" : m.name,
-      carLabel: m.car.nickname ?? `${m.car.year} ${m.car.make} ${m.car.model}`,
-    }));
+  return mods.map((m) => ({
+    // Use full ISO string so it aligns with the eventDate x-axis key built
+    // via Date.toISOString() in progress-chart.tsx
+    date: (m.installDate as Date).toISOString(),
+    label: m.name.length > 20 ? m.name.slice(0, 18) + "\u2026" : m.name,
+    carLabel: m.car.nickname ?? `${m.car.year} ${m.car.make} ${m.car.model}`,
+  }));
 }
 
 // ---------------------------------------------------------------------------
