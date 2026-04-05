@@ -34,7 +34,10 @@ export async function updateProfile(
     seasonBudget: formData.get("seasonBudget")
       ? Number(formData.get("seasonBudget"))
       : undefined,
-    defaultEventType: formData.get("defaultEventType") || undefined,
+    defaultEventType: (() => {
+      const v = formData.get("defaultEventType");
+      return v && v !== "none" ? v : undefined;
+    })(),
   };
 
   const parsed = updateProfileSchema.safeParse(raw);
@@ -77,9 +80,7 @@ export async function updateProfile(
             ? null
             : seasonBudget,
         defaultEventType:
-          defaultEventType === undefined ||
-          defaultEventType === "" ||
-          defaultEventType === "none"
+          defaultEventType === undefined || defaultEventType === ""
             ? null
             : defaultEventType,
         // Only overwrite lat/lng when a home address was submitted.

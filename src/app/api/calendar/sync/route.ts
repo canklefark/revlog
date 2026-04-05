@@ -28,7 +28,13 @@ export async function POST(request: NextRequest) {
   }
 
   // Fetch the event and verify ownership.
-  const event = await prisma.event.findUnique({ where: { id: eventId } });
+  const [event, user] = await Promise.all([
+    prisma.event.findUnique({ where: { id: eventId } }),
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: { timezone: true },
+    }),
+  ]);
   if (!event || event.userId !== userId) {
     return NextResponse.json({ error: "Event not found" }, { status: 404 });
   }
@@ -45,6 +51,9 @@ export async function POST(request: NextRequest) {
     title: `[${event.type}] ${event.name}`,
     startDate: event.startDate,
     endDate: event.endDate,
+    startTime: event.startTime ?? null,
+    endTime: event.endTime ?? null,
+    userTimezone: user?.timezone ?? "America/New_York",
     location: event.address ?? event.venueName ?? null,
     description: buildCalendarDescription(event),
   };
