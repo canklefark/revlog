@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth-utils";
 import { updateProfileSchema } from "@/lib/validations/user";
 import { geocodeAddress } from "@/lib/services/geocode";
+import { calculateDistance } from "@/lib/services/distance";
 
 export type UpdateProfileState = {
   data?: {
@@ -104,6 +105,45 @@ export async function updateProfile(
         defaultEventType: true,
       },
     });
+
+    // Backfill distances on existing events when home coords are now available.
+    if (homeLat != null && homeLng != null) {
+      const events = await prisma.event.findMany({
+        where: { userId, address: { not: null } },
+        select: { id: true, address: true, lat: true, lng: true },
+      });
+      await Promise.all(
+        events.map(async (ev) => {
+          // Geocode first if we don't have coords for this event yet.
+          let evLat = ev.lat;
+          let evLng = ev.lng;
+          if ((evLat == null || evLng == null) && ev.address) {
+            const coords = await geocodeAddress(ev.address);
+            if (coords) {
+              evLat = coords.lat;
+              evLng = coords.lng;
+            }
+          }
+          if (evLat == null || evLng == null) return;
+
+          const result = await calculateDistance(
+            { lat: homeLat!, lng: homeLng! },
+            { lat: evLat, lng: evLng },
+          );
+          if (result) {
+            await prisma.event.update({
+              where: { id: ev.id, userId },
+              data: {
+                lat: evLat,
+                lng: evLng,
+                distanceFromHome: result.distanceMiles,
+                driveTimeMinutes: result.driveTimeMinutes,
+              },
+            });
+          }
+        }),
+      );
+    }
 
     return { data: user };
   } catch {
