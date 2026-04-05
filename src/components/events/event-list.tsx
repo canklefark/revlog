@@ -1,11 +1,15 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import { CalendarDaysIcon, CalendarPlusIcon } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import { EventCard } from "./event-card";
 import { EventFilters } from "./event-filters";
 import { ExportButton } from "@/components/shared/export-button";
+import { groupByKey } from "@/lib/utils/group-by";
 import type { Event } from "@prisma/client";
 
 interface EventListProps {
@@ -14,6 +18,12 @@ interface EventListProps {
 }
 
 export function EventList({ events, total }: EventListProps) {
+  const searchParams = useSearchParams();
+  const groupBy = searchParams.get("group");
+
+  const grouped = groupBy === "type" ? groupByKey(events, (e) => e.type) : null;
+  const groupCategories = grouped ? Object.keys(grouped) : null;
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3 flex-wrap">
@@ -53,6 +63,25 @@ export function EventList({ events, total }: EventListProps) {
           <Button asChild size="sm" variant="outline">
             <Link href="/events/new">Add your first event</Link>
           </Button>
+        </div>
+      ) : grouped && groupCategories ? (
+        <div className="space-y-6 max-w-2xl">
+          {groupCategories.map((type, idx) => (
+            <div key={type}>
+              {idx > 0 && <Separator className="mb-6" />}
+              <div className="flex items-center gap-2 mb-3">
+                <h2 className="text-sm font-semibold">{type}</h2>
+                <Badge variant="secondary" className="text-xs">
+                  {grouped[type].length}
+                </Badge>
+              </div>
+              <div className="flex flex-col gap-2">
+                {grouped[type].map((event) => (
+                  <EventCard key={event.id} event={event} />
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       ) : (
         <div className="flex flex-col gap-2 max-w-2xl">

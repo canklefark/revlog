@@ -23,8 +23,12 @@ export default async function WishlistPage({
   const { items, estimatedTotal } = await getWishlistItems(carId, userId);
   const displayName = car.nickname ?? `${car.year} ${car.make} ${car.model}`;
 
+  const highCount = items.filter((i) => i.priority === "High").length;
+  const medCount = items.filter((i) => i.priority === "Medium").length;
+  const lowCount = items.filter((i) => i.priority === "Low").length;
+
   return (
-    <main className="w-full">
+    <main className="max-w-3xl mx-auto w-full">
       <div className="flex items-center justify-between mb-6 gap-4">
         <div>
           <Link
@@ -48,20 +52,50 @@ export default async function WishlistPage({
 
       {items.length > 0 && (
         <Card className="mb-6">
-          <CardContent className="pt-4">
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-muted-foreground">
-                {items.length} item{items.length !== 1 ? "s" : ""}
-              </span>
-              {estimatedTotal > 0 && (
-                <span className="font-semibold">
-                  ~$
-                  {estimatedTotal.toLocaleString("en-US", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}{" "}
-                  estimated
-                </span>
+          <CardContent className="pt-4 pb-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+              <div>
+                <p className="text-2xl font-semibold">{items.length}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {items.length === 1 ? "Item" : "Items"}
+                </p>
+              </div>
+              <div>
+                <p className="text-2xl font-semibold text-red-500">
+                  {highCount}
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  High priority
+                </p>
+              </div>
+              <div>
+                <p className="text-2xl font-semibold text-yellow-500">
+                  {medCount}
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Medium priority
+                </p>
+              </div>
+              {estimatedTotal > 0 ? (
+                <div>
+                  <p className="text-2xl font-semibold">
+                    ~$
+                    {estimatedTotal.toLocaleString("en-US", {
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 0,
+                    })}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Estimated total
+                  </p>
+                </div>
+              ) : (
+                <div>
+                  <p className="text-2xl font-semibold">{lowCount}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Low priority
+                  </p>
+                </div>
               )}
             </div>
           </CardContent>

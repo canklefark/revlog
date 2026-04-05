@@ -21,12 +21,14 @@ export function EventFilters() {
   const currentType = searchParams.get("type") ?? "all";
   const currentStatus = searchParams.get("status") ?? "all";
   const currentDate = searchParams.get("date") ?? "upcoming";
+  const currentGroup = searchParams.get("group") ?? "none";
 
   function updateFilter(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString());
     const isDefault =
       (key === "date" && value === "upcoming") ||
-      (key !== "date" && value === "all");
+      (key === "group" && value === "none") ||
+      (key !== "date" && key !== "group" && value === "all");
     if (isDefault) {
       params.delete(key);
     } else {
@@ -82,6 +84,19 @@ export function EventFilters() {
               {s}
             </SelectItem>
           ))}
+        </SelectContent>
+      </Select>
+
+      <Select
+        value={currentGroup}
+        onValueChange={(v) => updateFilter("group", v)}
+      >
+        <SelectTrigger className="w-auto min-w-[130px] h-8 text-xs">
+          <SelectValue placeholder="Group by" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="none">No grouping</SelectItem>
+          <SelectItem value="type">Event type</SelectItem>
         </SelectContent>
       </Select>
     </div>
