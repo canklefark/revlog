@@ -77,7 +77,9 @@ export async function updateProfile(
             ? null
             : seasonBudget,
         defaultEventType:
-          defaultEventType === undefined || defaultEventType === ""
+          defaultEventType === undefined ||
+          defaultEventType === "" ||
+          defaultEventType === "none"
             ? null
             : defaultEventType,
         // Only overwrite lat/lng when a home address was submitted.

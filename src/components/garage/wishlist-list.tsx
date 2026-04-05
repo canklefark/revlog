@@ -143,7 +143,7 @@ export function WishlistList({ items, carId }: WishlistListProps) {
   }
 
   const availableCategories = Array.from(
-    new Set(items.map((i) => i.category ?? "Uncategorized")),
+    new Set(items.map((i) => i.category || "Uncategorized")),
   ).sort((a, b) => {
     if (a === "Uncategorized") return 1;
     if (b === "Uncategorized") return -1;
@@ -157,13 +157,13 @@ export function WishlistList({ items, carId }: WishlistListProps) {
   const filteredItems = items.filter((item) => {
     const catMatch =
       categoryFilter === "all" ||
-      (item.category ?? "Uncategorized") === categoryFilter;
+      (item.category || "Uncategorized") === categoryFilter;
     const priMatch =
       priorityFilter === "all" || item.priority === priorityFilter;
     return catMatch && priMatch;
   });
 
-  const grouped = groupByKey(filteredItems, (i) => i.category);
+  const grouped = groupByKey(filteredItems, (i) => i.category || null);
   const categories = Object.keys(grouped);
 
   return (

@@ -45,6 +45,8 @@ type FormValues = {
   organizingBody: string;
   startDate: string;
   endDate: string;
+  startTime: string;
+  endTime: string;
   venueName: string;
   address: string;
   registrationStatus: string;
@@ -107,6 +109,8 @@ export function EventForm({
       endDate: event?.endDate
         ? format(new Date(event.endDate), "yyyy-MM-dd")
         : "",
+      startTime: event?.startTime ?? "",
+      endTime: event?.endTime ?? "",
       venueName: source?.venueName ?? "",
       address: source?.address ?? "",
       registrationStatus: "Interested",
@@ -177,6 +181,8 @@ export function EventForm({
       "organizingBody",
       "startDate",
       "endDate",
+      "startTime",
+      "endTime",
       "venueName",
       "address",
       "registrationStatus",
@@ -284,6 +290,25 @@ export function EventForm({
           )}
         </div>
 
+        <div className="space-y-1.5">
+          <Label htmlFor="startTime">
+            Start time{" "}
+            <span className="text-muted-foreground font-normal">
+              (optional)
+            </span>
+          </Label>
+          <input
+            id="startTime"
+            type="time"
+            {...register("startTime")}
+            className={cn(
+              "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-colors",
+              "focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:border-ring",
+              "disabled:cursor-not-allowed disabled:opacity-50",
+            )}
+          />
+        </div>
+
         {!isQuickMode && (
           <div className="space-y-1.5">
             <Label htmlFor="registrationStatus">Registration status *</Label>
@@ -338,6 +363,25 @@ export function EventForm({
                     placeholder="Optional end date"
                     hasError={false}
                   />
+                )}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="endTime">
+                End time{" "}
+                <span className="text-muted-foreground font-normal">
+                  (optional)
+                </span>
+              </Label>
+              <input
+                id="endTime"
+                type="time"
+                {...register("endTime")}
+                className={cn(
+                  "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs transition-colors",
+                  "focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:border-ring",
+                  "disabled:cursor-not-allowed disabled:opacity-50",
                 )}
               />
             </div>

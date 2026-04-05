@@ -23,15 +23,24 @@ export type EventActionState = {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
+/** Parse a date-only string as noon UTC to avoid timezone off-by-one. */
+function parseDateOnly(dateStr: string): Date {
+  return new Date(`${dateStr}T12:00:00Z`);
+}
+
 /** Build the CalendarEventData payload from a persisted event. */
 function toCalendarEventData(
   event: Event,
   eventType: string,
+  userTimezone: string,
 ): CalendarEventData {
   return {
     title: `[${eventType}] ${event.name}`,
     startDate: event.startDate,
     endDate: event.endDate,
+    startTime: event.startTime ?? null,
+    endTime: event.endTime ?? null,
+    userTimezone,
     location: event.address ?? event.venueName ?? null,
     description: buildCalendarDescription(event),
   };
@@ -94,6 +103,8 @@ export async function createEvent(
     organizingBody: formData.get("organizingBody") || undefined,
     startDate: formData.get("startDate"),
     endDate: formData.get("endDate") || undefined,
+    startTime: formData.get("startTime") || undefined,
+    endTime: formData.get("endTime") || undefined,
     venueName: formData.get("venueName") || undefined,
     address: formData.get("address") || undefined,
     registrationStatus: formData.get("registrationStatus") || "Interested",
@@ -127,10 +138,10 @@ export async function createEvent(
       data: {
         ...rest,
         userId,
-        startDate: new Date(startDate),
-        endDate: endDate ? new Date(endDate) : null,
+        startDate: parseDateOnly(startDate),
+        endDate: endDate ? parseDateOnly(endDate) : null,
         registrationDeadline: registrationDeadline
-          ? new Date(registrationDeadline)
+          ? parseDateOnly(registrationDeadline)
           : null,
         carId: rest.carId || null,
         organizingBody: rest.organizingBody || null,
@@ -145,9 +156,13 @@ export async function createEvent(
 
     // Sync to Google Calendar if the event is immediately Registered.
     if (event.registrationStatus === "Registered") {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { timezone: true },
+      });
       const calendarEventId = await createCalendarEvent(
         userId,
-        toCalendarEventData(event, event.type),
+        toCalendarEventData(event, event.type, user?.timezone ?? "UTC"),
       );
       if (calendarEventId) {
         await prisma.event.update({
@@ -178,6 +193,8 @@ export async function updateEvent(
     organizingBody: formData.get("organizingBody") || undefined,
     startDate: formData.get("startDate") || undefined,
     endDate: formData.get("endDate") || undefined,
+    startTime: formData.get("startTime") || undefined,
+    endTime: formData.get("endTime") || undefined,
     venueName: formData.get("venueName") || undefined,
     address: formData.get("address") || undefined,
     registrationStatus: formData.get("registrationStatus") || undefined,
@@ -220,17 +237,17 @@ export async function updateEvent(
       where: { id: eventId, userId },
       data: {
         ...rest,
-        startDate: startDate ? new Date(startDate) : undefined,
+        startDate: startDate ? parseDateOnly(startDate) : undefined,
         endDate:
           endDate !== undefined
             ? endDate
-              ? new Date(endDate)
+              ? parseDateOnly(endDate)
               : null
             : undefined,
         registrationDeadline:
           registrationDeadline !== undefined
             ? registrationDeadline
-              ? new Date(registrationDeadline)
+              ? parseDateOnly(registrationDeadline)
               : null
             : undefined,
         carId: rest.carId !== undefined ? rest.carId || null : undefined,
@@ -254,10 +271,14 @@ export async function updateEvent(
 
     // If the event already has a calendar entry, keep it in sync.
     if (event.calendarEventId) {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { timezone: true },
+      });
       await updateCalendarEvent(
         userId,
         event.calendarEventId,
-        toCalendarEventData(event, event.type),
+        toCalendarEventData(event, event.type, user?.timezone ?? "UTC"),
       );
     }
 
@@ -339,9 +360,13 @@ export async function updateEventStatus(
 
     // Calendar sync: create on Registered (if not yet synced), delete on Skipped.
     if (status === "Registered" && !existing.calendarEventId) {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { timezone: true },
+      });
       const calendarEventId = await createCalendarEvent(
         userId,
-        toCalendarEventData(event, event.type),
+        toCalendarEventData(event, event.type, user?.timezone ?? "UTC"),
       );
       if (calendarEventId) {
         await prisma.event.update({

@@ -148,13 +148,13 @@ export function ProfileForm({ user }: ProfileFormProps) {
         <Label htmlFor="defaultEventType">Default Event Type</Label>
         <Select
           name="defaultEventType"
-          defaultValue={user?.defaultEventType ?? ""}
+          defaultValue={user?.defaultEventType || "none"}
         >
           <SelectTrigger id="defaultEventType">
             <SelectValue placeholder="None" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">None</SelectItem>
+            <SelectItem value="none">None</SelectItem>
             {EVENT_TYPES.map((t) => (
               <SelectItem key={t} value={t}>
                 {t}

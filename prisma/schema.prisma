@@ -163,6 +163,8 @@ model Event {
   organizingBody       String?
   startDate            DateTime
   endDate              DateTime?
+  startTime            String?
+  endTime              String?
   venueName            String?
   address              String?
   lat                  Float?

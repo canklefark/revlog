@@ -10,6 +10,14 @@ export const createEventSchema = z.object({
   organizingBody: z.string().optional(),
   startDate: z.string().min(1, "Start date is required"),
   endDate: z.string().optional(),
+  startTime: z
+    .string()
+    .regex(/^\d{2}:\d{2}$/)
+    .optional(),
+  endTime: z
+    .string()
+    .regex(/^\d{2}:\d{2}$/)
+    .optional(),
   venueName: z.string().optional(),
   address: z.string().optional(),
   registrationStatus: z.enum(REGISTRATION_STATUSES).default("Interested"),
@@ -35,6 +43,14 @@ export const updateEventSchema = z.object({
   organizingBody: z.string().optional(),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
+  startTime: z
+    .string()
+    .regex(/^\d{2}:\d{2}$/)
+    .optional(),
+  endTime: z
+    .string()
+    .regex(/^\d{2}:\d{2}$/)
+    .optional(),
   venueName: z.string().optional(),
   address: z.string().optional(),
   registrationStatus: z.enum(REGISTRATION_STATUSES).optional(),

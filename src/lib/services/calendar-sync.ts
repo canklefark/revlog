@@ -8,6 +8,9 @@ export interface CalendarEventData {
   title: string; // e.g. "[AutoX] SCCA Points Event #3"
   startDate: Date;
   endDate: Date | null;
+  startTime: string | null; // HH:MM, 24h
+  endTime: string | null; // HH:MM, 24h
+  userTimezone: string; // IANA timezone, e.g. "America/Chicago"
   location: string | null;
   description: string; // organizing body, fee, run group, url, notes
 }
@@ -131,21 +134,45 @@ async function refreshAccessToken(
   }
 }
 
+/** Extract "YYYY-MM-DD" from a Date stored at noon UTC. */
+function toDateStr(d: Date): string {
+  return d.toISOString().substring(0, 10);
+}
+
 /** Build a Google Calendar event body from CalendarEventData. */
 function buildEventBody(eventData: CalendarEventData) {
-  // Google Calendar requires RFC3339 date-time strings.
-  const startIso = eventData.startDate.toISOString();
-  // If no explicit end, default to start + 1 day (all-day style).
-  const endIso = eventData.endDate
-    ? eventData.endDate.toISOString()
-    : new Date(eventData.startDate.getTime() + 86_400_000).toISOString();
-
-  return {
+  const base = {
     summary: eventData.title,
     location: eventData.location ?? undefined,
     description: eventData.description,
-    start: { dateTime: startIso, timeZone: "UTC" },
-    end: { dateTime: endIso, timeZone: "UTC" },
+  };
+
+  if (eventData.startTime) {
+    // Timed event — use dateTime format with the user's local timezone.
+    const startStr = `${toDateStr(eventData.startDate)}T${eventData.startTime}:00`;
+    const endDateStr = eventData.endDate
+      ? toDateStr(eventData.endDate)
+      : toDateStr(eventData.startDate);
+    const endTimeStr = eventData.endTime ?? "23:59";
+    const endStr = `${endDateStr}T${endTimeStr}:00`;
+    return {
+      ...base,
+      start: { dateTime: startStr, timeZone: eventData.userTimezone },
+      end: { dateTime: endStr, timeZone: eventData.userTimezone },
+    };
+  }
+
+  // All-day event — use date format. Google Calendar end is exclusive, so
+  // add 1 day to the last day of the event.
+  const startDate = toDateStr(eventData.startDate);
+  const lastDay = eventData.endDate ?? eventData.startDate;
+  const exclusiveEnd = new Date(lastDay.getTime() + 86_400_000);
+  const endDate = toDateStr(exclusiveEnd);
+
+  return {
+    ...base,
+    start: { date: startDate },
+    end: { date: endDate },
   };
 }
 
