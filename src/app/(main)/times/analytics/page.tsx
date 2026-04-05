@@ -6,6 +6,7 @@ import {
   getPersonalRecords,
   getConditionsAnalysis,
   getCarComparisonData,
+  getModMarkers,
 } from "@/lib/queries/analytics";
 import { PRTable } from "@/components/analytics/pr-table";
 import { ConsistencyCard } from "@/components/analytics/consistency-card";
@@ -14,13 +15,19 @@ import { AnalyticsCharts } from "@/components/analytics/analytics-charts";
 export default async function AnalyticsPage() {
   const userId = await requireAuth();
 
-  const [progressData, personalRecords, conditionsData, carComparisonData] =
-    await Promise.all([
-      getProgressData(userId),
-      getPersonalRecords(userId),
-      getConditionsAnalysis(userId),
-      getCarComparisonData(userId),
-    ]);
+  const [
+    progressData,
+    personalRecords,
+    conditionsData,
+    carComparisonData,
+    modMarkers,
+  ] = await Promise.all([
+    getProgressData(userId),
+    getPersonalRecords(userId),
+    getConditionsAnalysis(userId),
+    getCarComparisonData(userId),
+    getModMarkers(userId),
+  ]);
 
   const hasData = progressData.length > 0;
 
@@ -53,6 +60,7 @@ export default async function AnalyticsPage() {
         conditionsData={conditionsData}
         carComparisonData={carComparisonData}
         consistencySlot={<ConsistencyCard records={personalRecords} />}
+        modMarkers={modMarkers}
       />
       <PRTable records={personalRecords} />
     </div>
