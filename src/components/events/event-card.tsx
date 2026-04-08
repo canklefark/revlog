@@ -29,8 +29,13 @@ export function EventCard({ event }: EventCardProps) {
                 <TypeBadge type={event.type} />
                 <StatusBadge status={event.registrationStatus} />
               </div>
+              {event.organizingBody && (
+                <p className="text-xs text-muted-foreground mt-1.5 truncate">
+                  {event.organizingBody}
+                </p>
+              )}
               {event.venueName && (
-                <div className="flex items-center gap-1 mt-1.5 text-xs text-muted-foreground">
+                <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
                   <MapPinIcon className="size-3 shrink-0" />
                   <span className="truncate">{event.venueName}</span>
                 </div>

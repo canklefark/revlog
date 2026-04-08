@@ -25,14 +25,28 @@ import { BackLink } from "@/components/shared/back-link";
 
 export default async function EventDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ eventId: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const { eventId } = await params;
-  const userId = await requireAuth();
+  const [{ eventId }, sp, userId] = await Promise.all([
+    params,
+    searchParams,
+    requireAuth(),
+  ]);
+  const fromCalendar = sp.from === "calendar";
+  const monthParam =
+    typeof sp.month === "string" && /^\d{4}-\d{2}$/.test(sp.month)
+      ? sp.month
+      : undefined;
+  const backHref = fromCalendar
+    ? `/events/calendar${monthParam ? `?month=${monthParam}` : ""}`
+    : "/events";
+  const backLabel = fromCalendar ? "Calendar" : "Events";
 
   const event = await prisma.event.findUnique({
-    where: { id: eventId },
+    where: { id: eventId, userId },
     include: {
       car: {
         select: {
@@ -54,7 +68,7 @@ export default async function EventDetailPage({
     },
   });
 
-  if (!event || event.userId !== userId) {
+  if (!event) {
     notFound();
   }
 
@@ -66,7 +80,7 @@ export default async function EventDetailPage({
 
   return (
     <div className="w-full">
-      <BackLink href="/events" label="Events" />
+      <BackLink href={backHref} label={backLabel} />
       {/* Header */}
       <div className="flex items-start justify-between gap-4 mb-4">
         <div className="min-w-0">

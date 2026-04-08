@@ -1,6 +1,7 @@
 import { requireAuth } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 import { EventForm } from "@/components/events/event-form";
+import { getVenueOptions } from "@/lib/queries/venues";
 
 export default async function NewEventPage({
   searchParams,
@@ -10,7 +11,7 @@ export default async function NewEventPage({
   const userId = await requireAuth();
   const params = await searchParams;
 
-  const [cars, user] = await Promise.all([
+  const [cars, user, venues] = await Promise.all([
     prisma.car.findMany({
       where: { userId },
       select: { id: true, year: true, make: true, model: true, nickname: true },
@@ -20,6 +21,7 @@ export default async function NewEventPage({
       where: { id: userId },
       select: { defaultEventType: true },
     }),
+    getVenueOptions(userId),
   ]);
 
   let template = null;
@@ -41,6 +43,7 @@ export default async function NewEventPage({
         cars={cars}
         defaultEventType={user?.defaultEventType ?? null}
         template={template ?? undefined}
+        venues={venues}
       />
     </div>
   );

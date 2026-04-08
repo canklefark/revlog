@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
+import { Suspense } from "react";
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import {
   startOfMonth,
@@ -16,6 +16,7 @@ import {
   parseISO,
   startOfDay,
 } from "date-fns";
+import { useCalendarMonth } from "@/hooks/use-calendar-month";
 import { Button } from "@/components/ui/button";
 import { EVENT_TYPE_COLORS } from "@/lib/constants/event-colors";
 import type { EventType } from "@/lib/constants/event-types";
@@ -35,8 +36,8 @@ interface CalendarViewProps {
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
 
-export function CalendarView({ events }: CalendarViewProps) {
-  const [currentMonth, setCurrentMonth] = useState(new Date());
+function CalendarViewInner({ events }: CalendarViewProps) {
+  const { currentMonth, setMonth } = useCalendarMonth();
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
@@ -65,7 +66,7 @@ export function CalendarView({ events }: CalendarViewProps) {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+          onClick={() => setMonth(subMonths(currentMonth, 1))}
           aria-label="Previous month"
         >
           <ChevronLeftIcon className="size-4" />
@@ -76,7 +77,7 @@ export function CalendarView({ events }: CalendarViewProps) {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+          onClick={() => setMonth(addMonths(currentMonth, 1))}
           aria-label="Next month"
         >
           <ChevronRightIcon className="size-4" />
@@ -104,7 +105,7 @@ export function CalendarView({ events }: CalendarViewProps) {
                       return (
                         <Link
                           key={event.id}
-                          href={`/events/${event.id}`}
+                          href={`/events/${event.id}?from=calendar&month=${format(currentMonth, "yyyy-MM")}`}
                           className="flex items-center justify-between w-full rounded-md border border-border px-3 py-2.5 hover:bg-muted/50 transition-colors"
                         >
                           <span className="text-sm font-medium truncate pr-3">
@@ -180,7 +181,7 @@ export function CalendarView({ events }: CalendarViewProps) {
                     return (
                       <Link
                         key={event.id}
-                        href={`/events/${event.id}`}
+                        href={`/events/${event.id}?from=calendar&month=${format(currentMonth, "yyyy-MM")}`}
                         className={`block truncate text-xs px-1 py-0.5 rounded ${
                           colors?.bg ?? "bg-muted"
                         } ${colors?.text ?? "text-foreground"} hover:opacity-80 transition-opacity`}
@@ -216,5 +217,30 @@ export function CalendarView({ events }: CalendarViewProps) {
         })}
       </div>
     </div>
+  );
+}
+
+function CalendarSkeleton() {
+  return (
+    <div className="animate-pulse">
+      <div className="flex items-center justify-between mb-4">
+        <div className="size-9 rounded-md bg-muted" />
+        <div className="h-5 w-32 rounded bg-muted" />
+        <div className="size-9 rounded-md bg-muted" />
+      </div>
+      <div className="grid grid-cols-7 gap-px">
+        {Array.from({ length: 35 }).map((_, i) => (
+          <div key={i} className="min-h-[80px] rounded bg-muted/40" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function CalendarView({ events }: CalendarViewProps) {
+  return (
+    <Suspense fallback={<CalendarSkeleton />}>
+      <CalendarViewInner events={events} />
+    </Suspense>
   );
 }

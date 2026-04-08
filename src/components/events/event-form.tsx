@@ -29,6 +29,10 @@ import {
   type EventActionState,
 } from "@/lib/actions/event";
 import { UrlAutofill } from "@/components/events/url-autofill";
+import {
+  VenueAutocomplete,
+  type VenueOption,
+} from "@/components/events/venue-autocomplete";
 import type { ScrapedEventData } from "@/lib/services/motorsportreg-scraper";
 import type { Car, Event } from "@prisma/client";
 
@@ -37,6 +41,7 @@ interface EventFormProps {
   event?: Event;
   template?: Event;
   defaultEventType?: string | null;
+  venues?: VenueOption[];
 }
 
 type FormValues = {
@@ -65,6 +70,7 @@ export function EventForm({
   event,
   template,
   defaultEventType,
+  venues = [],
 }: EventFormProps) {
   const router = useRouter();
   const isEditing = !!event;
@@ -111,7 +117,7 @@ export function EventForm({
       endTime: event?.endTime ?? "",
       venueName: source?.venueName ?? "",
       address: source?.address ?? "",
-      registrationStatus: "Interested",
+      registrationStatus: source?.registrationStatus ?? "Interested",
       registrationDeadline: event?.registrationDeadline
         ? format(new Date(event.registrationDeadline), "yyyy-MM-dd")
         : "",
@@ -383,10 +389,24 @@ export function EventForm({
 
           <div className="space-y-1.5">
             <Label htmlFor="venueName">Venue name</Label>
-            <Input
-              id="venueName"
-              placeholder="ORP, Mid-Ohio, etc."
-              {...register("venueName")}
+            <Controller
+              name="venueName"
+              control={control}
+              render={({ field }) => (
+                <VenueAutocomplete
+                  id="venueName"
+                  value={field.value}
+                  onChange={field.onChange}
+                  onSelect={(venue) => {
+                    field.onChange(venue.venueName);
+                    if (venue.address != null) {
+                      setValue("address", venue.address);
+                    }
+                  }}
+                  venues={venues}
+                  placeholder="ORP, Mid-Ohio, etc."
+                />
+              )}
             />
           </div>
 

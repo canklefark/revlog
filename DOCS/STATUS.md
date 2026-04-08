@@ -309,25 +309,55 @@ Dokploy VPS with Nixpacks auto-build (not Docker). Set `AUTH_URL` and `AUTH_TRUS
 
 ---
 
+## Phase 7 — Telemetry Import ⏳ NOT STARTED — NO TIMELINE
+
+> **Note:** No lap timing app has a REST API — integration is file upload + parsing only. Do not work on Phase 7 until explicitly decided.
+
+### Tier 1 (MVP) — Lap Time Import
+
+Upload exported session files → parse → auto-create Runs (and Event if no match).
+
+- **Parsers:** VBO (covers all major apps), RaceChrono CSV v3, generic CSV with column mapping
+- **Import flow:** Upload → detect format → preview laps → match/create Event + Car → confirm → bulk-create Runs
+- **Schema changes:** `Run.sectorTimes Float[]`, `Run.importSource String?`
+- Supported sources: RaceChrono, Harry's LapTimer, TrackAddict, VBOX hardware
+
+### Tier 2 — GPS Trace Storage & Track Maps
+
+- New `GpsTrace` model: JSON array of `{t, lat, lon, speed, heading}` per Run
+- GPX parser; extend VBO/CSV parsers to extract GPS columns
+- Track map: driving line color-coded by speed (Leaflet or Mapbox — TBD, see Open Questions)
+- Lap comparison overlay (two laps on same map)
+
+### Tier 3 — OBD2 / Telemetry Channels
+
+- OBD2 channels: RPM, throttle %, coolant temp, engine load
+- Time-series charts (Recharts) synced to track map position
+- Higher storage volume — may require compression or partitioned storage
+
+---
+
 ## Open Questions
 
-| #   | Question                                       | Blocking                                                               |
-| --- | ---------------------------------------------- | ---------------------------------------------------------------------- |
-| 1   | MotorsportReg API availability (authenticated) | Phase 5 (unauthenticated org calendar already integrated in Phase 4.8) |
-| 2   | PWA depth: promote to full offline sync queue? | Phase 5                                                                |
+| #   | Question                                               | Blocking                                                               |
+| --- | ------------------------------------------------------ | ---------------------------------------------------------------------- |
+| 1   | MotorsportReg API availability (authenticated)         | Phase 5 (unauthenticated org calendar already integrated in Phase 4.8) |
+| 2   | PWA depth: promote to full offline sync queue?         | Phase 5                                                                |
+| 3   | Mapping library for GPS track maps (Leaflet vs Mapbox) | Phase 7 Tier 2                                                         |
 
 ---
 
 ## Resolved Decisions
 
-| #   | Question                 | Decision                                                                                 | Phase   |
-| --- | ------------------------ | ---------------------------------------------------------------------------------------- | ------- |
-| 2   | PWA depth                | Basic caching only in Phase 4. Full offline sync queue deferred to Phase 5 as a maybe    | Phase 4 |
-| 3   | Tire log                 | First-class entity — tires get their own section in the app, not maintenance log entries | Phase 3 |
-| 4   | Billing provider         | Lemon Squeezy (merchant of record, simpler for indie/international)                      | Phase 6 |
-| 5   | Paid tier model          | Storage gating only — free users get full app, paid unlocks photo uploads                | Phase 6 |
-| 6   | Video on runs            | Out of scope permanently. Photo upload for car profile only (one image)                  | Phase 5 |
-| 7   | Co-driver / team support | Cut entirely — not needed for target use case                                            | —       |
+| #   | Question                  | Decision                                                                                         | Phase   |
+| --- | ------------------------- | ------------------------------------------------------------------------------------------------ | ------- |
+| 2   | PWA depth                 | Basic caching only in Phase 4. Full offline sync queue deferred to Phase 5 as a maybe            | Phase 4 |
+| 3   | Tire log                  | First-class entity — tires get their own section in the app, not maintenance log entries         | Phase 3 |
+| 4   | Billing provider          | Lemon Squeezy (merchant of record, simpler for indie/international)                              | Phase 6 |
+| 5   | Paid tier model           | Storage gating only — free users get full app, paid unlocks photo uploads                        | Phase 6 |
+| 6   | Video on runs             | Out of scope permanently. Photo upload for car profile only (one image)                          | Phase 5 |
+| 7   | Co-driver / team support  | Cut entirely — not needed for target use case                                                    | —       |
+| 8   | Telemetry import approach | File upload + parsing only — no lap timing app (RaceChrono, Harry's, TrackAddict) has a REST API | Phase 7 |
 
 ---
 
