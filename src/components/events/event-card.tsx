@@ -25,7 +25,7 @@ export function EventCard({ event }: EventCardProps) {
               <p className="text-sm font-semibold text-foreground leading-tight truncate">
                 {event.name}
               </p>
-              <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+              <div className="flex items-center gap-3 mt-1.5 flex-wrap">
                 <TypeBadge type={event.type} />
                 <StatusBadge status={event.registrationStatus} />
               </div>

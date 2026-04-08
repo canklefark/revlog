@@ -85,7 +85,7 @@ export default async function EventDetailPage({
       <div className="flex items-start justify-between gap-4 mb-4">
         <div className="min-w-0">
           <h1 className="text-2xl font-semibold leading-tight">{event.name}</h1>
-          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+          <div className="flex items-center gap-3 mt-1.5 flex-wrap">
             <TypeBadge type={event.type} />
             <StatusBadge status={event.registrationStatus} />
           </div>

@@ -58,7 +58,7 @@ export function EventsTimeline({ events }: EventsTimelineProps) {
                       <p className="text-sm font-semibold text-foreground leading-tight truncate">
                         {event.name}
                       </p>
-                      <div className="mt-1 flex items-center gap-1.5 flex-wrap">
+                      <div className="mt-1 flex items-center gap-3 flex-wrap">
                         <TypeBadge type={event.type} />
                         <StatusBadge status={event.registrationStatus} />
                       </div>
