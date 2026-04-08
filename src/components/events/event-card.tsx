@@ -12,9 +12,9 @@ interface EventCardProps {
 
 export function EventCard({ event }: EventCardProps) {
   return (
-    <Link href={`/events/${event.id}`} className="block group">
-      <Card className="transition-colors hover:bg-accent/50 active:bg-accent">
-        <CardContent className="px-4 py-3">
+    <Link href={`/events/${event.id}`} className="block group h-full">
+      <Card className="transition-colors hover:bg-accent/50 active:bg-accent h-full">
+        <CardContent className="px-4 py-3 h-full">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 flex-wrap mb-1">

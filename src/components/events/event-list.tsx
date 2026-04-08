@@ -81,7 +81,7 @@ export function EventList({ events, total }: EventListProps) {
                   {grouped[type].length}
                 </Badge>
               </div>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 items-stretch">
                 {grouped[type].map((event) => (
                   <EventCard key={event.id} event={event} />
                 ))}
@@ -90,7 +90,7 @@ export function EventList({ events, total }: EventListProps) {
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 items-stretch">
           {events.map((event) => (
             <EventCard key={event.id} event={event} />
           ))}
