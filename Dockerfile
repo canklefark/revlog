@@ -28,6 +28,8 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
+RUN mkdir -p .next/cache && chown -R nextjs:nodejs .next/cache
+
 USER nextjs
 EXPOSE 3000
 ENV PORT=3000

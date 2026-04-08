@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth-utils";
 import { createEventSchema, updateEventSchema } from "@/lib/validations/event";
@@ -154,23 +155,33 @@ export async function createEvent(
       },
     });
 
-    // Sync to Google Calendar if the event is immediately Registered.
+    // Sync to Google Calendar if the event is immediately Registered (non-blocking).
     if (event.registrationStatus === "Registered") {
-      const user = await prisma.user.findUnique({
-        where: { id: userId },
-        select: { timezone: true },
+      const eventId = event.id;
+      const eventType = event.type;
+      after(async () => {
+        try {
+          const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { timezone: true },
+          });
+          const calendarEventId = await createCalendarEvent(
+            userId,
+            toCalendarEventData(event, eventType, user?.timezone ?? "UTC"),
+          );
+          if (calendarEventId) {
+            await prisma.event.update({
+              where: { id: eventId, userId },
+              data: { calendarEventId },
+            });
+          }
+        } catch (err) {
+          console.error(
+            "[calendar-sync] Failed to create calendar event:",
+            err,
+          );
+        }
       });
-      const calendarEventId = await createCalendarEvent(
-        userId,
-        toCalendarEventData(event, event.type, user?.timezone ?? "UTC"),
-      );
-      if (calendarEventId) {
-        await prisma.event.update({
-          where: { id: event.id, userId },
-          data: { calendarEventId },
-        });
-        event.calendarEventId = calendarEventId;
-      }
     }
 
     revalidatePath("/events");
@@ -269,17 +280,28 @@ export async function updateEvent(
       },
     });
 
-    // If the event already has a calendar entry, keep it in sync.
+    // If the event already has a calendar entry, keep it in sync (non-blocking).
     if (event.calendarEventId) {
-      const user = await prisma.user.findUnique({
-        where: { id: userId },
-        select: { timezone: true },
+      const calId = event.calendarEventId;
+      const eventType = event.type;
+      after(async () => {
+        try {
+          const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { timezone: true },
+          });
+          await updateCalendarEvent(
+            userId,
+            calId,
+            toCalendarEventData(event, eventType, user?.timezone ?? "UTC"),
+          );
+        } catch (err) {
+          console.error(
+            "[calendar-sync] Failed to update calendar event:",
+            err,
+          );
+        }
       });
-      await updateCalendarEvent(
-        userId,
-        event.calendarEventId,
-        toCalendarEventData(event, event.type, user?.timezone ?? "UTC"),
-      );
     }
 
     revalidatePath("/events");
@@ -306,9 +328,16 @@ export async function deleteEvent(
     return { error: "Event not found." };
   }
 
-  // Remove from Google Calendar before deleting from DB.
+  // Capture calendar ID before deleting from DB, then remove from Google Calendar (non-blocking).
   if (existing.calendarEventId) {
-    await deleteCalendarEvent(userId, existing.calendarEventId);
+    const calId = existing.calendarEventId;
+    after(async () => {
+      try {
+        await deleteCalendarEvent(userId, calId);
+      } catch (err) {
+        console.error("[calendar-sync] Failed to delete calendar event:", err);
+      }
+    });
   }
 
   try {
@@ -358,30 +387,50 @@ export async function updateEventStatus(
       data: { registrationStatus: status },
     });
 
-    // Calendar sync: create on Registered (if not yet synced), delete on Skipped.
+    // Calendar sync: create on Registered (if not yet synced), delete on Skipped (non-blocking).
     if (status === "Registered" && !existing.calendarEventId) {
-      const user = await prisma.user.findUnique({
-        where: { id: userId },
-        select: { timezone: true },
+      const persistedEventId = event.id;
+      const eventType = event.type;
+      after(async () => {
+        try {
+          const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { timezone: true },
+          });
+          const calendarEventId = await createCalendarEvent(
+            userId,
+            toCalendarEventData(event, eventType, user?.timezone ?? "UTC"),
+          );
+          if (calendarEventId) {
+            await prisma.event.update({
+              where: { id: persistedEventId, userId },
+              data: { calendarEventId },
+            });
+          }
+        } catch (err) {
+          console.error(
+            "[calendar-sync] Failed to create calendar event:",
+            err,
+          );
+        }
       });
-      const calendarEventId = await createCalendarEvent(
-        userId,
-        toCalendarEventData(event, event.type, user?.timezone ?? "UTC"),
-      );
-      if (calendarEventId) {
-        await prisma.event.update({
-          where: { id: event.id, userId },
-          data: { calendarEventId },
-        });
-        event.calendarEventId = calendarEventId;
-      }
     } else if (status === "Skipped" && existing.calendarEventId) {
-      await deleteCalendarEvent(userId, existing.calendarEventId);
-      await prisma.event.update({
-        where: { id: event.id, userId },
-        data: { calendarEventId: null },
+      const calId = existing.calendarEventId;
+      const persistedEventId = event.id;
+      after(async () => {
+        try {
+          await deleteCalendarEvent(userId, calId);
+          await prisma.event.update({
+            where: { id: persistedEventId, userId },
+            data: { calendarEventId: null },
+          });
+        } catch (err) {
+          console.error(
+            "[calendar-sync] Failed to delete calendar event:",
+            err,
+          );
+        }
       });
-      event.calendarEventId = null;
     }
 
     revalidatePath("/events");
