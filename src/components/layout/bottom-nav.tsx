@@ -35,7 +35,7 @@ export function BottomNav({ className }: BottomNavProps) {
             )}
             aria-current={isActive ? "page" : undefined}
           >
-            <div className="relative flex flex-col items-center justify-center gap-1 w-full">
+            <div className="relative flex flex-col items-center justify-center gap-1 w-full pt-2">
               <span
                 className={cn(
                   "absolute top-0 left-1/2 -translate-x-1/2 h-0.5 w-8 rounded-full bg-primary transition-opacity",
