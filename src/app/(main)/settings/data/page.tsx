@@ -6,7 +6,7 @@ export default async function DataManagementPage() {
   await requireAuth();
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div>
       <BackLink href="/settings" label="Settings" />
       <h1 className="mb-6 text-2xl font-semibold">Data Management</h1>
 

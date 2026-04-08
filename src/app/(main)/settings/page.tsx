@@ -45,7 +45,7 @@ export default async function SettingsPage() {
   await requireAuth();
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div>
       <h1 className="mb-6 text-2xl font-semibold">Settings</h1>
       <div className="flex flex-col gap-3">
         {settingsSections.map(({ href, Icon, title, description }) => (

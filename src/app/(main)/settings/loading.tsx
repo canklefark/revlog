@@ -3,7 +3,7 @@ import { Card, CardHeader } from "@/components/ui/card";
 
 export default function SettingsLoading() {
   return (
-    <div className="mx-auto max-w-2xl">
+    <div>
       <Skeleton className="mb-6 h-8 w-28" />
       <div className="flex flex-col gap-3">
         {Array.from({ length: 5 }).map((_, i) => (

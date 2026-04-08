@@ -28,7 +28,7 @@ export default async function CalendarSettingsPage() {
   const calendars = isGoogleConnected ? await listUserCalendars(userId) : [];
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div>
       <BackLink href="/settings" label="Settings" />
       <h1 className="mb-2 text-2xl font-semibold">Calendar Sync</h1>
       <p className="mb-6 text-sm text-muted-foreground">

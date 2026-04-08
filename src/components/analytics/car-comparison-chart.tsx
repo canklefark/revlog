@@ -12,18 +12,14 @@ import {
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatLapTime } from "@/lib/utils/penalty-calc";
+import {
+  CHART_COLORS,
+  AXIS_STYLE,
+  GRID_COLOR,
+  TOOLTIP_STYLE,
+  LEGEND_STYLE,
+} from "./chart-theme";
 import type { CarComparisonSeries } from "@/types/analytics";
-
-const CHART_COLORS = [
-  "#3b82f6",
-  "#f97316",
-  "#22c55e",
-  "#a855f7",
-  "#ec4899",
-  "#14b8a6",
-];
-const AXIS_COLOR = "hsl(var(--muted-foreground))";
-const GRID_COLOR = "hsl(var(--border))";
 
 const RATING_CLASSES: Record<string, string> = {
   Excellent: "bg-green-500/20 text-green-400",
@@ -54,25 +50,20 @@ export function CarComparisonChart({ data }: CarComparisonChartProps) {
         <ResponsiveContainer width="100%" height={250}>
           <BarChart data={barData}>
             <CartesianGrid strokeDasharray="3 3" stroke={GRID_COLOR} />
-            <XAxis dataKey="car" stroke={AXIS_COLOR} tick={{ fontSize: 11 }} />
+            <XAxis dataKey="car" stroke={GRID_COLOR} tick={AXIS_STYLE} />
             <YAxis
               tickFormatter={(v: number) => formatLapTime(v)}
-              stroke={AXIS_COLOR}
-              tick={{ fontSize: 11 }}
+              stroke={GRID_COLOR}
+              tick={AXIS_STYLE}
               width={60}
             />
             <Tooltip
               formatter={(v) =>
                 typeof v === "number" ? formatLapTime(v) : String(v)
               }
-              contentStyle={{
-                backgroundColor: "hsl(var(--popover))",
-                border: "1px solid hsl(var(--border))",
-                borderRadius: 6,
-                fontSize: 12,
-              }}
+              contentStyle={TOOLTIP_STYLE}
             />
-            <Legend />
+            <Legend wrapperStyle={LEGEND_STYLE} />
             <Bar
               dataKey="Best Time"
               fill={CHART_COLORS[0]}

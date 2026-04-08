@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useMemo } from "react";
 import { format } from "date-fns";
 import {
   LineChart,
@@ -13,19 +14,16 @@ import {
   ReferenceLine,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import { formatLapTime } from "@/lib/utils/penalty-calc";
+import {
+  CHART_COLORS,
+  AXIS_STYLE,
+  GRID_COLOR,
+  TOOLTIP_STYLE,
+  LEGEND_STYLE,
+} from "./chart-theme";
 import type { ProgressDataPoint, ModMarker } from "@/types/analytics";
-
-const CHART_COLORS = [
-  "#3b82f6",
-  "#f97316",
-  "#22c55e",
-  "#a855f7",
-  "#ec4899",
-  "#14b8a6",
-];
-const AXIS_COLOR = "hsl(var(--muted-foreground))";
-const GRID_COLOR = "hsl(var(--border))";
 
 type ChartRow = Record<string, string | number>;
 
@@ -35,105 +33,167 @@ interface ProgressChartProps {
 }
 
 export function ProgressChart({ data, modMarkers }: ProgressChartProps) {
-  if (data.length === 0) return null;
-
-  // Collect all unique car labels in order of first appearance
-  const carLabels: string[] = [];
-  const seen = new Set<string>();
-  for (const point of data) {
-    if (!seen.has(point.carLabel)) {
-      carLabels.push(point.carLabel);
-      seen.add(point.carLabel);
+  // Unique event types present in data, preserving first-seen order
+  const eventTypes = useMemo(() => {
+    const seen = new Set<string>();
+    const types: string[] = [];
+    for (const d of data) {
+      if (!seen.has(d.eventType)) {
+        seen.add(d.eventType);
+        types.push(d.eventType);
+      }
     }
-  }
+    return types;
+  }, [data]);
 
-  // Build a map keyed by ISO date string → row object
-  const rowMap = new Map<string, ChartRow>();
-  for (const point of data) {
-    const dateKey =
-      point.startDate instanceof Date
-        ? point.startDate.toISOString()
-        : new Date(point.startDate).toISOString();
+  const [selectedType, setSelectedType] = useState<string>(
+    () => eventTypes[0] ?? "",
+  );
 
-    const existing = rowMap.get(dateKey) ?? { eventDate: dateKey };
-    existing[point.carLabel] = point.bestAdjustedTime;
-    rowMap.set(dateKey, existing);
-  }
+  // Keep selected type valid if data changes
+  const activeType = eventTypes.includes(selectedType)
+    ? selectedType
+    : (eventTypes[0] ?? "");
 
-  // Sort rows by date ascending
-  const chartData = Array.from(rowMap.values()).sort((a, b) => {
-    return (
-      new Date(a.eventDate as string).getTime() -
-      new Date(b.eventDate as string).getTime()
+  const filtered = useMemo(
+    () => data.filter((d) => d.eventType === activeType),
+    [data, activeType],
+  );
+
+  // Collect car labels in first-seen order for the filtered set
+  const carLabels = useMemo(() => {
+    const seen = new Set<string>();
+    const labels: string[] = [];
+    for (const d of filtered) {
+      if (!seen.has(d.carLabel)) {
+        seen.add(d.carLabel);
+        labels.push(d.carLabel);
+      }
+    }
+    return labels;
+  }, [filtered]);
+
+  // Build chart rows keyed by ISO date
+  const chartData = useMemo(() => {
+    const rowMap = new Map<string, ChartRow>();
+    for (const point of filtered) {
+      const dateKey =
+        point.startDate instanceof Date
+          ? point.startDate.toISOString()
+          : new Date(point.startDate).toISOString();
+      const existing = rowMap.get(dateKey) ?? { eventDate: dateKey };
+      existing[point.carLabel] = point.bestAdjustedTime;
+      rowMap.set(dateKey, existing);
+    }
+    return Array.from(rowMap.values()).sort(
+      (a, b) =>
+        new Date(a.eventDate as string).getTime() -
+        new Date(b.eventDate as string).getTime(),
     );
-  });
+  }, [filtered]);
+
+  const relevantMarkers = useMemo(() => {
+    const labelSet = new Set(carLabels);
+    return (modMarkers ?? []).filter((m) => labelSet.has(m.carLabel));
+  }, [modMarkers, carLabels]);
+
+  if (data.length === 0) return null;
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Progress Over Time</CardTitle>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <CardTitle>Best Times</CardTitle>
+          {eventTypes.length > 1 && (
+            <div className="flex flex-wrap gap-1.5">
+              {eventTypes.map((type) => (
+                <button
+                  key={type}
+                  onClick={() => setSelectedType(type)}
+                  className={cn(
+                    "rounded-full px-3 py-1 text-xs font-medium transition-colors",
+                    activeType === type
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {type}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" stroke={GRID_COLOR} />
-            <XAxis
-              dataKey="eventDate"
-              tickFormatter={(d: string) => format(new Date(d), "MMM d")}
-              stroke={AXIS_COLOR}
-              tick={{ fontSize: 11 }}
-              interval="preserveStartEnd"
-            />
-            <YAxis
-              tickFormatter={(v: number) => formatLapTime(v)}
-              stroke={AXIS_COLOR}
-              tick={{ fontSize: 11 }}
-              width={60}
-              domain={["dataMin - 2", "dataMax + 2"]}
-            />
-            <Tooltip
-              formatter={(v) =>
-                typeof v === "number" ? [formatLapTime(v), ""] : [String(v), ""]
-              }
-              labelFormatter={(l) =>
-                typeof l === "string" ? format(new Date(l), "MMM d, yyyy") : ""
-              }
-              contentStyle={{
-                backgroundColor: "hsl(var(--popover))",
-                border: "1px solid hsl(var(--border))",
-                borderRadius: 6,
-                fontSize: 12,
-              }}
-            />
-            <Legend />
-            {carLabels.map((label, i) => (
-              <Line
-                key={label}
-                type="monotone"
-                dataKey={label}
-                stroke={CHART_COLORS[i % CHART_COLORS.length]}
-                dot={{ r: 3 }}
-                connectNulls
+        {chartData.length < 2 ? (
+          <p className="py-8 text-center text-sm text-muted-foreground">
+            {chartData.length === 0
+              ? `No ${activeType} runs logged yet.`
+              : `Only one ${activeType} event logged — add more to see trends.`}
+          </p>
+        ) : (
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" stroke={GRID_COLOR} />
+              <XAxis
+                dataKey="eventDate"
+                tickFormatter={(d: string) => format(new Date(d), "MMM d")}
+                stroke={GRID_COLOR}
+                tick={AXIS_STYLE}
+                interval="preserveStartEnd"
               />
-            ))}
-            {(modMarkers ?? []).map((marker, i) => (
-              <ReferenceLine
-                key={i}
-                x={marker.date}
-                stroke="#ef4444"
-                strokeDasharray="3 3"
-                strokeOpacity={0.7}
-                label={{
-                  value: marker.label,
-                  position: "top",
-                  fontSize: 9,
-                  fill: "#ef4444",
-                  opacity: 0.8,
-                }}
+              <YAxis
+                tickFormatter={(v: number) => formatLapTime(v)}
+                stroke={GRID_COLOR}
+                tick={AXIS_STYLE}
+                width={60}
+                domain={["dataMin - 2", "dataMax + 2"]}
               />
-            ))}
-          </LineChart>
-        </ResponsiveContainer>
+              <Tooltip
+                formatter={(v) =>
+                  typeof v === "number"
+                    ? [formatLapTime(v), ""]
+                    : [String(v), ""]
+                }
+                labelFormatter={(l) =>
+                  typeof l === "string"
+                    ? format(new Date(l), "MMM d, yyyy")
+                    : ""
+                }
+                contentStyle={TOOLTIP_STYLE}
+              />
+              <Legend wrapperStyle={LEGEND_STYLE} />
+              {carLabels.map((label, i) => (
+                <Line
+                  key={label}
+                  type="monotone"
+                  dataKey={label}
+                  stroke={CHART_COLORS[i % CHART_COLORS.length]}
+                  strokeWidth={2}
+                  dot={{ r: 4 }}
+                  activeDot={{ r: 5 }}
+                  connectNulls
+                />
+              ))}
+              {relevantMarkers.map((marker, i) => (
+                <ReferenceLine
+                  key={i}
+                  x={marker.date}
+                  stroke="#ef4444"
+                  strokeDasharray="3 3"
+                  strokeOpacity={0.7}
+                  label={{
+                    value: marker.label,
+                    position: "top",
+                    fontSize: 9,
+                    fill: "#ef4444",
+                    opacity: 0.8,
+                  }}
+                />
+              ))}
+            </LineChart>
+          </ResponsiveContainer>
+        )}
       </CardContent>
     </Card>
   );

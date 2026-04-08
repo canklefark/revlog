@@ -12,18 +12,14 @@ import {
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatLapTime } from "@/lib/utils/penalty-calc";
+import {
+  CHART_COLORS,
+  AXIS_STYLE,
+  GRID_COLOR,
+  TOOLTIP_STYLE,
+  LEGEND_STYLE,
+} from "./chart-theme";
 import type { ConditionStats } from "@/types/analytics";
-
-const CHART_COLORS = [
-  "#3b82f6",
-  "#f97316",
-  "#22c55e",
-  "#a855f7",
-  "#ec4899",
-  "#14b8a6",
-];
-const AXIS_COLOR = "hsl(var(--muted-foreground))";
-const GRID_COLOR = "hsl(var(--border))";
 
 interface ConditionsChartProps {
   data: ConditionStats[];
@@ -60,28 +56,23 @@ export function ConditionsChart({ data }: ConditionsChartProps) {
             <XAxis
               type="number"
               tickFormatter={(v: number) => formatLapTime(v)}
-              stroke={AXIS_COLOR}
-              tick={{ fontSize: 10 }}
+              stroke={GRID_COLOR}
+              tick={{ ...AXIS_STYLE, fontSize: 10 }}
             />
             <YAxis
               type="category"
               dataKey="condition"
-              stroke={AXIS_COLOR}
-              tick={{ fontSize: 11 }}
+              stroke={GRID_COLOR}
+              tick={AXIS_STYLE}
               width={50}
             />
             <Tooltip
               formatter={(v) =>
                 typeof v === "number" ? formatLapTime(v) : String(v)
               }
-              contentStyle={{
-                backgroundColor: "hsl(var(--popover))",
-                border: "1px solid hsl(var(--border))",
-                borderRadius: 6,
-                fontSize: 12,
-              }}
+              contentStyle={TOOLTIP_STYLE}
             />
-            <Legend />
+            <Legend wrapperStyle={LEGEND_STYLE} />
             <Bar
               dataKey="bestTime"
               name="Best"

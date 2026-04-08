@@ -22,7 +22,7 @@ export default async function MainLayout({
       <div className="flex flex-1 flex-col">
         <AppHeader user={user} />
         <main className="flex-1 overflow-y-auto p-4 pb-20 md:p-6 md:pb-6">
-          {children}
+          <div className="max-w-4xl mx-auto w-full">{children}</div>
         </main>
       </div>
       <BottomNav className="md:hidden" />
