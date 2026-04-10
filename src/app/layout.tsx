@@ -20,6 +20,7 @@ export const metadata: Metadata = {
   description: "Motorsport life organizer",
   manifest: "/manifest.webmanifest",
   icons: {
+    icon: "/favicon.jpg",
     apple: "/icon-192.png",
   },
   appleWebApp: {
