@@ -2,7 +2,6 @@
 
 import { useActionState, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { PlusIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -23,31 +22,47 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { createPart, type PartActionState } from "@/lib/actions/part";
+import { updatePart, type PartActionState } from "@/lib/actions/part";
 import { MOD_CATEGORIES } from "@/lib/constants/mod-categories";
+import type { PartWithCar } from "@/lib/queries/parts";
 
-interface AddPartModalProps {
+interface EditPartModalProps {
+  part: PartWithCar;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  carId: string;
 }
 
 const initialState: PartActionState = {};
 
-export function AddPartModal({ open, onOpenChange, carId }: AddPartModalProps) {
+function toDateInput(date: Date | string | null | undefined): string {
+  if (!date) return "";
+  return new Date(date).toISOString().split("T")[0];
+}
+
+export function EditPartModal({
+  part,
+  open,
+  onOpenChange,
+}: EditPartModalProps) {
   const [state, formAction, isPending] = useActionState(
-    createPart,
+    updatePart,
     initialState,
   );
-  const [isWishlist, setIsWishlist] = useState(false);
-  const [category, setCategory] = useState("none");
+  const [isWishlist, setIsWishlist] = useState(part.status === "wishlist");
+  const [category, setCategory] = useState(part.category ?? "none");
+
+  // Reset local state when the modal opens with a (potentially different) part
+  useEffect(() => {
+    if (open) {
+      setIsWishlist(part.status === "wishlist");
+      setCategory(part.category ?? "none");
+    }
+  }, [open, part.status, part.category]);
 
   useEffect(() => {
     if (state.data && state.data !== true) {
-      toast.success("Part added to inventory");
+      toast.success("Part updated");
       onOpenChange(false);
-      setIsWishlist(false);
-      setCategory("none");
     }
     if (state.error) toast.error(state.error);
   }, [state, onOpenChange]);
@@ -56,18 +71,24 @@ export function AddPartModal({ open, onOpenChange, carId }: AddPartModalProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add Part</DialogTitle>
+          <DialogTitle>Edit Part</DialogTitle>
           <DialogDescription>
-            Add a new part to your inventory.
+            Update the details for this part.
           </DialogDescription>
         </DialogHeader>
 
         <form action={formAction} className="space-y-4">
-          <input type="hidden" name="carId" value={carId} />
+          <input type="hidden" name="partId" value={part.id} />
           <input
             type="hidden"
             name="status"
-            value={isWishlist ? "wishlist" : "stock"}
+            value={
+              isWishlist
+                ? "wishlist"
+                : part.status === "wishlist"
+                  ? "stock"
+                  : part.status
+            }
           />
           <input
             type="hidden"
@@ -78,12 +99,13 @@ export function AddPartModal({ open, onOpenChange, carId }: AddPartModalProps) {
           <div className="grid grid-cols-2 gap-4">
             {/* Part Name */}
             <div className="col-span-2 space-y-1.5">
-              <Label htmlFor="part-name">
+              <Label htmlFor="edit-name">
                 Part Name <span className="text-destructive">*</span>
               </Label>
               <Input
-                id="part-name"
+                id="edit-name"
                 name="name"
+                defaultValue={part.name}
                 placeholder="Part name"
                 required
               />
@@ -96,20 +118,22 @@ export function AddPartModal({ open, onOpenChange, carId }: AddPartModalProps) {
 
             {/* Manufacturer */}
             <div className="space-y-1.5">
-              <Label htmlFor="manufacturer">Manufacturer</Label>
+              <Label htmlFor="edit-manufacturer">Manufacturer</Label>
               <Input
-                id="manufacturer"
+                id="edit-manufacturer"
                 name="manufacturer"
+                defaultValue={part.manufacturer ?? ""}
                 placeholder="Brand"
               />
             </div>
 
             {/* Part Number */}
             <div className="space-y-1.5">
-              <Label htmlFor="part-number">Part Number</Label>
+              <Label htmlFor="edit-part-number">Part Number</Label>
               <Input
-                id="part-number"
+                id="edit-part-number"
                 name="partNumber"
+                defaultValue={part.partNumber ?? ""}
                 placeholder="OEM or aftermarket number"
               />
             </div>
@@ -119,7 +143,7 @@ export function AddPartModal({ open, onOpenChange, carId }: AddPartModalProps) {
               <Label>Category</Label>
               <Select value={category} onValueChange={setCategory}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a category" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">No category</SelectItem>
@@ -134,11 +158,12 @@ export function AddPartModal({ open, onOpenChange, carId }: AddPartModalProps) {
 
             {/* Product Link */}
             <div className="space-y-1.5">
-              <Label htmlFor="product-link">Product Link</Label>
+              <Label htmlFor="edit-product-link">Product Link</Label>
               <Input
-                id="product-link"
+                id="edit-product-link"
                 name="productLink"
                 type="url"
+                defaultValue={part.productLink ?? ""}
                 placeholder="https://"
               />
               {state.fieldErrors?.productLink && (
@@ -150,10 +175,11 @@ export function AddPartModal({ open, onOpenChange, carId }: AddPartModalProps) {
 
             {/* Description */}
             <div className="col-span-2 space-y-1.5">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="edit-description">Description</Label>
               <Textarea
-                id="description"
+                id="edit-description"
                 name="description"
+                defaultValue={part.description ?? ""}
                 placeholder="What this part does or why you want it..."
                 rows={2}
               />
@@ -162,26 +188,23 @@ export function AddPartModal({ open, onOpenChange, carId }: AddPartModalProps) {
 
           <Separator />
 
-          {/* Purchase Information */}
           <div className="space-y-4">
-            <p className="text-sm font-medium">
-              Purchase Information (Optional)
-            </p>
+            <p className="text-sm font-medium">Purchase Information</p>
 
             {/* Wishlist toggle */}
             <div className="flex items-start gap-3 rounded-lg border border-border bg-muted/40 p-3">
               <Switch
-                id="wishlist-toggle"
+                id="edit-wishlist-toggle"
                 checked={isWishlist}
                 onCheckedChange={setIsWishlist}
                 className="mt-0.5 shrink-0"
               />
               <div>
                 <Label
-                  htmlFor="wishlist-toggle"
+                  htmlFor="edit-wishlist-toggle"
                   className="cursor-pointer font-medium text-sm"
                 >
-                  Add as wish-list item
+                  Wish-list item
                 </Label>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   Not yet purchased — stays in your wish list until bought.
@@ -192,18 +215,18 @@ export function AddPartModal({ open, onOpenChange, carId }: AddPartModalProps) {
             <div className="grid grid-cols-2 gap-4">
               {/* Price */}
               <div className="space-y-1.5">
-                <Label htmlFor="price">Price</Label>
+                <Label htmlFor="edit-price">Price</Label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
                     $
                   </span>
                   <Input
-                    id="price"
+                    id="edit-price"
                     name="price"
                     type="number"
                     step="0.01"
                     min="0"
-                    defaultValue="0.00"
+                    defaultValue={part.price ?? 0}
                     className="pl-6"
                   />
                 </div>
@@ -211,39 +234,46 @@ export function AddPartModal({ open, onOpenChange, carId }: AddPartModalProps) {
 
               {/* Purchase Date */}
               <div className="space-y-1.5">
-                <Label htmlFor="purchase-date">Purchase Date</Label>
-                <Input id="purchase-date" name="purchaseDate" type="date" />
+                <Label htmlFor="edit-purchase-date">Purchase Date</Label>
+                <Input
+                  id="edit-purchase-date"
+                  name="purchaseDate"
+                  type="date"
+                  defaultValue={toDateInput(part.purchaseDate)}
+                />
               </div>
 
               {/* Vendor */}
               <div className="space-y-1.5">
-                <Label htmlFor="vendor">Vendor</Label>
+                <Label htmlFor="edit-vendor">Vendor</Label>
                 <Input
-                  id="vendor"
+                  id="edit-vendor"
                   name="vendor"
+                  defaultValue={part.vendor ?? ""}
                   placeholder="Where you bought it"
                 />
               </div>
 
               {/* Quantity */}
               <div className="space-y-1.5">
-                <Label htmlFor="quantity">Quantity</Label>
+                <Label htmlFor="edit-quantity">Quantity</Label>
                 <Input
-                  id="quantity"
+                  id="edit-quantity"
                   name="quantity"
                   type="number"
                   min="1"
-                  defaultValue="1"
+                  defaultValue={part.quantity}
                 />
               </div>
             </div>
 
             {/* Notes */}
             <div className="space-y-1.5">
-              <Label htmlFor="notes">Notes</Label>
+              <Label htmlFor="edit-notes">Notes</Label>
               <Textarea
-                id="notes"
+                id="edit-notes"
                 name="notes"
+                defaultValue={part.notes ?? ""}
                 placeholder="Condition, fitment notes, install tips..."
                 rows={2}
               />
@@ -260,8 +290,7 @@ export function AddPartModal({ open, onOpenChange, carId }: AddPartModalProps) {
               Cancel
             </Button>
             <Button type="submit" disabled={isPending}>
-              <PlusIcon className="size-4 mr-1" />
-              {isPending ? "Adding..." : "Add Part"}
+              {isPending ? "Saving..." : "Save Changes"}
             </Button>
           </div>
         </form>

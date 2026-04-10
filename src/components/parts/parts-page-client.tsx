@@ -2,7 +2,7 @@
 
 import { useState, useActionState, useEffect } from "react";
 import { toast } from "sonner";
-import { DownloadIcon, PlusIcon, SearchIcon, SparklesIcon } from "lucide-react";
+import { PencilIcon, PlusIcon, SearchIcon, Trash2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { AddPartModal } from "./add-part-modal";
+import { EditPartModal } from "./edit-part-modal";
 import type { PartWithCar } from "@/lib/queries/parts";
 import {
   PART_STATUS_LABELS,
@@ -68,59 +69,74 @@ function formatCurrency(value: number | null | undefined): string {
 const deleteInitial: PartActionState = {};
 const statusInitial: PartActionState = {};
 
-function DeletePartDialog({
-  partId,
-  partName,
-}: {
-  partId: string;
-  partName: string;
-}) {
-  const [open, setOpen] = useState(false);
-  const [state, formAction, isPending] = useActionState(
+function RowActions({ part }: { part: PartWithCar }) {
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteState, deleteFormAction, deleteIsPending] = useActionState(
     deletePart,
     deleteInitial,
   );
 
   useEffect(() => {
-    if (state.data) {
+    if (deleteState.data) {
       toast.success("Part deleted");
-      setOpen(false);
+      setDeleteOpen(false);
     }
-    if (state.error) toast.error(state.error);
-  }, [state]);
+    if (deleteState.error) toast.error(deleteState.error);
+  }, [deleteState]);
 
   return (
-    <>
-      <button
+    <div className="flex items-center justify-end gap-0.5">
+      <Button
         type="button"
-        onClick={() => setOpen(true)}
-        className="text-xs text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
+        variant="ghost"
+        size="icon"
+        className="h-7 w-7 text-muted-foreground hover:text-foreground"
+        onClick={() => setEditOpen(true)}
+        aria-label="Edit part"
       >
-        Delete
-      </button>
-      <Dialog open={open} onOpenChange={setOpen}>
+        <PencilIcon className="size-3.5" />
+      </Button>
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        className="h-7 w-7 text-muted-foreground hover:text-destructive"
+        onClick={() => setDeleteOpen(true)}
+        aria-label="Delete part"
+      >
+        <Trash2Icon className="size-3.5" />
+      </Button>
+
+      <EditPartModal part={part} open={editOpen} onOpenChange={setEditOpen} />
+
+      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete &ldquo;{partName}&rdquo;?</DialogTitle>
+            <DialogTitle>Delete &ldquo;{part.name}&rdquo;?</DialogTitle>
             <DialogDescription>
               This will permanently remove this part from your inventory. This
               cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>
+            <Button variant="outline" onClick={() => setDeleteOpen(false)}>
               Cancel
             </Button>
-            <form action={formAction}>
-              <input type="hidden" name="partId" value={partId} />
-              <Button type="submit" variant="destructive" disabled={isPending}>
-                {isPending ? "Deleting..." : "Delete"}
+            <form action={deleteFormAction}>
+              <input type="hidden" name="partId" value={part.id} />
+              <Button
+                type="submit"
+                variant="destructive"
+                disabled={deleteIsPending}
+              >
+                {deleteIsPending ? "Deleting..." : "Delete"}
               </Button>
             </form>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </>
+    </div>
   );
 }
 
@@ -212,14 +228,6 @@ export function PartsPageClient({ parts, carId }: PartsPageClientProps) {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-semibold">Parts Inventory</h1>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" disabled>
-            <DownloadIcon className="size-3.5 mr-1.5" />
-            Export
-          </Button>
-          <Button variant="outline" size="sm" disabled>
-            <SparklesIcon className="size-3.5 mr-1.5" />
-            Upload
-          </Button>
           <Button size="sm" onClick={() => setAddModalOpen(true)}>
             <PlusIcon className="size-3.5 mr-1.5" />
             Add Part
@@ -323,13 +331,14 @@ export function PartsPageClient({ parts, carId }: PartsPageClientProps) {
               <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Qty
               </th>
+              <th className="w-20" />
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
               <tr>
                 <td
-                  colSpan={6}
+                  colSpan={7}
                   className="px-4 py-16 text-center text-muted-foreground"
                 >
                   {parts.length === 0 ? (
@@ -393,13 +402,11 @@ export function PartsPageClient({ parts, carId }: PartsPageClientProps) {
                   <td className="px-4 py-3 text-right text-muted-foreground">
                     {formatCurrency(part.price)}
                   </td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex items-center justify-end gap-3">
-                      <span className="text-muted-foreground">
-                        {part.quantity}
-                      </span>
-                      <DeletePartDialog partId={part.id} partName={part.name} />
-                    </div>
+                  <td className="px-4 py-3 text-right text-muted-foreground">
+                    {part.quantity}
+                  </td>
+                  <td className="px-2 py-3">
+                    <RowActions part={part} />
                   </td>
                 </tr>
               ))
