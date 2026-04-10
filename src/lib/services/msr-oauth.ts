@@ -110,13 +110,18 @@ export async function getRequestToken(
       method: "POST",
       headers: {
         ...authHeader,
-        "Content-Type": "application/x-www-form-urlencoded",
       },
-      body: `oauth_callback=${encodeURIComponent(callbackUrl)}`,
       signal: AbortSignal.timeout(10000),
     });
 
-    if (!res.ok) return null;
+    if (!res.ok) {
+      const errBody = await res.text().catch(() => "");
+      console.error(
+        `[msr-oauth] request token failed: ${res.status} ${res.statusText}`,
+        errBody,
+      );
+      return null;
+    }
 
     const body = await res.text();
     const parsed = parseFormEncoded(body);
