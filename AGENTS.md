@@ -41,6 +41,7 @@ Current status and phase tracking: `DOCS/STATUS.md` — **update this file after
 - Use `proxy.ts` not `middleware.ts` — middleware is deprecated in Next.js 16
 - Use `useActionState` from `react` — never `useFormState` from `react-dom` (deprecated)
 - Google Maps and Calendar are env-gated — check for credentials before calling, fail silently with a no-op if missing
+- Before implementing any MSR API feature, read `DOCS/motorsportreg-api.md` — pay attention to which auth method each endpoint requires (OAuth vs. Basic Auth) and whether `X-Organization-Id` is needed
 - After completing a major feature or workstream, commit and push to git
 - Commit message format: conventional commits — `feat:`, `fix:`, `chore:`, `docs:`, `refactor:`
 - Example: `feat: add modifications log with category grouping and cost totals`

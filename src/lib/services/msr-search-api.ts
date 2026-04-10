@@ -129,6 +129,10 @@ export async function searchMsrCalendars(
   // /rest/calendars requires X-Organization-Id even with OAuth.
   // Fetch the user's first org membership to satisfy this requirement.
   const profile = await fetchMyProfile(userId);
+  console.log(
+    `[msr-search] profile orgs raw:`,
+    JSON.stringify(profile?.orgs).slice(0, 500),
+  );
   const orgId = profile?.orgs[0]?.id;
   const extraHeaders: Record<string, string> = orgId
     ? { "X-Organization-Id": orgId }
