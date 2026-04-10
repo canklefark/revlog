@@ -1,6 +1,15 @@
 import { requireAuth } from "@/lib/auth-utils";
+import { isCurrentUserAdmin } from "@/lib/admin";
 import Link from "next/link";
-import { User, Palette, CalendarSync, Gauge, Database } from "lucide-react";
+import {
+  User,
+  Palette,
+  CalendarSync,
+  Gauge,
+  Database,
+  Plug,
+  ShieldCheck,
+} from "lucide-react";
 import {
   Card,
   CardDescription,
@@ -28,6 +37,12 @@ const settingsSections = [
     description: "Connect Google Calendar to sync your registered events.",
   },
   {
+    href: "/settings/integrations",
+    Icon: Plug,
+    title: "Integrations",
+    description: "Connect MotorsportReg and other third-party services.",
+  },
+  {
     href: "/settings/penalties",
     Icon: Gauge,
     title: "Penalty Defaults",
@@ -41,14 +56,26 @@ const settingsSections = [
   },
 ] as const;
 
+const adminSections = [
+  {
+    href: "/settings/whitelist",
+    Icon: ShieldCheck,
+    title: "Registration Whitelist",
+    description: "Allow specific emails to register when sign-up is closed.",
+  },
+] as const;
+
 export default async function SettingsPage() {
   await requireAuth();
+  const isAdmin = await isCurrentUserAdmin();
+
+  const allSections = [...settingsSections, ...(isAdmin ? adminSections : [])];
 
   return (
     <div>
       <h1 className="mb-6 text-2xl font-semibold">Settings</h1>
       <div className="flex flex-col gap-3">
-        {settingsSections.map(({ href, Icon, title, description }) => (
+        {allSections.map(({ href, Icon, title, description }) => (
           <Link key={href} href={href} className="block">
             <Card className="transition-colors hover:bg-accent/50">
               <CardHeader className="flex flex-row items-center gap-4 space-y-0 py-4">

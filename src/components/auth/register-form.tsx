@@ -9,7 +9,11 @@ import { registerAction, type AuthActionState } from "@/lib/actions/auth";
 
 const initialState: AuthActionState = {};
 
-export function RegisterForm() {
+interface RegisterFormProps {
+  invitationOnly?: boolean;
+}
+
+export function RegisterForm({ invitationOnly }: RegisterFormProps) {
   const [state, formAction, isPending] = useActionState(
     registerAction,
     initialState,
@@ -32,7 +36,9 @@ export function RegisterForm() {
             Create an account
           </h2>
           <p className="text-xs text-muted-foreground">
-            Track your motorsport events, garage, and lap times.
+            {invitationOnly
+              ? "Registration is by invitation only. Use the email you were invited with."
+              : "Track your motorsport events, garage, and lap times."}
           </p>
         </div>
 

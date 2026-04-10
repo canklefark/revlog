@@ -13,11 +13,13 @@ const initialState: AuthActionState = {};
 interface LoginFormProps {
   registrationEnabled: boolean;
   googleEnabled: boolean;
+  invitationOnly?: boolean;
 }
 
 export function LoginForm({
   registrationEnabled,
   googleEnabled,
+  invitationOnly,
 }: LoginFormProps) {
   const [state, formAction, isPending] = useActionState(
     loginAction,
@@ -135,12 +137,14 @@ export function LoginForm({
 
       {registrationEnabled && (
         <p className="text-center text-sm text-muted-foreground">
-          Don&apos;t have an account?{" "}
+          {invitationOnly
+            ? "Have an invitation?"
+            : "Don\u0027t have an account?"}{" "}
           <Link
             href="/register"
             className="text-foreground underline underline-offset-4 hover:text-primary"
           >
-            Create one
+            {invitationOnly ? "Register" : "Create one"}
           </Link>
         </p>
       )}

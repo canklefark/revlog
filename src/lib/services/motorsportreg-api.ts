@@ -84,7 +84,7 @@ const MSR_TYPE_MAP: Record<string, EventType> = {
   "drag race": "Drag",
 };
 
-function mapMsrType(msrType: string, name?: string): EventType {
+export function mapMsrType(msrType: string, name?: string): EventType {
   const normalized = msrType.toLowerCase().trim();
   const mapped = MSR_TYPE_MAP[normalized];
   if (mapped) return mapped;

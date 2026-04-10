@@ -1,7 +1,7 @@
 # RevLog — Development Status
 
 **Last updated:** 2026-04-10
-**Current phase:** Phase 4.9 complete — Phase 5 next
+**Current phase:** Phase 4.9 complete — Phase 5.0 (MSR OAuth) in progress
 
 ---
 
@@ -334,6 +334,114 @@ Migration: `20260410155213_phase_4_9_garage_overhaul`
 
 ---
 
+## Phase 5.0a — Email Whitelist Registration ✅ COMPLETE
+
+**Completed:** 2026-04-10
+
+### Scope
+
+- [x] `AllowedEmail` model — DB-backed email whitelist for invitation-only registration
+- [x] `ADMIN_EMAILS` env var — comma-separated admin emails, gates whitelist management
+- [x] Modified 3 registration gates (server action, Google OAuth callback, register page) to check whitelist
+- [x] Self-cleaning: whitelist entries consumed after successful registration (credentials + Google OAuth)
+- [x] `/settings/whitelist` admin page — add/remove whitelisted emails with notes
+- [x] "Invitation only" messaging on login/register pages when whitelist entries exist
+- [x] Admin-only nav link in settings (only shown to ADMIN_EMAILS users)
+
+### New files
+
+- `src/lib/admin.ts` — admin utilities (isAdminEmail, requireAdmin, isEmailWhitelisted, hasWhitelistEntries, consumeWhitelistEntry)
+- `src/lib/actions/whitelist.ts` — addWhitelistEmail / removeWhitelistEmail server actions
+- `src/app/(main)/settings/whitelist/page.tsx` — admin whitelist management page
+- `src/components/settings/whitelist-manager.tsx` — whitelist management UI
+
+### Modified files
+
+- `src/lib/auth.ts` — signIn callback checks whitelist; createUser event consumes entry
+- `src/lib/actions/auth.ts` — registerAction checks whitelist + catches unique constraint race
+- `src/app/(auth)/register/page.tsx` — shows page when whitelist exists; passes invitationOnly prop
+- `src/app/(auth)/login/page.tsx` — shows register link + "Have an invitation?" text
+- `src/components/auth/register-form.tsx` — invitationOnly messaging
+- `src/components/auth/login-form.tsx` — invitationOnly register link text
+
+### Schema changes
+
+Migration: `20260410201649_add_allowed_email`
+
+- New model: `AllowedEmail` (id, email unique, note, createdAt)
+
+### Key decisions
+
+- Admin identification via `ADMIN_EMAILS` env var — no schema changes for roles
+- Whitelist is self-cleaning: entries auto-delete on successful registration
+- Register page accessible when whitelist has entries (invitation-only mode)
+- `DISABLE_REGISTRATION` flag kept — whitelist only applies when flag is true
+
+### Required env vars
+
+```
+ADMIN_EMAILS=you@email.com   # comma-separated, controls who sees /settings/whitelist
+```
+
+---
+
+## Phase 5.0 — MSR OAuth Integration ✅ COMPLETE
+
+**Completed:** 2026-04-10
+
+### Scope
+
+- [x] OAuth 1.0a three-legged flow (connect / callback / disconnect)
+- [x] Per-user MSR account tokens stored in `Account` model
+- [x] Authenticated MSR API client (`GET /rest/me/events`)
+- [x] Event sync with 3-pass dedup (msrEventId → registrationUrl → fuzzy name+date)
+- [x] `/settings/integrations` page with connect/sync/disconnect UI
+- [x] Env-gated — no-op if `MSR_CONSUMER_KEY` is absent
+
+### New files
+
+- `src/lib/services/msr-oauth.ts` — OAuth 1.0a signing client
+- `src/lib/services/msr-authenticated-api.ts` — authenticated API client
+- `src/lib/actions/msr-sync.ts` — syncMsrEvents / disconnectMsr server actions
+- `src/app/api/msr/connect/route.ts` — initiate OAuth flow
+- `src/app/api/msr/callback/route.ts` — OAuth callback handler
+- `src/app/(main)/settings/integrations/page.tsx` — integrations settings page
+- `src/components/settings/msr-connect-card.tsx` — MSR connection UI
+
+### Schema changes
+
+Migration: `20260410200330_msr_oauth_integration`
+
+- `Account`: added `access_token_secret String? @db.Text`
+- `Event`: added `msrEventId String?`, index `@@index([userId, msrEventId])`
+
+### Packages added
+
+- `oauth-1.0a` — HMAC-SHA1 OAuth 1.0a signing (RFC 5849, zero dependencies)
+
+### Key decisions
+
+- Request token secret stored in signed HTTP-only cookie (HMAC-SHA256 with AUTH_SECRET, 10 min TTL)
+- MSR tokens are permanent — no refresh logic needed
+- `providerAccountId` stores MSR profile ID (standard NextAuth pattern)
+- `access_token_secret` added to Account model for OAuth 1.0a signing
+- 3-pass event matching: exact msrEventId → registrationUrl → fuzzy name+date ±7d
+- New events created with `registrationStatus: "Registered"` (user is already registered on MSR)
+
+### Required env vars
+
+```
+MSR_CONSUMER_KEY=<your consumer key>
+MSR_CONSUMER_SECRET=<your consumer secret>
+MSR_CALLBACK_URL=https://yourdomain.com/api/msr/callback
+```
+
+### Resolved Open Questions
+
+- **OQ #1: MotorsportReg API availability (authenticated)** — Resolved. API access obtained and integrated.
+
+---
+
 ## Phase 5 — Open Source Prep ⏳ NOT STARTED
 
 ### Pre-work required before starting
@@ -347,7 +455,6 @@ Migration: `20260410155213_phase_4_9_garage_overhaul`
 - [ ] Photo uploads (R2 / S3-compatible abstraction)
 - [ ] Additional calendar providers (Apple CalDAV, Outlook Graph API)
 - [ ] Comprehensive self-host documentation for public users
-- [ ] MotorsportReg API integration (contingent on API access)
 
 ---
 
@@ -400,11 +507,11 @@ Upload exported session files → parse → auto-create Runs (and Event if no ma
 
 ## Open Questions
 
-| #   | Question                                               | Blocking                                                               |
-| --- | ------------------------------------------------------ | ---------------------------------------------------------------------- |
-| 1   | MotorsportReg API availability (authenticated)         | Phase 5 (unauthenticated org calendar already integrated in Phase 4.8) |
-| 2   | PWA depth: promote to full offline sync queue?         | Phase 5                                                                |
-| 3   | Mapping library for GPS track maps (Leaflet vs Mapbox) | Phase 7 Tier 2                                                         |
+| #   | Question                                               | Blocking                 |
+| --- | ------------------------------------------------------ | ------------------------ |
+| 1   | MotorsportReg API availability (authenticated)         | ✅ Resolved in Phase 5.0 |
+| 2   | PWA depth: promote to full offline sync queue?         | Phase 5                  |
+| 3   | Mapping library for GPS track maps (Leaflet vs Mapbox) | Phase 7 Tier 2           |
 
 ---
 

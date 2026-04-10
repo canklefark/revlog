@@ -5,6 +5,7 @@ import Google from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
 import { loginSchema } from "./validations/auth";
+import { isEmailWhitelisted, consumeWhitelistEntry } from "./admin";
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
@@ -72,7 +73,11 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
           where: { email: user.email! },
           select: { id: true },
         });
-        if (!existing) return false;
+        if (!existing) {
+          // Check whitelist — allow if email was pre-approved.
+          const allowed = await isEmailWhitelisted(user.email!);
+          if (!allowed) return false;
+        }
       }
       return true;
     },
@@ -83,6 +88,14 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     jwt({ token, user }) {
       if (user) token.sub = user.id;
       return token;
+    },
+  },
+  events: {
+    async createUser({ user }) {
+      // Clean up whitelist entry after successful OAuth registration.
+      if (user.email) {
+        await consumeWhitelistEntry(user.email);
+      }
     },
   },
   pages: {
