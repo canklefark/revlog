@@ -29,6 +29,7 @@ model User {
   sessions             Session[]
   cars                 Car[]
   events               Event[]
+  parts                Part[]
 }
 
 model Account {
@@ -77,6 +78,7 @@ model Car {
   user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   mods             Mod[]
   wishlistItems    WishlistItem[]
+  parts            Part[]
   maintenanceEntries MaintenanceEntry[]
   events           Event[]
   runs             Run[]
@@ -345,4 +347,34 @@ model Expense {
 
   @@index([carId])
   @@index([carId, date])
+}
+
+// status: wishlist | stock | installed | archived
+model Part {
+  id           String    @id @default(cuid())
+  userId       String
+  carId        String?
+  name         String
+  manufacturer String?
+  partNumber   String?
+  category     String?
+  description  String?
+  productLink  String?
+  status       String    @default("stock")
+  price        Float?
+  purchaseDate DateTime?
+  vendor       String?
+  quantity     Int       @default(1)
+  notes        String?
+  installedAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  car          Car?      @relation(fields: [carId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([userId, status])
+  @@index([carId])
+  @@map("parts")
 }
