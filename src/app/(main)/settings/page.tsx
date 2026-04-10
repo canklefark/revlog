@@ -9,6 +9,7 @@ import {
   Database,
   Plug,
   ShieldCheck,
+  Bug,
 } from "lucide-react";
 import {
   Card,
@@ -62,6 +63,12 @@ const adminSections = [
     Icon: ShieldCheck,
     title: "Registration Whitelist",
     description: "Allow specific emails to register when sign-up is closed.",
+  },
+  {
+    href: "/settings/bug-reports",
+    Icon: Bug,
+    title: "Bug Reports",
+    description: "Review feedback and bug reports submitted by users.",
   },
 ] as const;
 

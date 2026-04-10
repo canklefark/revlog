@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { DesktopSidebar } from "@/components/layout/desktop-sidebar";
 import { AppHeader } from "@/components/layout/app-header";
 import { BottomNav } from "@/components/layout/bottom-nav";
+import { BugReportFab } from "@/components/bug-report/bug-report-fab";
 
 export default async function MainLayout({
   children,
@@ -26,6 +27,7 @@ export default async function MainLayout({
         </main>
       </div>
       <BottomNav className="md:hidden" />
+      <BugReportFab />
     </div>
   );
 }
