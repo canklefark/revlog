@@ -56,7 +56,8 @@ export interface TireSetOption {
   id: string;
   brand: string;
   model: string;
-  size: string;
+  frontSize: string;
+  rearSize?: string | null;
 }
 
 export interface BrakeSetOption {
@@ -451,7 +452,10 @@ export function RunForm({
                       <SelectItem value="">None</SelectItem>
                       {tireSets.map((t) => (
                         <SelectItem key={t.id} value={t.id}>
-                          {t.brand} {t.model} – {t.size}
+                          {t.brand} {t.model} –{" "}
+                          {t.rearSize
+                            ? `F:${t.frontSize} R:${t.rearSize}`
+                            : t.frontSize}
                         </SelectItem>
                       ))}
                     </SelectContent>

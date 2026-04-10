@@ -34,8 +34,13 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { deleteTireSet, type TireSetActionState } from "@/lib/actions/tire-set";
+import {
+  deleteTireSet,
+  updateTireSet,
+  type TireSetActionState,
+} from "@/lib/actions/tire-set";
 import { TreadDepthForm } from "@/components/garage/tread-depth-form";
+import { TireSetForm } from "@/components/garage/tire-set-form";
 import type { TireSetWithLogs, GroupedTireSets } from "@/lib/queries/tire-sets";
 
 interface TireSetListProps extends GroupedTireSets {
@@ -52,7 +57,7 @@ function statusVariant(
   return "outline";
 }
 
-function DeleteTireSetForm({ tireSetId }: { tireSetId: string }) {
+function DeleteTireSetDialog({ tireSetId }: { tireSetId: string }) {
   const [state, formAction, isPending] = useActionState(
     deleteTireSet,
     deleteInitialState,
@@ -108,6 +113,7 @@ function TireSetCard({
   carId: string;
 }) {
   const [treadSheetOpen, setTreadSheetOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const latestDepth = tireSet.treadDepthLogs[0];
 
   return (
@@ -120,7 +126,11 @@ function TireSetCard({
           <p className="font-medium text-sm group-hover:text-primary transition-colors">
             {tireSet.brand} {tireSet.model}
           </p>
-          <p className="text-xs text-muted-foreground mt-0.5">{tireSet.size}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {tireSet.rearSize
+              ? `F: ${tireSet.frontSize}  R: ${tireSet.rearSize}`
+              : tireSet.frontSize}
+          </p>
           <div className="flex items-center gap-2 mt-1.5 flex-wrap">
             <Badge variant={statusVariant(tireSet.status)} className="text-xs">
               {tireSet.status}
@@ -155,22 +165,37 @@ function TireSetCard({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem asChild>
-              <Link href={`/garage/${carId}/tires/${tireSet.id}/edit`}>
-                <PencilIcon className="size-4 mr-2" />
-                Edit
-              </Link>
+            <DropdownMenuItem onSelect={() => setEditOpen(true)}>
+              <PencilIcon className="size-4 mr-2" />
+              Edit
             </DropdownMenuItem>
             <DropdownMenuItem onSelect={() => setTreadSheetOpen(true)}>
               <PlusIcon className="size-4 mr-2" />
               Add Tread Reading
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DeleteTireSetForm tireSetId={tireSet.id} />
+            <DeleteTireSetDialog tireSetId={tireSet.id} />
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
 
+      {/* Edit modal */}
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Tire Set</DialogTitle>
+          </DialogHeader>
+          <TireSetForm
+            action={updateTireSet}
+            carId={carId}
+            defaultValues={tireSet}
+            onSuccess={() => setEditOpen(false)}
+            onCancel={() => setEditOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Tread depth sheet */}
       <Sheet open={treadSheetOpen} onOpenChange={setTreadSheetOpen}>
         <SheetContent>
           <SheetHeader>

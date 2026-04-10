@@ -154,7 +154,11 @@ export function TireSetDetail({
           <h1 className="text-2xl font-semibold">
             {tireSet.brand} {tireSet.model}
           </h1>
-          <p className="text-muted-foreground text-sm mt-0.5">{tireSet.size}</p>
+          <p className="text-muted-foreground text-sm mt-0.5">
+            {tireSet.rearSize
+              ? `F: ${tireSet.frontSize}  R: ${tireSet.rearSize}`
+              : tireSet.frontSize}
+          </p>
           <div className="flex items-center gap-2 mt-2 flex-wrap">
             <Badge variant={statusVariant(tireSet.status)}>
               {tireSet.status}

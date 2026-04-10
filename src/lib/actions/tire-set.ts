@@ -31,6 +31,14 @@ function parseOptionalString(
   return String(value);
 }
 
+function parseOptionalInt(
+  value: FormDataEntryValue | null,
+): number | undefined {
+  if (value === null || value === "") return undefined;
+  const n = parseInt(String(value), 10);
+  return isNaN(n) ? undefined : n;
+}
+
 export async function createTireSet(
   _prevState: TireSetActionState,
   formData: FormData,
@@ -41,7 +49,12 @@ export async function createTireSet(
     carId: formData.get("carId") as string,
     brand: formData.get("brand") as string,
     model: formData.get("model") as string,
-    size: formData.get("size") as string,
+    frontSize: formData.get("frontSize") as string,
+    rearSize: parseOptionalString(formData.get("rearSize")),
+    quantity: parseInt(String(formData.get("quantity") ?? "4"), 10) || 4,
+    dotCode: parseOptionalString(formData.get("dotCode")),
+    maxHeatCycles: parseOptionalInt(formData.get("maxHeatCycles")),
+    rearCost: parseOptionalNumber(formData.get("rearCost")),
     compound: parseOptionalString(formData.get("compound")),
     purchaseDate: parseOptionalString(formData.get("purchaseDate")),
     cost: parseOptionalNumber(formData.get("cost")),
@@ -71,7 +84,12 @@ export async function createTireSet(
       carId: parsed.data.carId,
       brand: parsed.data.brand,
       model: parsed.data.model,
-      size: parsed.data.size,
+      frontSize: parsed.data.frontSize,
+      rearSize: parsed.data.rearSize,
+      quantity: parsed.data.quantity,
+      dotCode: parsed.data.dotCode,
+      maxHeatCycles: parsed.data.maxHeatCycles,
+      rearCost: parsed.data.rearCost,
       compound: parsed.data.compound,
       purchaseDate: parsed.data.purchaseDate
         ? new Date(parsed.data.purchaseDate)
@@ -96,7 +114,12 @@ export async function updateTireSet(
     tireSetId: formData.get("tireSetId") as string,
     brand: parseOptionalString(formData.get("brand")),
     model: parseOptionalString(formData.get("model")),
-    size: parseOptionalString(formData.get("size")),
+    frontSize: parseOptionalString(formData.get("frontSize")),
+    rearSize: parseOptionalString(formData.get("rearSize")),
+    quantity: parseOptionalInt(formData.get("quantity")),
+    dotCode: parseOptionalString(formData.get("dotCode")),
+    maxHeatCycles: parseOptionalInt(formData.get("maxHeatCycles")),
+    rearCost: parseOptionalNumber(formData.get("rearCost")),
     compound: parseOptionalString(formData.get("compound")),
     purchaseDate: parseOptionalString(formData.get("purchaseDate")),
     cost: parseOptionalNumber(formData.get("cost")),
@@ -127,7 +150,24 @@ export async function updateTireSet(
     data: {
       ...(parsed.data.brand !== undefined && { brand: parsed.data.brand }),
       ...(parsed.data.model !== undefined && { model: parsed.data.model }),
-      ...(parsed.data.size !== undefined && { size: parsed.data.size }),
+      ...(parsed.data.frontSize !== undefined && {
+        frontSize: parsed.data.frontSize,
+      }),
+      ...(parsed.data.rearSize !== undefined && {
+        rearSize: parsed.data.rearSize,
+      }),
+      ...(parsed.data.quantity !== undefined && {
+        quantity: parsed.data.quantity,
+      }),
+      ...(parsed.data.dotCode !== undefined && {
+        dotCode: parsed.data.dotCode,
+      }),
+      ...(parsed.data.maxHeatCycles !== undefined && {
+        maxHeatCycles: parsed.data.maxHeatCycles,
+      }),
+      ...(parsed.data.rearCost !== undefined && {
+        rearCost: parsed.data.rearCost,
+      }),
       ...(parsed.data.compound !== undefined && {
         compound: parsed.data.compound,
       }),

@@ -1,11 +1,8 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { PlusIcon } from "lucide-react";
 import { requireAuth } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 import { getTireSetsForCar } from "@/lib/queries/tire-sets";
-import { TireSetList } from "@/components/garage/tire-set-list";
-import { Button } from "@/components/ui/button";
+import { TiresPageClient } from "@/components/garage/tires-page-client";
 
 export default async function TiresPage({
   params,
@@ -20,38 +17,15 @@ export default async function TiresPage({
 
   const { active, stored, retired } = await getTireSetsForCar(carId, userId);
   const displayName = car.nickname ?? `${car.year} ${car.make} ${car.model}`;
-  const total = active.length + stored.length + retired.length;
 
   return (
     <main className="w-full">
-      <div className="flex items-center justify-between mb-6 gap-4">
-        <div>
-          <Link
-            href={`/garage/${carId}`}
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-          >
-            {displayName}
-          </Link>
-          <h1 className="text-2xl font-semibold">Tires</h1>
-          {total > 0 && (
-            <p className="text-sm text-muted-foreground mt-0.5">
-              {total} tire set{total !== 1 ? "s" : ""}
-            </p>
-          )}
-        </div>
-        <Button asChild size="sm">
-          <Link href={`/garage/${carId}/tires/new`}>
-            <PlusIcon />
-            Add Tire Set
-          </Link>
-        </Button>
-      </div>
-
-      <TireSetList
+      <TiresPageClient
         active={active}
         stored={stored}
         retired={retired}
         carId={carId}
+        displayName={displayName}
       />
     </main>
   );

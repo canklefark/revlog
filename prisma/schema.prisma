@@ -243,7 +243,12 @@ model TireSet {
   brand         String
   model         String
   compound      String?
-  size          String
+  frontSize     String
+  rearSize      String?
+  quantity      Int             @default(4)
+  dotCode       String?
+  maxHeatCycles Int?
+  rearCost      Float?
   purchaseDate  DateTime?
   cost          Float?
   heatCycles    Int             @default(0)
