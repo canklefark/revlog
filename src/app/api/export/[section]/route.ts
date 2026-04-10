@@ -7,6 +7,7 @@ import {
   maintenanceToCSV,
   runsToCSV,
   eventsToCSV,
+  expensesToCSV,
 } from "@/lib/services/csv-export";
 
 export async function GET(
@@ -72,6 +73,15 @@ export async function GET(
         });
         csv = eventsToCSV(events);
         filename = "events.csv";
+        break;
+      }
+      case "expenses": {
+        const expenses = await prisma.expense.findMany({
+          where: { carId: carId ?? undefined, car: { userId } },
+          orderBy: { date: "desc" },
+        });
+        csv = expensesToCSV(expenses);
+        filename = carId ? `expenses-${carId}.csv` : "expenses.csv";
         break;
       }
       default:

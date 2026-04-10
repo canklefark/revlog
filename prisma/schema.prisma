@@ -80,6 +80,10 @@ model Car {
   maintenanceEntries MaintenanceEntry[]
   events           Event[]
   runs             Run[]
+  tireSets         TireSet[]
+  brakeSets        BrakeSet[]
+  suspensionSetups SuspensionSetup[]
+  expenses         Expense[]
 }
 
 model Mod {
@@ -94,6 +98,7 @@ model Mod {
   shopName        String?
   cost            Float?
   odometerAtInstall Int?
+  receiptUrl      String?
   notes           String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -131,6 +136,7 @@ model MaintenanceEntry {
   productBrand      String?
   productSpec       String?
   cost              Float?
+  receiptUrl        String?
   notes             String?
   nextDueDate       DateTime?
   nextDueMileage    Int?
@@ -200,22 +206,143 @@ model AdditionalCost {
 }
 
 model Run {
-  id           String   @id @default(cuid())
-  eventId      String
-  carId        String
-  runNumber    Int
-  rawTime      Float
-  penalties    Json     @default("[]")
-  adjustedTime Float?
-  isDnf        Boolean  @default(false)
-  conditions   String[]
-  tireSetup    String?
-  notes        String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  event        Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  car          Car      @relation(fields: [carId], references: [id])
+  id              String           @id @default(cuid())
+  eventId         String
+  carId           String
+  runNumber       Int
+  rawTime         Float
+  penalties       Json             @default("[]")
+  adjustedTime    Float?
+  isDnf           Boolean          @default(false)
+  conditions      String[]
+  tireSetup       String?
+  tireSetId       String?
+  brakeSetId      String?
+  setupId         String?
+  notes           String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  event           Event            @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  car             Car              @relation(fields: [carId], references: [id])
+  tireSet         TireSet?         @relation(fields: [tireSetId], references: [id])
+  brakeSet        BrakeSet?        @relation(fields: [brakeSetId], references: [id])
+  suspensionSetup SuspensionSetup? @relation(fields: [setupId], references: [id])
 
   @@index([eventId])
   @@index([carId])
+  @@index([tireSetId])
+  @@index([brakeSetId])
+  @@index([setupId])
+}
+
+model TireSet {
+  id            String          @id @default(cuid())
+  carId         String
+  brand         String
+  model         String
+  compound      String?
+  size          String
+  purchaseDate  DateTime?
+  cost          Float?
+  heatCycles    Int             @default(0)
+  status        String          @default("Active")
+  notes         String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  car           Car             @relation(fields: [carId], references: [id], onDelete: Cascade)
+  treadDepthLogs TreadDepthLog[]
+  runs          Run[]
+
+  @@index([carId])
+}
+
+model TreadDepthLog {
+  id        String   @id @default(cuid())
+  tireSetId String
+  date      DateTime @default(now())
+  depth     Float
+  position  String?
+  notes     String?
+  createdAt DateTime @default(now())
+  tireSet   TireSet  @relation(fields: [tireSetId], references: [id], onDelete: Cascade)
+
+  @@index([tireSetId])
+}
+
+model BrakeSet {
+  id           String   @id @default(cuid())
+  carId        String
+  position     String
+  padBrand     String?
+  padCompound  String?
+  rotorBrand   String?
+  rotorNotes   String?
+  purchaseDate DateTime?
+  cost         Float?
+  heatCycles   Int      @default(0)
+  wearRemaining Float?
+  status       String   @default("Active")
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  car          Car      @relation(fields: [carId], references: [id], onDelete: Cascade)
+  runs         Run[]
+
+  @@index([carId])
+}
+
+model SuspensionSetup {
+  id                    String   @id @default(cuid())
+  carId                 String
+  name                  String
+  isActive              Boolean  @default(false)
+  camberFL              Float?
+  camberFR              Float?
+  camberRL              Float?
+  camberRR              Float?
+  toeFL                 Float?
+  toeFR                 Float?
+  toeRL                 Float?
+  toeRR                 Float?
+  casterFL              Float?
+  casterFR              Float?
+  springRateFront       Float?
+  springRateRear        Float?
+  rideHeightFront       Float?
+  rideHeightRear        Float?
+  damperClicksFrontComp Int?
+  damperClicksFrontReb  Int?
+  damperClicksRearComp  Int?
+  damperClicksRearReb   Int?
+  swayBarFront          String?
+  swayBarRear           String?
+  tirePressureFL        Float?
+  tirePressureFR        Float?
+  tirePressureRL        Float?
+  tirePressureRR        Float?
+  notes                 String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  car                   Car      @relation(fields: [carId], references: [id], onDelete: Cascade)
+  runs                  Run[]
+
+  @@index([carId])
+}
+
+model Expense {
+  id          String   @id @default(cuid())
+  carId       String
+  category    String
+  date        DateTime
+  amount      Float
+  vendor      String?
+  description String?
+  receiptUrl  String?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  car         Car      @relation(fields: [carId], references: [id], onDelete: Cascade)
+
+  @@index([carId])
+  @@index([carId, date])
 }

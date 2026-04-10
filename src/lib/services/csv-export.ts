@@ -4,6 +4,7 @@ import type {
   MaintenanceEntry,
   Run,
   Event,
+  Expense,
 } from "@prisma/client";
 
 function escapeCSV(value: unknown): string {
@@ -174,6 +175,30 @@ export function eventsToCSV(events: Event[]): string {
       e.entryFee,
       e.organizingBody,
       e.runGroup,
+      e.notes,
+    ]),
+  );
+  return [header, ...rows].join("\n");
+}
+
+export function expensesToCSV(expenses: Expense[]): string {
+  const header = rowToCSV([
+    "Date",
+    "Category",
+    "Vendor",
+    "Description",
+    "Amount",
+    "Receipt URL",
+    "Notes",
+  ]);
+  const rows = expenses.map((e) =>
+    rowToCSV([
+      new Date(e.date).toISOString().split("T")[0],
+      e.category,
+      e.vendor,
+      e.description,
+      e.amount,
+      e.receiptUrl,
       e.notes,
     ]),
   );
