@@ -90,7 +90,7 @@ export async function createPart(
     },
   });
 
-  revalidatePath("/parts");
+  revalidatePath(`/garage/${part.carId ?? ""}/parts`);
   return { data: part };
 }
 
@@ -175,7 +175,7 @@ export async function updatePart(
     },
   });
 
-  revalidatePath("/parts");
+  revalidatePath(`/garage/${part.carId ?? ""}/parts`);
   return { data: part };
 }
 
@@ -211,7 +211,7 @@ export async function updatePartStatus(
     },
   });
 
-  revalidatePath("/parts");
+  revalidatePath(`/garage/${part.carId ?? ""}/parts`);
   return { data: part };
 }
 
@@ -233,6 +233,6 @@ export async function deletePart(
 
   await prisma.part.delete({ where: { id: partId, userId } });
 
-  revalidatePath("/parts");
+  revalidatePath(`/garage/${existing.carId ?? ""}/parts`);
   return { data: true };
 }

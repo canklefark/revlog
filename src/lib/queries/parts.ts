@@ -9,9 +9,12 @@ export type PartWithCar = Prisma.PartGetPayload<{
   };
 }>;
 
-export async function getParts(userId: string): Promise<PartWithCar[]> {
+export async function getParts(
+  userId: string,
+  carId: string,
+): Promise<PartWithCar[]> {
   return prisma.part.findMany({
-    where: { userId },
+    where: { userId, carId },
     include: {
       car: {
         select: {

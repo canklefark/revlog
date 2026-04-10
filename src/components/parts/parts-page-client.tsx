@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { useActionState, useEffect } from "react";
+import { useState, useActionState, useEffect } from "react";
 import { toast } from "sonner";
 import { DownloadIcon, PlusIcon, SearchIcon, SparklesIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,6 +13,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { AddPartModal } from "./add-part-modal";
 import type { PartWithCar } from "@/lib/queries/parts";
@@ -27,26 +34,10 @@ import {
   updatePartStatus,
   type PartActionState,
 } from "@/lib/actions/part";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-
-interface Car {
-  id: string;
-  year: number;
-  make: string;
-  model: string;
-  nickname: string | null;
-}
 
 interface PartsPageClientProps {
   parts: PartWithCar[];
-  cars: Car[];
+  carId: string;
 }
 
 const TABS = [
@@ -65,11 +56,6 @@ const STATUS_BADGE: Record<PartStatus, string> = {
   installed: "bg-primary/15 text-primary border-primary/20",
   archived: "bg-muted/50 text-muted-foreground/60 border-border/50",
 };
-
-function carLabel(car: PartWithCar["car"]): string {
-  if (!car) return "—";
-  return car.nickname ?? `${car.year} ${car.make} ${car.model}`;
-}
 
 function formatCurrency(value: number | null | undefined): string {
   if (value == null) return "—";
@@ -161,14 +147,18 @@ function StatusChanger({ part }: { part: PartWithCar }) {
     <form action={formAction} className="inline">
       <input type="hidden" name="partId" value={part.id} />
       <input type="hidden" name="status" value={next} />
-      <button type="submit" disabled={isPending} className="cursor-pointer">
+      <button
+        type="submit"
+        disabled={isPending}
+        className="cursor-pointer"
+        title={`Click to mark as ${PART_STATUS_LABELS[next]}`}
+      >
         <span
           className={cn(
             "inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium transition-opacity",
             STATUS_BADGE[part.status as PartStatus] ?? STATUS_BADGE.stock,
             isPending && "opacity-50",
           )}
-          title={`Click to mark as ${PART_STATUS_LABELS[next]}`}
         >
           {PART_STATUS_LABELS[part.status as PartStatus] ?? part.status}
         </span>
@@ -177,10 +167,9 @@ function StatusChanger({ part }: { part: PartWithCar }) {
   );
 }
 
-export function PartsPageClient({ parts, cars }: PartsPageClientProps) {
+export function PartsPageClient({ parts, carId }: PartsPageClientProps) {
   const [activeTab, setActiveTab] = useState<TabKey>("all");
   const [search, setSearch] = useState("");
-  const [carFilter, setCarFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [sort, setSort] = useState("name");
   const [showTires, setShowTires] = useState(false);
@@ -190,19 +179,15 @@ export function PartsPageClient({ parts, cars }: PartsPageClientProps) {
     .filter((p) => {
       if (activeTab !== "all" && p.status !== activeTab) return false;
       if (!showTires && p.category === "Wheels & Tires") return false;
-      if (carFilter !== "all") {
-        if (carFilter === "none" && p.carId != null) return false;
-        if (carFilter !== "none" && p.carId !== carFilter) return false;
-      }
       if (categoryFilter !== "all" && p.category !== categoryFilter)
         return false;
       if (search.trim()) {
         const q = search.toLowerCase();
-        const match =
+        return (
           p.name.toLowerCase().includes(q) ||
           (p.manufacturer?.toLowerCase().includes(q) ?? false) ||
-          (p.partNumber?.toLowerCase().includes(q) ?? false);
-        if (!match) return false;
+          (p.partNumber?.toLowerCase().includes(q) ?? false)
+        );
       }
       return true;
     })
@@ -280,21 +265,6 @@ export function PartsPageClient({ parts, cars }: PartsPageClientProps) {
 
       {/* Filters */}
       <div className="flex items-center gap-2 flex-wrap mb-5">
-        <Select value={carFilter} onValueChange={setCarFilter}>
-          <SelectTrigger className="w-auto min-w-[120px] h-8 text-sm">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Car: All</SelectItem>
-            <SelectItem value="none">Unassigned</SelectItem>
-            {cars.map((car) => (
-              <SelectItem key={car.id} value={car.id}>
-                {car.nickname ?? `${car.year} ${car.make} ${car.model}`}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
         <Select value={categoryFilter} onValueChange={setCategoryFilter}>
           <SelectTrigger className="w-auto min-w-[140px] h-8 text-sm">
             <SelectValue />
@@ -345,9 +315,6 @@ export function PartsPageClient({ parts, cars }: PartsPageClientProps) {
                 Status
               </th>
               <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground hidden lg:table-cell">
-                Car
-              </th>
-              <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground hidden lg:table-cell">
                 Installed
               </th>
               <th className="text-right px-4 py-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -362,7 +329,7 @@ export function PartsPageClient({ parts, cars }: PartsPageClientProps) {
             {filtered.length === 0 ? (
               <tr>
                 <td
-                  colSpan={7}
+                  colSpan={6}
                   className="px-4 py-16 text-center text-muted-foreground"
                 >
                   {parts.length === 0 ? (
@@ -387,7 +354,7 @@ export function PartsPageClient({ parts, cars }: PartsPageClientProps) {
                 <tr
                   key={part.id}
                   className={cn(
-                    "border-b border-border last:border-0 hover:bg-muted/20 transition-colors group",
+                    "border-b border-border last:border-0 hover:bg-muted/20 transition-colors",
                     idx % 2 === 0 ? "" : "bg-muted/5",
                   )}
                 >
@@ -419,9 +386,6 @@ export function PartsPageClient({ parts, cars }: PartsPageClientProps) {
                     <StatusChanger part={part} />
                   </td>
                   <td className="px-4 py-3 text-muted-foreground hidden lg:table-cell">
-                    {carLabel(part.car)}
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground hidden lg:table-cell">
                     {part.installedAt
                       ? new Date(part.installedAt).toLocaleDateString()
                       : "—"}
@@ -447,7 +411,7 @@ export function PartsPageClient({ parts, cars }: PartsPageClientProps) {
       <AddPartModal
         open={addModalOpen}
         onOpenChange={setAddModalOpen}
-        cars={cars}
+        carId={carId}
       />
     </main>
   );

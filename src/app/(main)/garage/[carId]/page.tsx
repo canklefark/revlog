@@ -11,8 +11,7 @@ import {
   Disc,
   Gauge,
   Sliders,
-  Wrench,
-  Star,
+  Package,
   ClipboardList,
   DollarSign,
 } from "lucide-react";
@@ -42,8 +41,8 @@ export default async function CarDetailPage({
   }
 
   const [
-    modCount,
-    modTotalResult,
+    partCount,
+    partTotalResult,
     wishlistCount,
     maintenanceEntries,
     tireSetsData,
@@ -51,9 +50,9 @@ export default async function CarDetailPage({
     setups,
     expenseSummary,
   ] = await Promise.all([
-    prisma.mod.count({ where: { carId } }),
-    prisma.mod.aggregate({ where: { carId }, _sum: { cost: true } }),
-    prisma.wishlistItem.count({ where: { carId } }),
+    prisma.part.count({ where: { carId } }),
+    prisma.part.aggregate({ where: { carId }, _sum: { price: true } }),
+    prisma.part.count({ where: { carId, status: "wishlist" } }),
     prisma.maintenanceEntry.findMany({
       where: { carId, car: { userId } },
     }),
@@ -63,7 +62,7 @@ export default async function CarDetailPage({
     getExpenseSummary(carId, userId),
   ]);
 
-  const modTotal = modTotalResult._sum.cost ?? 0;
+  const partTotal = partTotalResult._sum.price ?? 0;
 
   const maintenanceAlerts = getMaintenanceAlerts(
     maintenanceEntries,
@@ -268,53 +267,29 @@ export default async function CarDetailPage({
           </CardContent>
         </Card>
 
-        {/* Modifications */}
+        {/* Parts */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <div className="flex items-center gap-2">
-              <Wrench className="h-4 w-4 text-muted-foreground" />
-              <CardTitle className="text-base">Modifications</CardTitle>
+              <Package className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-base">Parts</CardTitle>
             </div>
             <Button asChild variant="outline" size="sm">
-              <Link href={`/garage/${carId}/mods`}>View Mods</Link>
+              <Link href={`/garage/${carId}/parts`}>View Parts</Link>
             </Button>
           </CardHeader>
           <CardContent>
-            {modCount > 0 ? (
+            {partCount > 0 ? (
               <p className="text-sm text-muted-foreground">
-                {modCount} mod{modCount !== 1 ? "s" : ""}
-                {modTotal > 0
-                  ? ` · $${modTotal.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} total`
+                {partCount} part{partCount !== 1 ? "s" : ""}
+                {wishlistCount > 0 ? ` · ${wishlistCount} on wish list` : ""}
+                {partTotal > 0
+                  ? ` · $${partTotal.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} total`
                   : ""}
               </p>
             ) : (
               <p className="text-sm text-muted-foreground">
-                No modifications logged yet.
-              </p>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Wishlist */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <div className="flex items-center gap-2">
-              <Star className="h-4 w-4 text-muted-foreground" />
-              <CardTitle className="text-base">Wishlist</CardTitle>
-            </div>
-            <Button asChild variant="outline" size="sm">
-              <Link href={`/garage/${carId}/wishlist`}>View Wishlist</Link>
-            </Button>
-          </CardHeader>
-          <CardContent>
-            {wishlistCount > 0 ? (
-              <p className="text-sm text-muted-foreground">
-                {wishlistCount} item{wishlistCount !== 1 ? "s" : ""} on the
-                wishlist
-              </p>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                No wishlist items yet.
+                No parts logged yet.
               </p>
             )}
           </CardContent>

@@ -26,38 +26,28 @@ import { Separator } from "@/components/ui/separator";
 import { createPart, type PartActionState } from "@/lib/actions/part";
 import { MOD_CATEGORIES } from "@/lib/constants/mod-categories";
 
-interface Car {
-  id: string;
-  year: number;
-  make: string;
-  model: string;
-  nickname: string | null;
-}
-
 interface AddPartModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  cars: Car[];
+  carId: string;
 }
 
 const initialState: PartActionState = {};
 
-export function AddPartModal({ open, onOpenChange, cars }: AddPartModalProps) {
+export function AddPartModal({ open, onOpenChange, carId }: AddPartModalProps) {
   const [state, formAction, isPending] = useActionState(
     createPart,
     initialState,
   );
   const [isWishlist, setIsWishlist] = useState(false);
-  const [category, setCategory] = useState("");
-  const [carId, setCarId] = useState("");
+  const [category, setCategory] = useState("none");
 
   useEffect(() => {
     if (state.data && state.data !== true) {
       toast.success("Part added to inventory");
       onOpenChange(false);
       setIsWishlist(false);
-      setCategory("");
-      setCarId("");
+      setCategory("none");
     }
     if (state.error) toast.error(state.error);
   }, [state, onOpenChange]);
@@ -73,13 +63,18 @@ export function AddPartModal({ open, onOpenChange, cars }: AddPartModalProps) {
         </DialogHeader>
 
         <form action={formAction} className="space-y-4">
+          <input type="hidden" name="carId" value={carId} />
           <input
             type="hidden"
             name="status"
             value={isWishlist ? "wishlist" : "stock"}
           />
-          <input type="hidden" name="category" value={category} />
-          <input type="hidden" name="carId" value={carId} />
+          {/* Send empty string for "no category" — action treats "" as undefined */}
+          <input
+            type="hidden"
+            name="category"
+            value={category === "none" ? "" : category}
+          />
 
           {/* Part Name */}
           <div className="space-y-1.5">
@@ -127,6 +122,7 @@ export function AddPartModal({ open, onOpenChange, cars }: AddPartModalProps) {
                 <SelectValue placeholder="Select a category" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="none">No category</SelectItem>
                 {MOD_CATEGORIES.map((cat) => (
                   <SelectItem key={cat} value={cat}>
                     {cat}
@@ -163,8 +159,8 @@ export function AddPartModal({ open, onOpenChange, cars }: AddPartModalProps) {
                 variant="outline"
                 size="sm"
                 className="shrink-0"
-                title="Extract product info from URL (coming soon)"
                 disabled
+                title="Extract product info from URL (coming soon)"
               >
                 <ExternalLinkIcon className="size-3.5 mr-1" />
                 Extract
@@ -240,26 +236,6 @@ export function AddPartModal({ open, onOpenChange, cars }: AddPartModalProps) {
                 placeholder="e.g., Tire Rack, Summit Racing"
               />
             </div>
-
-            {/* Car assignment */}
-            {cars.length > 0 && (
-              <div className="space-y-1.5">
-                <Label>Assign to Car</Label>
-                <Select value={carId} onValueChange={setCarId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Unassigned" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">Unassigned</SelectItem>
-                    {cars.map((car) => (
-                      <SelectItem key={car.id} value={car.id}>
-                        {car.nickname ?? `${car.year} ${car.make} ${car.model}`}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
 
             {/* Quantity */}
             <div className="space-y-1.5">
