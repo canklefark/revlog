@@ -164,13 +164,18 @@ export async function getAccessToken(
       method: "POST",
       headers: {
         ...authHeader,
-        "Content-Type": "application/x-www-form-urlencoded",
       },
-      body: `oauth_verifier=${encodeURIComponent(oauthVerifier)}`,
       signal: AbortSignal.timeout(10000),
     });
 
-    if (!res.ok) return null;
+    if (!res.ok) {
+      const errBody = await res.text().catch(() => "");
+      console.error(
+        `[msr-oauth] access token failed: ${res.status} ${res.statusText}`,
+        errBody,
+      );
+      return null;
+    }
 
     const body = await res.text();
     const parsed = parseFormEncoded(body);
