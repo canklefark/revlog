@@ -1,8 +1,6 @@
-import Link from "next/link";
 import { requireAuth } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
-import { CarList } from "@/components/garage/car-list";
-import { Button } from "@/components/ui/button";
+import { GaragePageClient } from "@/components/garage/garage-page-client";
 
 export default async function GaragePage() {
   const userId = await requireAuth();
@@ -14,13 +12,7 @@ export default async function GaragePage() {
 
   return (
     <main className="w-full">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold">My Garage</h1>
-        <Button asChild>
-          <Link href="/garage/new">Add Car</Link>
-        </Button>
-      </div>
-      <CarList cars={cars} />
+      <GaragePageClient cars={cars} />
     </main>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
-import Link from "next/link";
 import { toast } from "sonner";
 import { PencilIcon, Trash2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -22,7 +21,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { EXPENSE_CATEGORIES } from "@/lib/constants/expense-categories";
-import { deleteExpense, type ExpenseActionState } from "@/lib/actions/expense";
+import {
+  deleteExpense,
+  updateExpense,
+  type ExpenseActionState,
+} from "@/lib/actions/expense";
+import { ExpenseForm } from "@/components/garage/expense-form";
 import type { Expense } from "@prisma/client";
 
 interface ExpenseListProps {
@@ -92,6 +96,73 @@ function DeleteExpenseForm({ expenseId }: { expenseId: string }) {
   );
 }
 
+function ExpenseRow({ expense, carId }: { expense: Expense; carId: string }) {
+  const [editOpen, setEditOpen] = useState(false);
+
+  return (
+    <>
+      <div className="flex items-center justify-between gap-2 rounded-lg border border-border bg-card p-3">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs text-muted-foreground tabular-nums">
+              {new Date(expense.date).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })}
+            </span>
+            <Badge variant="secondary" className="text-xs shrink-0">
+              {expense.category}
+            </Badge>
+          </div>
+          <p className="text-sm font-medium mt-0.5 truncate">
+            {expense.vendor
+              ? expense.vendor
+              : expense.description
+                ? expense.description
+                : expense.category}
+          </p>
+          {expense.vendor && expense.description && (
+            <p className="text-xs text-muted-foreground truncate">
+              {expense.description}
+            </p>
+          )}
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="text-sm font-semibold tabular-nums">
+            {formatCurrency(expense.amount)}
+          </span>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-muted-foreground"
+            aria-label="Edit expense"
+            onClick={() => setEditOpen(true)}
+          >
+            <PencilIcon className="size-4" />
+          </Button>
+          <DeleteExpenseForm expenseId={expense.id} />
+        </div>
+      </div>
+
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Expense</DialogTitle>
+          </DialogHeader>
+          <ExpenseForm
+            action={updateExpense}
+            carId={carId}
+            defaultValues={expense}
+            onSuccess={() => setEditOpen(false)}
+            onCancel={() => setEditOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
 export function ExpenseList({ expenses, carId }: ExpenseListProps) {
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
 
@@ -137,54 +208,7 @@ export function ExpenseList({ expenses, carId }: ExpenseListProps) {
       ) : (
         <div className="space-y-2">
           {sorted.map((expense) => (
-            <div
-              key={expense.id}
-              className="flex items-center justify-between gap-2 rounded-lg border border-border bg-card p-3"
-            >
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-xs text-muted-foreground tabular-nums">
-                    {new Date(expense.date).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
-                  </span>
-                  <Badge variant="secondary" className="text-xs shrink-0">
-                    {expense.category}
-                  </Badge>
-                </div>
-                <p className="text-sm font-medium mt-0.5 truncate">
-                  {expense.vendor
-                    ? expense.vendor
-                    : expense.description
-                      ? expense.description
-                      : expense.category}
-                </p>
-                {expense.vendor && expense.description && (
-                  <p className="text-xs text-muted-foreground truncate">
-                    {expense.description}
-                  </p>
-                )}
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <span className="text-sm font-semibold tabular-nums">
-                  {formatCurrency(expense.amount)}
-                </span>
-                <Button
-                  asChild
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 text-muted-foreground"
-                  aria-label="Edit expense"
-                >
-                  <Link href={`/garage/${carId}/expenses/${expense.id}/edit`}>
-                    <PencilIcon className="size-4" />
-                  </Link>
-                </Button>
-                <DeleteExpenseForm expenseId={expense.id} />
-              </div>
-            </div>
+            <ExpenseRow key={expense.id} expense={expense} carId={carId} />
           ))}
         </div>
       )}

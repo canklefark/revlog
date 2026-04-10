@@ -1,12 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { PlusIcon } from "lucide-react";
 import { requireAuth } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 import { getMaintenanceAlerts } from "@/lib/utils/maintenance-alerts";
-import { MaintenanceAlertBanner } from "@/components/garage/maintenance-alert-banner";
-import { MaintenanceList } from "@/components/garage/maintenance-list";
-import { Button } from "@/components/ui/button";
+import { MaintenancePageClient } from "@/components/garage/maintenance-page-client";
 import { ExportButton } from "@/components/shared/export-button";
 
 export default async function MaintenancePage({
@@ -46,21 +43,12 @@ export default async function MaintenancePage({
           </Link>
           <h1 className="text-2xl font-semibold">Maintenance Log</h1>
         </div>
-        <div className="flex items-center gap-2">
-          <ExportButton section="maintenance" carId={carId} />
-          <Button asChild size="sm">
-            <Link href={`/garage/${carId}/maintenance/new`}>
-              <PlusIcon />
-              Add Entry
-            </Link>
-          </Button>
-        </div>
+        <ExportButton section="maintenance" carId={carId} />
       </div>
 
-      <MaintenanceAlertBanner alerts={alerts} carId={carId} />
-
-      <MaintenanceList
+      <MaintenancePageClient
         entries={entries}
+        alerts={alerts}
         carId={carId}
         carOdometer={car.currentOdometer ?? null}
       />

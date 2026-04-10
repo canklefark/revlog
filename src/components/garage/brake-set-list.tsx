@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useActionState, useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -30,8 +29,10 @@ import {
 import {
   deleteBrakeSet,
   incrementBrakeHeatCycles,
+  updateBrakeSet,
   type BrakeSetActionState,
 } from "@/lib/actions/brake-set";
+import { BrakeSetForm } from "@/components/garage/brake-set-form";
 import type { BrakeSet } from "@prisma/client";
 import type { GroupedBrakeSets } from "@/lib/queries/brake-sets";
 
@@ -156,73 +157,83 @@ function BrakeSetCard({
   brakeSet: BrakeSet;
   carId: string;
 }) {
+  const [editOpen, setEditOpen] = useState(false);
+
   return (
-    <div className="rounded-lg border border-border bg-card p-4 space-y-3">
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-2 flex-wrap">
-          <Badge variant={positionVariant(brakeSet.position)}>
-            {brakeSet.position}
-          </Badge>
-          <Badge variant="outline" className="text-xs">
-            {brakeSet.status}
-          </Badge>
-        </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 shrink-0 text-muted-foreground"
-              aria-label="Brake set actions"
-            >
-              <MoreHorizontalIcon className="size-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem asChild>
-              <Link href={`/garage/${carId}/brakes/${brakeSet.id}/edit`}>
+    <>
+      <div className="rounded-lg border border-border bg-card p-4 space-y-3">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <Badge variant={positionVariant(brakeSet.position)}>
+              {brakeSet.position}
+            </Badge>
+            <Badge variant="outline" className="text-xs">
+              {brakeSet.status}
+            </Badge>
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 shrink-0 text-muted-foreground"
+                aria-label="Brake set actions"
+              >
+                <MoreHorizontalIcon className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onSelect={() => setEditOpen(true)}>
                 <PencilIcon className="size-4 mr-2" />
                 Edit
-              </Link>
-            </DropdownMenuItem>
-            <HeatCycleForm brakeSetId={brakeSet.id} />
-            <DropdownMenuSeparator />
-            <DeleteBrakeSetForm brakeSetId={brakeSet.id} />
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+              </DropdownMenuItem>
+              <HeatCycleForm brakeSetId={brakeSet.id} />
+              <DropdownMenuSeparator />
+              <DeleteBrakeSetForm brakeSetId={brakeSet.id} />
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
 
-      <Link
-        href={`/garage/${carId}/brakes/${brakeSet.id}`}
-        className="block group"
-      >
         <div className="space-y-1">
           {brakeSet.padBrand || brakeSet.padCompound ? (
-            <p className="text-sm font-medium group-hover:underline">
+            <p className="text-sm font-medium">
               {[brakeSet.padBrand, brakeSet.padCompound]
                 .filter(Boolean)
                 .join(" ")}
             </p>
           ) : (
-            <p className="text-sm text-muted-foreground italic group-hover:underline">
-              No pad info
-            </p>
+            <p className="text-sm text-muted-foreground italic">No pad info</p>
           )}
         </div>
-      </Link>
 
-      <div className="flex items-center gap-3 text-xs text-muted-foreground">
-        <span className="flex items-center gap-1">
-          <FlameIcon className="size-3" />
-          {brakeSet.heatCycles} cycle{brakeSet.heatCycles !== 1 ? "s" : ""}
-        </span>
+        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1">
+            <FlameIcon className="size-3" />
+            {brakeSet.heatCycles} cycle{brakeSet.heatCycles !== 1 ? "s" : ""}
+          </span>
+        </div>
+
+        {brakeSet.wearRemaining !== null &&
+          brakeSet.wearRemaining !== undefined && (
+            <WearBar wear={brakeSet.wearRemaining} />
+          )}
       </div>
 
-      {brakeSet.wearRemaining !== null &&
-        brakeSet.wearRemaining !== undefined && (
-          <WearBar wear={brakeSet.wearRemaining} />
-        )}
-    </div>
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Brake Set</DialogTitle>
+          </DialogHeader>
+          <BrakeSetForm
+            action={updateBrakeSet}
+            carId={carId}
+            defaultValues={brakeSet}
+            onSuccess={() => setEditOpen(false)}
+            onCancel={() => setEditOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 

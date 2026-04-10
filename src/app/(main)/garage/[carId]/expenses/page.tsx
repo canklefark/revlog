@@ -1,12 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { PlusIcon } from "lucide-react";
 import { requireAuth } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 import { getExpenseSummary } from "@/lib/queries/expenses";
-import { ExpenseSummaryView } from "@/components/garage/expense-summary";
-import { ExpenseList } from "@/components/garage/expense-list";
-import { Button } from "@/components/ui/button";
+import { ExpensesPageClient } from "@/components/garage/expenses-page-client";
 import { ExportButton } from "@/components/shared/export-button";
 
 export default async function ExpensesPage({
@@ -35,22 +32,10 @@ export default async function ExpensesPage({
           </Link>
           <h1 className="text-2xl font-semibold">Expenses</h1>
         </div>
-        <div className="flex items-center gap-2">
-          <ExportButton section="expenses" carId={carId} />
-          <Button asChild size="sm">
-            <Link href={`/garage/${carId}/expenses/new`}>
-              <PlusIcon />
-              Add Expense
-            </Link>
-          </Button>
-        </div>
+        <ExportButton section="expenses" carId={carId} />
       </div>
 
-      <div className="mb-6">
-        <ExpenseSummaryView summary={summary} />
-      </div>
-
-      <ExpenseList expenses={expenses} carId={carId} />
+      <ExpensesPageClient expenses={expenses} summary={summary} carId={carId} />
     </main>
   );
 }

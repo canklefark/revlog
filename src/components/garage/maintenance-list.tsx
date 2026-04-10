@@ -1,7 +1,6 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
-import Link from "next/link";
 import { toast } from "sonner";
 import { PencilIcon, Trash2Icon } from "lucide-react";
 import type { MaintenanceEntry } from "@prisma/client";
@@ -22,8 +21,10 @@ import {
 } from "@/lib/utils/maintenance-alerts";
 import {
   deleteMaintenance,
+  updateMaintenance,
   type MaintenanceActionState,
 } from "@/lib/actions/maintenance";
+import { MaintenanceForm } from "@/components/garage/maintenance-form";
 
 interface MaintenanceListProps {
   entries: MaintenanceEntry[];
@@ -93,6 +94,7 @@ function EntryCard({
   carId: string;
   carOdometer: number | null;
 }) {
+  const [editOpen, setEditOpen] = useState(false);
   const alertLevel = getAlertLevel(entry, carOdometer);
   const badgeVariant = getAlertBadgeVariant(alertLevel);
   const alertBadgeClass =
@@ -154,20 +156,31 @@ function EntryCard({
 
       <div className="flex items-center gap-1 shrink-0">
         <Button
-          asChild
           variant="ghost"
           size="icon"
           className="size-8 text-muted-foreground hover:text-foreground"
+          aria-label="Edit entry"
+          onClick={() => setEditOpen(true)}
         >
-          <Link
-            href={`/garage/${carId}/maintenance/${entry.id}/edit`}
-            aria-label="Edit entry"
-          >
-            <PencilIcon className="size-4" />
-          </Link>
+          <PencilIcon className="size-4" />
         </Button>
         <DeleteForm entryId={entry.id} />
       </div>
+
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Maintenance Entry</DialogTitle>
+          </DialogHeader>
+          <MaintenanceForm
+            action={updateMaintenance}
+            carId={carId}
+            defaultValues={entry}
+            onSuccess={() => setEditOpen(false)}
+            onCancel={() => setEditOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

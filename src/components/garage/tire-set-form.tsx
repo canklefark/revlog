@@ -303,7 +303,9 @@ export function TireSetForm({
           </p>
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="cost">Front Price ($)</Label>
+          <Label htmlFor="cost">
+            {isStaggered ? "Front Price ($)" : "Price ($)"}
+          </Label>
           <Input
             id="cost"
             name="cost"

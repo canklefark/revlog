@@ -26,8 +26,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { deleteCar } from "@/lib/actions/car";
+import { deleteCar, updateCar } from "@/lib/actions/car";
 import type { CarActionState } from "@/lib/actions/car";
+import { CarForm } from "@/components/garage/car-form";
 
 interface CarCardProps {
   car: Car;
@@ -38,6 +39,7 @@ const initialState: CarActionState = {};
 export function CarCard({ car }: CarCardProps) {
   const [, deleteAction, isDeleting] = useActionState(deleteCar, initialState);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
 
   const displayName = car.nickname
     ? car.nickname
@@ -66,11 +68,9 @@ export function CarCard({ car }: CarCardProps) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem asChild>
-                <Link href={`/garage/${car.id}/edit`}>
-                  <PencilIcon />
-                  Edit
-                </Link>
+              <DropdownMenuItem onSelect={() => setEditOpen(true)}>
+                <PencilIcon />
+                Edit
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
@@ -139,6 +139,20 @@ export function CarCard({ car }: CarCardProps) {
               </Button>
             </form>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Car</DialogTitle>
+          </DialogHeader>
+          <CarForm
+            action={updateCar}
+            car={car}
+            onSuccess={() => setEditOpen(false)}
+            onCancel={() => setEditOpen(false)}
+          />
         </DialogContent>
       </Dialog>
     </>

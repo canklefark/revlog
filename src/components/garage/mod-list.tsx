@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useActionState, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { PencilIcon, Trash2Icon } from "lucide-react";
@@ -15,7 +14,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { deleteMod, type ModActionState } from "@/lib/actions/mod";
+import { deleteMod, updateMod, type ModActionState } from "@/lib/actions/mod";
+import { ModForm } from "@/components/garage/mod-form";
 import type { Mod } from "@prisma/client";
 
 interface ModListProps {
@@ -76,6 +76,66 @@ function DeleteModForm({ modId }: { modId: string }) {
   );
 }
 
+function ModRow({ mod, carId }: { mod: Mod; carId: string }) {
+  const [editOpen, setEditOpen] = useState(false);
+
+  return (
+    <>
+      <div className="flex items-center justify-between gap-2 rounded-lg border border-border bg-card p-3">
+        <div className="min-w-0 flex-1">
+          <p className="font-medium text-sm truncate">{mod.name}</p>
+          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+            {mod.brand && (
+              <span className="text-xs text-muted-foreground">{mod.brand}</span>
+            )}
+            {mod.cost != null && (
+              <span className="text-xs text-muted-foreground">
+                $
+                {mod.cost.toLocaleString("en-US", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+              </span>
+            )}
+            {mod.installDate && (
+              <span className="text-xs text-muted-foreground">
+                {new Date(mod.installDate).toLocaleDateString()}
+              </span>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-1 shrink-0">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-muted-foreground"
+            aria-label="Edit modification"
+            onClick={() => setEditOpen(true)}
+          >
+            <PencilIcon className="size-4" />
+          </Button>
+          <DeleteModForm modId={mod.id} />
+        </div>
+      </div>
+
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Modification</DialogTitle>
+          </DialogHeader>
+          <ModForm
+            action={updateMod}
+            carId={carId}
+            defaultValues={mod}
+            onSuccess={() => setEditOpen(false)}
+            onCancel={() => setEditOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
 export function ModList({ grouped, carId }: ModListProps) {
   const categories = Object.keys(grouped).sort();
 
@@ -101,49 +161,7 @@ export function ModList({ grouped, carId }: ModListProps) {
           </div>
           <div className="space-y-2">
             {grouped[category].map((mod) => (
-              <div
-                key={mod.id}
-                className="flex items-center justify-between gap-2 rounded-lg border border-border bg-card p-3"
-              >
-                <div className="min-w-0 flex-1">
-                  <p className="font-medium text-sm truncate">{mod.name}</p>
-                  <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                    {mod.brand && (
-                      <span className="text-xs text-muted-foreground">
-                        {mod.brand}
-                      </span>
-                    )}
-                    {mod.cost != null && (
-                      <span className="text-xs text-muted-foreground">
-                        $
-                        {mod.cost.toLocaleString("en-US", {
-                          minimumFractionDigits: 2,
-                          maximumFractionDigits: 2,
-                        })}
-                      </span>
-                    )}
-                    {mod.installDate && (
-                      <span className="text-xs text-muted-foreground">
-                        {new Date(mod.installDate).toLocaleDateString()}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-center gap-1 shrink-0">
-                  <Button
-                    asChild
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-muted-foreground"
-                    aria-label="Edit modification"
-                  >
-                    <Link href={`/garage/${carId}/mods/${mod.id}/edit`}>
-                      <PencilIcon className="size-4" />
-                    </Link>
-                  </Button>
-                  <DeleteModForm modId={mod.id} />
-                </div>
-              </div>
+              <ModRow key={mod.id} mod={mod} carId={carId} />
             ))}
           </div>
         </div>

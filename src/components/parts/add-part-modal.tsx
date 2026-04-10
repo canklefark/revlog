@@ -54,7 +54,7 @@ export function AddPartModal({ open, onOpenChange, carId }: AddPartModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add Part</DialogTitle>
           <DialogDescription>

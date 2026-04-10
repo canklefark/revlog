@@ -1,7 +1,6 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -31,12 +30,13 @@ interface CarFormProps {
     formData: FormData,
   ) => Promise<CarActionState>;
   car?: Car;
+  onSuccess?: () => void;
+  onCancel?: () => void;
 }
 
 const initialState: CarActionState = {};
 
-export function CarForm({ action, car }: CarFormProps) {
-  const router = useRouter();
+export function CarForm({ action, car, onSuccess, onCancel }: CarFormProps) {
   const [showMore, setShowMore] = useState(false);
 
   const purchaseDateDefault = car?.purchaseDate
@@ -76,8 +76,11 @@ export function CarForm({ action, car }: CarFormProps) {
   useEffect(() => {
     if (!state) return;
     if (state.error) toast.error(state.error);
-    if (state.data) toast.success(car ? "Car updated." : "Car added.");
-  }, [state, car]);
+    if (state.data) {
+      toast.success(car ? "Car updated." : "Car added.");
+      onSuccess?.();
+    }
+  }, [state]);
 
   const fieldError = (field: keyof CarFormInput): string | undefined => {
     const client = clientErrors[field];
@@ -289,17 +292,19 @@ export function CarForm({ action, car }: CarFormProps) {
 
       {state.error && <p className="text-sm text-destructive">{state.error}</p>}
 
-      <div className="flex gap-3 pt-2">
+      <div className="flex justify-end gap-2 pt-2">
+        {onCancel && (
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onCancel}
+            disabled={isPending}
+          >
+            Cancel
+          </Button>
+        )}
         <Button type="submit" disabled={isPending}>
           {isPending ? "Saving..." : car ? "Save Changes" : "Add Car"}
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => router.back()}
-          disabled={isPending}
-        >
-          Cancel
         </Button>
       </div>
     </form>

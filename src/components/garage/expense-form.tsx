@@ -1,7 +1,6 @@
 "use client";
 
 import { useActionState, useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +27,8 @@ interface ExpenseFormProps {
   ) => Promise<ExpenseActionState>;
   carId: string;
   defaultValues?: Partial<Expense>;
+  onSuccess?: () => void;
+  onCancel?: () => void;
 }
 
 const initialState: ExpenseActionState = {};
@@ -41,8 +42,9 @@ export function ExpenseForm({
   action,
   carId,
   defaultValues,
+  onSuccess,
+  onCancel,
 }: ExpenseFormProps) {
-  const router = useRouter();
   const [state, formAction, isPending] = useActionState(action, initialState);
   const [category, setCategory] = useState<ExpenseCategory | "">(
     (defaultValues?.category as ExpenseCategory) ?? "",
@@ -51,9 +53,10 @@ export function ExpenseForm({
   useEffect(() => {
     if (state.data) {
       toast.success(defaultValues?.id ? "Expense updated" : "Expense added");
-      router.push(`/garage/${carId}/expenses`);
+      onSuccess?.();
     }
-  }, [state.data]);
+    if (state.error) toast.error(state.error);
+  }, [state]);
 
   const fieldError = (field: string): string | undefined =>
     state.fieldErrors?.[field]?.[0];
@@ -175,9 +178,21 @@ export function ExpenseForm({
 
       {state.error && <p className="text-sm text-destructive">{state.error}</p>}
 
-      <Button type="submit" disabled={isPending} className="w-full">
-        {isPending ? "Saving..." : isEdit ? "Save Changes" : "Add Expense"}
-      </Button>
+      <div className="flex justify-end gap-2 pt-1">
+        {onCancel && (
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onCancel}
+            disabled={isPending}
+          >
+            Cancel
+          </Button>
+        )}
+        <Button type="submit" disabled={isPending}>
+          {isPending ? "Saving..." : isEdit ? "Save Changes" : "Add Expense"}
+        </Button>
+      </div>
     </form>
   );
 }

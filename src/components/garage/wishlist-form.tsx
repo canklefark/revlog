@@ -1,7 +1,6 @@
 "use client";
 
 import { useActionState, useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -33,6 +32,8 @@ interface WishlistFormProps {
   ) => Promise<WishlistActionState>;
   carId: string;
   defaultValues?: Partial<WishlistItem>;
+  onSuccess?: () => void;
+  onCancel?: () => void;
 }
 
 const initialState: WishlistActionState = {};
@@ -41,8 +42,9 @@ export function WishlistForm({
   action,
   carId,
   defaultValues,
+  onSuccess,
+  onCancel,
 }: WishlistFormProps) {
-  const router = useRouter();
   const [state, formAction, isPending] = useActionState(action, initialState);
   const [category, setCategory] = useState<ModCategory | "">(
     (defaultValues?.category as ModCategory) ?? "",
@@ -56,9 +58,10 @@ export function WishlistForm({
       toast.success(
         defaultValues?.id ? "Item updated" : "Item added to wishlist",
       );
-      router.push(`/garage/${carId}/wishlist`);
+      onSuccess?.();
     }
-  }, [state.data]);
+    if (state.error) toast.error(state.error);
+  }, [state]);
 
   const fieldError = (field: string): string | undefined =>
     state.fieldErrors?.[field]?.[0];
@@ -189,9 +192,25 @@ export function WishlistForm({
 
       {state.error && <p className="text-sm text-destructive">{state.error}</p>}
 
-      <Button type="submit" disabled={isPending} className="w-full">
-        {isPending ? "Saving..." : isEdit ? "Save Changes" : "Add to Wishlist"}
-      </Button>
+      <div className="flex justify-end gap-2 pt-1">
+        {onCancel && (
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onCancel}
+            disabled={isPending}
+          >
+            Cancel
+          </Button>
+        )}
+        <Button type="submit" disabled={isPending}>
+          {isPending
+            ? "Saving..."
+            : isEdit
+              ? "Save Changes"
+              : "Add to Wishlist"}
+        </Button>
+      </div>
     </form>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import { useActionState, useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -30,6 +29,8 @@ interface BrakeSetFormProps {
   ) => Promise<BrakeSetActionState>;
   carId: string;
   defaultValues?: Partial<BrakeSet>;
+  onSuccess?: () => void;
+  onCancel?: () => void;
 }
 
 const initialState: BrakeSetActionState = {};
@@ -43,8 +44,9 @@ export function BrakeSetForm({
   action,
   carId,
   defaultValues,
+  onSuccess,
+  onCancel,
 }: BrakeSetFormProps) {
-  const router = useRouter();
   const [state, formAction, isPending] = useActionState(action, initialState);
   const [position, setPosition] = useState<BrakePosition | "">(
     (defaultValues?.position as BrakePosition) ?? "",
@@ -58,9 +60,10 @@ export function BrakeSetForm({
       toast.success(
         defaultValues?.id ? "Brake set updated" : "Brake set added",
       );
-      router.push(`/garage/${carId}/brakes`);
+      onSuccess?.();
     }
-  }, [state.data]);
+    if (state.error) toast.error(state.error);
+  }, [state]);
 
   const fieldError = (field: string): string | undefined =>
     state.fieldErrors?.[field]?.[0];
@@ -247,9 +250,21 @@ export function BrakeSetForm({
 
       {state.error && <p className="text-sm text-destructive">{state.error}</p>}
 
-      <Button type="submit" disabled={isPending} className="w-full">
-        {isPending ? "Saving..." : isEdit ? "Save Changes" : "Add Brake Set"}
-      </Button>
+      <div className="flex justify-end gap-2 pt-1">
+        {onCancel && (
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onCancel}
+            disabled={isPending}
+          >
+            Cancel
+          </Button>
+        )}
+        <Button type="submit" disabled={isPending}>
+          {isPending ? "Saving..." : isEdit ? "Save Changes" : "Add Brake Set"}
+        </Button>
+      </div>
     </form>
   );
 }

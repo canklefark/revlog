@@ -1,7 +1,6 @@
 "use client";
 
 import { useActionState, useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -31,6 +30,8 @@ interface ModFormProps {
   ) => Promise<ModActionState>;
   carId: string;
   defaultValues?: Partial<Mod>;
+  onSuccess?: () => void;
+  onCancel?: () => void;
 }
 
 const initialState: ModActionState = {};
@@ -40,8 +41,13 @@ function formatDateForInput(date: Date | null | undefined): string {
   return new Date(date).toISOString().split("T")[0];
 }
 
-export function ModForm({ action, carId, defaultValues }: ModFormProps) {
-  const router = useRouter();
+export function ModForm({
+  action,
+  carId,
+  defaultValues,
+  onSuccess,
+  onCancel,
+}: ModFormProps) {
   const [state, formAction, isPending] = useActionState(action, initialState);
   const [category, setCategory] = useState<ModCategory | "">(
     (defaultValues?.category as ModCategory) ?? "",
@@ -55,9 +61,10 @@ export function ModForm({ action, carId, defaultValues }: ModFormProps) {
       toast.success(
         defaultValues?.id ? "Modification updated" : "Modification added",
       );
-      router.push(`/garage/${carId}/mods`);
+      onSuccess?.();
     }
-  }, [state.data]);
+    if (state.error) toast.error(state.error);
+  }, [state]);
 
   const fieldError = (field: string): string | undefined =>
     state.fieldErrors?.[field]?.[0];
@@ -248,9 +255,25 @@ export function ModForm({ action, carId, defaultValues }: ModFormProps) {
 
       {state.error && <p className="text-sm text-destructive">{state.error}</p>}
 
-      <Button type="submit" disabled={isPending} className="w-full">
-        {isPending ? "Saving..." : isEdit ? "Save Changes" : "Add Modification"}
-      </Button>
+      <div className="flex justify-end gap-2 pt-1">
+        {onCancel && (
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onCancel}
+            disabled={isPending}
+          >
+            Cancel
+          </Button>
+        )}
+        <Button type="submit" disabled={isPending}>
+          {isPending
+            ? "Saving..."
+            : isEdit
+              ? "Save Changes"
+              : "Add Modification"}
+        </Button>
+      </div>
     </form>
   );
 }

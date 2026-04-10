@@ -1,7 +1,6 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -32,6 +31,8 @@ interface MaintenanceFormProps {
   carId: string;
   defaultValues?: Partial<MaintenanceEntry>;
   defaultServiceType?: string;
+  onSuccess?: () => void;
+  onCancel?: () => void;
 }
 
 const initialState: MaintenanceActionState = {};
@@ -46,8 +47,9 @@ export function MaintenanceForm({
   carId,
   defaultValues,
   defaultServiceType,
+  onSuccess,
+  onCancel,
 }: MaintenanceFormProps) {
-  const router = useRouter();
   const isEdit = !!defaultValues?.id;
   const [state, formAction, isPending] = useActionState(action, initialState);
 
@@ -56,9 +58,9 @@ export function MaintenanceForm({
     if (state.error) toast.error(state.error);
     if (state.data) {
       toast.success(isEdit ? "Entry updated." : "Entry added.");
-      router.push(`/garage/${carId}/maintenance`);
+      onSuccess?.();
     }
-  }, [state, isEdit, carId, router]);
+  }, [state]);
 
   const initialServiceType = (defaultValues?.serviceType ??
     defaultServiceType ??
@@ -321,9 +323,21 @@ export function MaintenanceForm({
 
       {state.error && <p className="text-sm text-destructive">{state.error}</p>}
 
-      <Button type="submit" disabled={isPending} className="w-full">
-        {isPending ? "Saving..." : isEdit ? "Save Changes" : "Add Entry"}
-      </Button>
+      <div className="flex justify-end gap-2 pt-1">
+        {onCancel && (
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onCancel}
+            disabled={isPending}
+          >
+            Cancel
+          </Button>
+        )}
+        <Button type="submit" disabled={isPending}>
+          {isPending ? "Saving..." : isEdit ? "Save Changes" : "Add Entry"}
+        </Button>
+      </div>
     </form>
   );
 }

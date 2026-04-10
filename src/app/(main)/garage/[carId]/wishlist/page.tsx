@@ -1,12 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { PlusIcon } from "lucide-react";
 import { requireAuth } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 import { getWishlistItems } from "@/lib/queries/wishlist";
-import { WishlistList } from "@/components/garage/wishlist-list";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { WishlistPageClient } from "@/components/garage/wishlist-page-client";
 import { ExportButton } from "@/components/shared/export-button";
 
 export default async function WishlistPage({
@@ -39,70 +36,17 @@ export default async function WishlistPage({
           </Link>
           <h1 className="text-2xl font-semibold">Wishlist</h1>
         </div>
-        <div className="flex items-center gap-2">
-          <ExportButton section="wishlist" carId={carId} />
-          <Button asChild size="sm">
-            <Link href={`/garage/${carId}/wishlist/new`}>
-              <PlusIcon />
-              Add Item
-            </Link>
-          </Button>
-        </div>
+        <ExportButton section="wishlist" carId={carId} />
       </div>
 
-      {items.length > 0 && (
-        <Card className="mb-6">
-          <CardContent className="pt-4 pb-4">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
-              <div>
-                <p className="text-2xl font-semibold">{items.length}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {items.length === 1 ? "Item" : "Items"}
-                </p>
-              </div>
-              <div>
-                <p className="text-2xl font-semibold text-red-500">
-                  {highCount}
-                </p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  High priority
-                </p>
-              </div>
-              <div>
-                <p className="text-2xl font-semibold text-yellow-500">
-                  {medCount}
-                </p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Medium priority
-                </p>
-              </div>
-              {estimatedTotal > 0 ? (
-                <div>
-                  <p className="text-2xl font-semibold">
-                    ~$
-                    {estimatedTotal.toLocaleString("en-US", {
-                      minimumFractionDigits: 0,
-                      maximumFractionDigits: 0,
-                    })}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Estimated total
-                  </p>
-                </div>
-              ) : (
-                <div>
-                  <p className="text-2xl font-semibold">{lowCount}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Low priority
-                  </p>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      <WishlistList items={items} carId={carId} />
+      <WishlistPageClient
+        items={items}
+        estimatedTotal={estimatedTotal}
+        highCount={highCount}
+        medCount={medCount}
+        lowCount={lowCount}
+        carId={carId}
+      />
     </main>
   );
 }

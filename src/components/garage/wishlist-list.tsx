@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useActionState, useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -31,10 +30,18 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   deleteWishlistItem,
   moveWishlistToMod,
+  updateWishlistItem,
   type WishlistActionState,
 } from "@/lib/actions/wishlist";
+import { WishlistForm } from "@/components/garage/wishlist-form";
 import { groupByKey } from "@/lib/utils/group-by";
 import type { WishlistItem } from "@prisma/client";
 
@@ -119,6 +126,98 @@ function MoveToModsForm({ itemId }: { itemId: string }) {
         {isPending ? "Moving..." : "Move to Mods"}
       </Button>
     </form>
+  );
+}
+
+function WishlistItemCard({
+  item,
+  carId,
+}: {
+  item: WishlistItem;
+  carId: string;
+}) {
+  const [editOpen, setEditOpen] = useState(false);
+
+  return (
+    <>
+      <div className="rounded-lg border border-border bg-card p-3">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="font-medium text-sm">
+                {item.brand && (
+                  <span className="text-muted-foreground font-normal">
+                    {item.brand}{" "}
+                  </span>
+                )}
+                {item.name}
+              </p>
+              <span
+                className={`text-xs font-medium ${PRIORITY_COLORS[item.priority] ?? "text-muted-foreground"}`}
+              >
+                {item.priority}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+              {item.estimatedCost != null && (
+                <span className="text-xs text-muted-foreground">
+                  ~$
+                  {item.estimatedCost.toLocaleString("en-US", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </span>
+              )}
+              {item.sourceUrl && (
+                <a
+                  href={item.sourceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-0.5 text-xs text-primary hover:underline underline-offset-4"
+                >
+                  Source <ExternalLinkIcon className="size-3" />
+                </a>
+              )}
+            </div>
+            {item.notes && (
+              <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                {item.notes}
+              </p>
+            )}
+          </div>
+          <div className="flex items-center gap-1 shrink-0">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-muted-foreground"
+              aria-label="Edit wishlist item"
+              onClick={() => setEditOpen(true)}
+            >
+              <PencilIcon className="size-4" />
+            </Button>
+            <DeleteWishlistForm itemId={item.id} />
+          </div>
+        </div>
+        <div className="mt-2 pt-2 border-t border-border">
+          <MoveToModsForm itemId={item.id} />
+        </div>
+      </div>
+
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Wishlist Item</DialogTitle>
+          </DialogHeader>
+          <WishlistForm
+            action={updateWishlistItem}
+            carId={carId}
+            defaultValues={item}
+            onSuccess={() => setEditOpen(false)}
+            onCancel={() => setEditOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
@@ -215,75 +314,7 @@ export function WishlistList({ items, carId }: WishlistListProps) {
               </div>
               <div className="space-y-3">
                 {grouped[category].map((item) => (
-                  <div
-                    key={item.id}
-                    className="rounded-lg border border-border bg-card p-3"
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <p className="font-medium text-sm">
-                            {item.brand && (
-                              <span className="text-muted-foreground font-normal">
-                                {item.brand}{" "}
-                              </span>
-                            )}
-                            {item.name}
-                          </p>
-                          <span
-                            className={`text-xs font-medium ${PRIORITY_COLORS[item.priority] ?? "text-muted-foreground"}`}
-                          >
-                            {item.priority}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                          {item.estimatedCost != null && (
-                            <span className="text-xs text-muted-foreground">
-                              ~$
-                              {item.estimatedCost.toLocaleString("en-US", {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              })}
-                            </span>
-                          )}
-                          {item.sourceUrl && (
-                            <a
-                              href={item.sourceUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-0.5 text-xs text-primary hover:underline underline-offset-4"
-                            >
-                              Source <ExternalLinkIcon className="size-3" />
-                            </a>
-                          )}
-                        </div>
-                        {item.notes && (
-                          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                            {item.notes}
-                          </p>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-1 shrink-0">
-                        <Button
-                          asChild
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-muted-foreground"
-                          aria-label="Edit wishlist item"
-                        >
-                          <Link
-                            href={`/garage/${carId}/wishlist/${item.id}/edit`}
-                          >
-                            <PencilIcon className="size-4" />
-                          </Link>
-                        </Button>
-                        <DeleteWishlistForm itemId={item.id} />
-                      </div>
-                    </div>
-                    <div className="mt-2 pt-2 border-t border-border">
-                      <MoveToModsForm itemId={item.id} />
-                    </div>
-                  </div>
+                  <WishlistItemCard key={item.id} item={item} carId={carId} />
                 ))}
               </div>
             </div>
