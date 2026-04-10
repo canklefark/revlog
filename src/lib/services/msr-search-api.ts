@@ -6,6 +6,7 @@ import "server-only";
 import { msrCredsPresent, msrFetch } from "@/lib/services/msr-oauth";
 import {
   getMsrAccount,
+  fetchMyProfile,
   type MsrAccount,
   type MsrEventResult,
 } from "@/lib/services/msr-authenticated-api";
@@ -125,12 +126,26 @@ export async function searchMsrCalendars(
   if (params.end) qs.set("end", params.end);
   if (params.country) qs.set("country", params.country);
 
+  // /rest/calendars requires X-Organization-Id even with OAuth.
+  // Fetch the user's first org membership to satisfy this requirement.
+  const profile = await fetchMyProfile(userId);
+  const orgId = profile?.orgs[0]?.id;
+  const extraHeaders: Record<string, string> = orgId
+    ? { "X-Organization-Id": orgId }
+    : {};
+  if (orgId) {
+    console.log(`[msr-search] using org ID: ${orgId}`);
+  } else {
+    console.warn(`[msr-search] no org ID found — request may fail`);
+  }
+
   const url = `/rest/calendars.json?${qs.toString()}`;
   const res = await msrFetch(
     url,
     "GET",
     account.accessToken,
     account.accessTokenSecret,
+    extraHeaders,
   );
   if (!res?.ok) {
     console.error(
