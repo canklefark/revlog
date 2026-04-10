@@ -45,6 +45,7 @@ export async function createMod(
     cost: parseOptionalNumber(formData.get("cost")),
     odometerAtInstall: parseOptionalNumber(formData.get("odometerAtInstall")),
     notes: parseOptionalString(formData.get("notes")),
+    receiptUrl: parseOptionalString(formData.get("receiptUrl")),
   };
 
   const parsed = createModSchema.safeParse(raw);
@@ -81,6 +82,7 @@ export async function createMod(
       cost: parsed.data.cost,
       odometerAtInstall: parsed.data.odometerAtInstall,
       notes: parsed.data.notes,
+      receiptUrl: parsed.data.receiptUrl,
     },
   });
 
@@ -106,6 +108,7 @@ export async function updateMod(
     cost: parseOptionalNumber(formData.get("cost")),
     odometerAtInstall: parseOptionalNumber(formData.get("odometerAtInstall")),
     notes: parseOptionalString(formData.get("notes")),
+    receiptUrl: parseOptionalString(formData.get("receiptUrl")),
   };
 
   const parsed = updateModSchema.safeParse(raw);
@@ -153,6 +156,9 @@ export async function updateMod(
         odometerAtInstall: parsed.data.odometerAtInstall,
       }),
       ...(parsed.data.notes !== undefined && { notes: parsed.data.notes }),
+      ...(parsed.data.receiptUrl !== undefined && {
+        receiptUrl: parsed.data.receiptUrl,
+      }),
     },
   });
 

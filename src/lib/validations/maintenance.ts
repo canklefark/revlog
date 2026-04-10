@@ -30,6 +30,7 @@ export const createMaintenanceSchema = z
       .int()
       .nonnegative("Next due mileage must be non-negative")
       .optional(),
+    receiptUrl: z.string().url("Receipt URL must be a valid URL").optional(),
   })
   .refine(
     (data) =>
@@ -76,6 +77,7 @@ export const updateMaintenanceSchema = z
       .int()
       .nonnegative("Next due mileage must be non-negative")
       .optional(),
+    receiptUrl: z.string().url("Receipt URL must be a valid URL").optional(),
   })
   .refine(
     (data) =>

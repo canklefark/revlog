@@ -6,10 +6,24 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PencilIcon } from "lucide-react";
+import {
+  PencilIcon,
+  Disc,
+  Gauge,
+  Sliders,
+  Wrench,
+  Star,
+  ClipboardList,
+  DollarSign,
+} from "lucide-react";
 import { BackLink } from "@/components/shared/back-link";
 import { DeleteCarButton } from "@/components/garage/delete-car-button";
 import { getMaintenanceAlerts } from "@/lib/utils/maintenance-alerts";
+import { getTireSetsForCar } from "@/lib/queries/tire-sets";
+import { getBrakeSetsForCar } from "@/lib/queries/brake-sets";
+import { getSetupsForCar } from "@/lib/queries/suspension-setups";
+import { getExpenseSummary } from "@/lib/queries/expenses";
+import type { AlertLevel } from "@/lib/utils/maintenance-alerts";
 
 export default async function CarDetailPage({
   params,
@@ -27,22 +41,69 @@ export default async function CarDetailPage({
     notFound();
   }
 
-  const [modCount, modTotalResult, wishlistCount, maintenanceEntries] =
-    await Promise.all([
-      prisma.mod.count({ where: { carId } }),
-      prisma.mod.aggregate({ where: { carId }, _sum: { cost: true } }),
-      prisma.wishlistItem.count({ where: { carId } }),
-      prisma.maintenanceEntry.findMany({
-        where: { carId, car: { userId } },
-      }),
-    ]);
+  const [
+    modCount,
+    modTotalResult,
+    wishlistCount,
+    maintenanceEntries,
+    tireSetsData,
+    brakeSetsData,
+    setups,
+    expenseSummary,
+  ] = await Promise.all([
+    prisma.mod.count({ where: { carId } }),
+    prisma.mod.aggregate({ where: { carId }, _sum: { cost: true } }),
+    prisma.wishlistItem.count({ where: { carId } }),
+    prisma.maintenanceEntry.findMany({
+      where: { carId, car: { userId } },
+    }),
+    getTireSetsForCar(carId, userId),
+    getBrakeSetsForCar(carId, userId),
+    getSetupsForCar(carId, userId),
+    getExpenseSummary(carId, userId),
+  ]);
+
   const modTotal = modTotalResult._sum.cost ?? 0;
 
   const maintenanceAlerts = getMaintenanceAlerts(
     maintenanceEntries,
     car.currentOdometer,
   );
-  const worstLevel = maintenanceAlerts[0]?.level ?? "none";
+
+  // Start from the worst maintenance-derived level
+  const maintenanceWorst: AlertLevel = maintenanceAlerts[0]?.level ?? "none";
+
+  // Compute brake-wear level across all active brake sets
+  const LEVEL_ORDER: Record<AlertLevel, number> = {
+    overdue: 0,
+    due: 1,
+    upcoming: 2,
+    none: 3,
+  };
+
+  let brakeLevel: AlertLevel = "none";
+  for (const brakeSet of brakeSetsData.active) {
+    const wear = brakeSet.wearRemaining;
+    if (wear !== null) {
+      if (wear < 5 && LEVEL_ORDER["overdue"] < LEVEL_ORDER[brakeLevel]) {
+        brakeLevel = "overdue";
+      } else if (
+        wear < 20 &&
+        wear >= 5 &&
+        LEVEL_ORDER["due"] < LEVEL_ORDER[brakeLevel]
+      ) {
+        brakeLevel = "due";
+      }
+    }
+  }
+
+  // Pick worst of maintenance vs brake wear
+  const worstLevel: AlertLevel =
+    LEVEL_ORDER[maintenanceWorst] <= LEVEL_ORDER[brakeLevel]
+      ? maintenanceWorst
+      : brakeLevel;
+
+  const activeSetup = setups.find((s) => s.isActive);
 
   const displayName = car.nickname
     ? car.nickname
@@ -148,10 +209,72 @@ export default async function CarDetailPage({
 
       <Separator className="mb-8" />
 
-      <div className="grid gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Tires */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle>Modifications</CardTitle>
+            <div className="flex items-center gap-2">
+              <Disc className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-base">Tires</CardTitle>
+            </div>
+            <Button asChild variant="outline" size="sm">
+              <Link href={`/garage/${carId}/tires`}>View Tires</Link>
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              {tireSetsData.active.length > 0
+                ? `${tireSetsData.active.length} active set${tireSetsData.active.length !== 1 ? "s" : ""}`
+                : "No active tire sets"}
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Brakes */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <div className="flex items-center gap-2">
+              <Gauge className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-base">Brakes</CardTitle>
+            </div>
+            <Button asChild variant="outline" size="sm">
+              <Link href={`/garage/${carId}/brakes`}>View Brakes</Link>
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              {brakeSetsData.active.length > 0
+                ? `${brakeSetsData.active.length} active set${brakeSetsData.active.length !== 1 ? "s" : ""}`
+                : "No active brake sets"}
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Setups */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <div className="flex items-center gap-2">
+              <Sliders className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-base">Setups</CardTitle>
+            </div>
+            <Button asChild variant="outline" size="sm">
+              <Link href={`/garage/${carId}/setups`}>View Setups</Link>
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              {activeSetup ? activeSetup.name : "No active setup"}
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Modifications */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <div className="flex items-center gap-2">
+              <Wrench className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-base">Modifications</CardTitle>
+            </div>
             <Button asChild variant="outline" size="sm">
               <Link href={`/garage/${carId}/mods`}>View Mods</Link>
             </Button>
@@ -172,9 +295,13 @@ export default async function CarDetailPage({
           </CardContent>
         </Card>
 
+        {/* Wishlist */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle>Wishlist</CardTitle>
+            <div className="flex items-center gap-2">
+              <Star className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-base">Wishlist</CardTitle>
+            </div>
             <Button asChild variant="outline" size="sm">
               <Link href={`/garage/${carId}/wishlist`}>View Wishlist</Link>
             </Button>
@@ -193,9 +320,13 @@ export default async function CarDetailPage({
           </CardContent>
         </Card>
 
+        {/* Maintenance */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle>Maintenance</CardTitle>
+            <div className="flex items-center gap-2">
+              <ClipboardList className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-base">Maintenance</CardTitle>
+            </div>
             <Button asChild variant="outline" size="sm">
               <Link href={`/garage/${carId}/maintenance`}>View Log</Link>
             </Button>
@@ -203,6 +334,26 @@ export default async function CarDetailPage({
           <CardContent>
             <p className="text-sm text-muted-foreground">
               Track service history and get alerts when maintenance is due.
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Expenses */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <div className="flex items-center gap-2">
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-base">Expenses</CardTitle>
+            </div>
+            <Button asChild variant="outline" size="sm">
+              <Link href={`/garage/${carId}/expenses`}>View Expenses</Link>
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              {expenseSummary.summary.currentYear > 0
+                ? `$${expenseSummary.summary.currentYear.toLocaleString()} this year`
+                : "No expenses logged this year."}
             </p>
           </CardContent>
         </Card>

@@ -1,7 +1,7 @@
 # RevLog — Development Status
 
-**Last updated:** 2026-04-05
-**Current phase:** Phase 4 complete — Phase 5 next
+**Last updated:** 2026-04-10
+**Current phase:** Phase 4.9 complete — Phase 5 next
 
 ---
 
@@ -84,10 +84,6 @@ card, input, label, select, dialog, separator, badge, dropdown-menu, calendar, p
 
 - `cheerio` + `@types/cheerio`
 - `jszip`
-
-### shadcn/ui components added in Phase 2
-
-- `checkbox` (run form DNF toggle)
 
 ### shadcn/ui components added in Phase 2
 
@@ -273,36 +269,44 @@ Dokploy VPS with Nixpacks auto-build (not Docker). Set `AUTH_URL` and `AUTH_TRUS
 
 ---
 
-## Phase 4.9 — Garage Overhaul (WS-B: Brake Tracking) ✅ COMPLETE
+## Phase 4.9 — Garage Overhaul ✅ COMPLETE
 
 **Completed:** 2026-04-10
 
 ### Scope
 
-- [x] WS-B: Brake set tracking — full CRUD, heat cycles, wear status, run history, maintenance history
+- [x] Tire tracking — TireSet + TreadDepthLog (heat cycles, tread depth charts, maintenance history)
+- [x] Brake tracking — BrakeSet (heat cycles, wear percentage, maintenance history)
+- [x] Suspension setup documentation — SuspensionSetup with Basic/Advanced form sections, setActive
+- [x] Per-car expense tracking — Expense with category breakdown and monthly trend charts
+- [x] Run form equipment integration — TireSet/BrakeSet/SuspensionSetup dropdowns, session memory extended
+- [x] Transactional heat cycle tracking — auto-increment on run create, decrement on delete
+- [x] Car detail page expanded to 7 section cards (Tires, Brakes, Setups, Mods, Wishlist, Maintenance, Expenses)
+- [x] Race readiness badge updated to factor in brake wear (< 20% = Maintenance Due, < 5% = Not Race Ready)
+- [x] receiptUrl fields on Mod, MaintenanceEntry, and Expense
+- [x] Expense CSV export
 
 ### Workstreams
 
-| Workstream           | Status | Key files                                                                                                                                                                                                                                                                                 |
-| -------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| WS-B: Brake tracking | ✅     | `src/lib/constants/brake-positions.ts`, `src/lib/validations/brake-set.ts`, `src/lib/actions/brake-set.ts`, `src/lib/queries/brake-sets.ts`, `src/components/garage/brake-set-form.tsx`, `brake-set-list.tsx`, `brake-set-detail.tsx`, `src/app/(main)/garage/[carId]/brakes/` (5 routes) |
+| Workstream                  | Status | Key files                                                                                                                                                 |
+| --------------------------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| WS-A: Tire Tracking         | ✅     | `src/lib/actions/tire-set.ts`, `src/lib/queries/tire-sets.ts`, `src/components/garage/tire-set-*`, `src/app/(main)/garage/[carId]/tires/`                 |
+| WS-B: Brake Tracking        | ✅     | `src/lib/actions/brake-set.ts`, `src/lib/queries/brake-sets.ts`, `src/components/garage/brake-set-*`, `src/app/(main)/garage/[carId]/brakes/`             |
+| WS-C: Suspension Setups     | ✅     | `src/lib/actions/suspension-setup.ts`, `src/lib/queries/suspension-setups.ts`, `src/components/garage/setup-*`, `src/app/(main)/garage/[carId]/setups/`   |
+| WS-D: Expense Tracking      | ✅     | `src/lib/actions/expense.ts`, `src/lib/queries/expenses.ts`, `src/components/garage/expense-*`, `src/app/(main)/garage/[carId]/expenses/`                 |
+| WS-E: Run Form Equipment    | ✅     | `src/lib/actions/run.ts`, `src/lib/validations/run.ts`, `src/components/times/run-form.tsx`, `add-run-sheet.tsx`, `session/page.tsx`, `runs/new/page.tsx` |
+| WS-F/G: Car Detail + Polish | ✅     | `src/app/(main)/garage/[carId]/page.tsx`, `mod-form.tsx`, `maintenance-form.tsx`                                                                          |
 
-### New files
+### Schema changes
 
-- `src/lib/constants/brake-positions.ts` — `BRAKE_POSITIONS` as const tuple; `BrakePosition` type
-- `src/lib/validations/brake-set.ts` — `createBrakeSetSchema` + `updateBrakeSetSchema` (zod); reuses `TIRE_STATUSES` for status enum
-- `src/lib/actions/brake-set.ts` — `createBrakeSet`, `updateBrakeSet`, `deleteBrakeSet`, `incrementBrakeHeatCycles` server actions
-- `src/lib/queries/brake-sets.ts` — `getBrakeSetsForCar` (grouped Active/Stored/Retired, Front-first order), `getBrakeSetDetail` (with runs + brake maintenance history)
-- `src/components/garage/brake-set-form.tsx` — Form with position, status, pad brand/compound, rotor brand/notes, wear %, purchase date, cost, notes
-- `src/components/garage/brake-set-list.tsx` — Grouped by status, card grid with `WearBar` (red/yellow/green), heat cycle count, dropdown (Edit, +1 Heat Cycle, Delete with AlertDialog)
-- `src/components/garage/brake-set-detail.tsx` — Header with +1 Heat Cycle button, Specs card, Wear Status card (large % indicator), Run History, Brake Maintenance History
-- `src/app/(main)/garage/[carId]/brakes/page.tsx` — List page
-- `src/app/(main)/garage/[carId]/brakes/loading.tsx` — Skeleton loading state
-- `src/app/(main)/garage/[carId]/brakes/new/page.tsx` — Create form
-- `src/app/(main)/garage/[carId]/brakes/[brakeSetId]/page.tsx` — Detail page
-- `src/app/(main)/garage/[carId]/brakes/[brakeSetId]/edit/page.tsx` — Edit form
+Migration: `20260410155213_phase_4_9_garage_overhaul`
 
-### Key decisions
+- New models: `TireSet`, `TreadDepthLog`, `BrakeSet`, `SuspensionSetup`, `Expense`
+- `Run`: added `tireSetId`, `brakeSetId`, `setupId` FK columns
+- `Mod`: added `receiptUrl`
+- `MaintenanceEntry`: added `receiptUrl`
+
+### Key decisions (WS-B)
 
 - Reused `TIRE_STATUSES` (Active/Stored/Retired) for brake status — same lifecycle semantics
 - `wearRemaining` is nullable — "Not measured" shown instead of a bar when null
@@ -312,52 +316,21 @@ Dokploy VPS with Nixpacks auto-build (not Docker). Set `AUTH_URL` and `AUTH_TRUS
 - `incrementBrakeHeatCycles` revalidates the detail page path; create/update/delete revalidate the list path
 - All ownership checks use `findFirst` with `car: { userId }` join pattern (matching spec)
 
----
-
-## Phase 4.9 — Garage Overhaul (WS-D: Expense Tracking) ✅ COMPLETE
-
-**Completed:** 2026-04-10
-
-### Scope
-
-- [x] WS-D: Per-car expense tracking — full CRUD, charts, CSV export
-
-### Workstreams
-
-| Workstream             | Status | Key files                                                                                                                                                                                                                                                                |
-| ---------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| WS-D: Expense tracking | ✅     | `src/lib/constants/expense-categories.ts`, `src/lib/validations/expense.ts`, `src/lib/actions/expense.ts`, `src/lib/queries/expenses.ts`, `src/components/garage/expense-form.tsx`, `expense-list.tsx`, `expense-summary.tsx`, `src/app/(main)/garage/[carId]/expenses/` |
-
-### New files
-
-- `src/lib/constants/expense-categories.ts` — 7 categories as const tuple
-- `src/lib/validations/expense.ts` — `createExpenseSchema` + `updateExpenseSchema` (zod)
-- `src/lib/actions/expense.ts` — `createExpense`, `updateExpense`, `deleteExpense` server actions
-- `src/lib/queries/expenses.ts` — `getExpensesForCar`, `getExpenseSummary` (JS aggregation: allTime, currentYear, byCategory, byMonth)
-- `src/components/garage/expense-form.tsx` — Category/date/amount/vendor/description/receiptUrl/notes form
-- `src/components/garage/expense-list.tsx` — Client component with category filter + delete confirmation dialog
-- `src/components/garage/expense-summary.tsx` — Stat cards + horizontal BarChart (by category) + LineChart (12-month trend)
-- `src/app/(main)/garage/[carId]/expenses/page.tsx` — Main expenses page
-- `src/app/(main)/garage/[carId]/expenses/loading.tsx` — Skeleton loading state
-- `src/app/(main)/garage/[carId]/expenses/new/page.tsx` — New expense page
-- `src/app/(main)/garage/[carId]/expenses/[expenseId]/edit/page.tsx` — Edit expense page
-
-### CSV export extended
-
-- `expensesToCSV()` added to `src/lib/services/csv-export.ts`
-- `expenses` case added to `src/app/api/export/[section]/route.ts`
-
-### Pre-existing test fix
-
-- `src/lib/services/csv-export.test.ts` — Updated Mod fixtures to include `receiptUrl: null` (Mod schema was extended in a previous phase; test was stale)
-
-### Key decisions
+### Key decisions (WS-D)
 
 - Monthly aggregation uses JS/TS (fetch all, aggregate in-memory) — appropriate at this scale, avoids raw SQL
 - `getExpenseSummary` returns both `expenses` and `summary` in a single call to avoid waterfall on the page
 - `byMonth` always returns 12 entries (oldest → newest) with 0 for months with no spend
 - Ownership verified via `car: { userId }` join on `Expense.findFirst` (matching the spec pattern)
 - Export button wired with existing `ExportButton` component (`section="expenses"`)
+
+### Key decisions (WS-F/G)
+
+- Tread depth does NOT affect race readiness — compound-dependent thresholds are too subjective
+- Brake wear thresholds: active sets with `wearRemaining < 5%` degrade to "Not Race Ready"; `< 20%` degrades to "Maintenance Due"
+- Badge logic is additive: worst of (maintenance alerts + brake wear) wins
+- Card grid uses `grid-cols-1 sm:grid-cols-2` for mobile-first layout
+- `getExpenseSummary` already returns full summary object — `currentYear` stat displayed directly
 
 ---
 
@@ -451,10 +424,12 @@ Upload exported session files → parse → auto-create Runs (and Event if no ma
 
 ## Schema Change Log
 
-| Migration                                    | Phase          | Description                                                                                                                  |
-| -------------------------------------------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `20260330174150_init`                        | Pre-Phase 1    | Initial schema: User, Account, Session, Car, Mod, WishlistItem, MaintenanceEntry, Event, AdditionalCost, Run, PenaltyDefault |
-| `20260330200024_make_adjusted_time_nullable` | Phase 2        | Make `Run.adjustedTime` nullable (`Float?`)                                                                                  |
-| _(pending)_                                  | Before Phase 3 | Add `MaintenanceAudit` model                                                                                                 |
-| _(pending)_                                  | Before Phase 5 | Add `CarPhoto` model                                                                                                         |
-| _(pending)_                                  | Before Phase 6 | Add `Subscription` model, `User.tier` field                                                                                  |
+| Migration                                    | Phase          | Description                                                                                                                          |
+| -------------------------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `20260330174150_init`                        | Pre-Phase 1    | Initial schema: User, Account, Session, Car, Mod, WishlistItem, MaintenanceEntry, Event, AdditionalCost, Run, PenaltyDefault         |
+| `20260330200024_make_adjusted_time_nullable` | Phase 2        | Make `Run.adjustedTime` nullable (`Float?`)                                                                                          |
+| `20260331191406_pre_phase3_*`                | Phase 3        | Add indexes, `Run.isDnf`, drop `PenaltyDefault`                                                                                      |
+| `20260331194048_add_maintenance_audit`       | Phase 3        | Add `MaintenanceAudit` model                                                                                                         |
+| `20260410155213_phase_4_9_garage_overhaul`   | Phase 4.9      | Add `TireSet`, `TreadDepthLog`, `BrakeSet`, `SuspensionSetup`, `Expense`; `Run` FKs; `Mod.receiptUrl`; `MaintenanceEntry.receiptUrl` |
+| _(pending)_                                  | Before Phase 5 | Add `CarPhoto` model                                                                                                                 |
+| _(pending)_                                  | Before Phase 6 | Add `Subscription` model, `User.tier` field                                                                                          |

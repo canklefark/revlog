@@ -221,6 +221,21 @@ export function ModForm({ action, carId, defaultValues }: ModFormProps) {
       </div>
 
       <div className="space-y-1.5">
+        <Label htmlFor="receiptUrl">Receipt URL</Label>
+        <Input
+          id="receiptUrl"
+          name="receiptUrl"
+          type="url"
+          placeholder="https://..."
+          defaultValue={defaultValues?.receiptUrl ?? ""}
+          aria-invalid={!!fieldError("receiptUrl")}
+        />
+        {fieldError("receiptUrl") && (
+          <p className="text-xs text-destructive">{fieldError("receiptUrl")}</p>
+        )}
+      </div>
+
+      <div className="space-y-1.5">
         <Label htmlFor="notes">Notes</Label>
         <Textarea
           id="notes"

@@ -24,6 +24,7 @@ export const createModSchema = z
       .nonnegative("Odometer must be non-negative")
       .optional(),
     notes: z.string().optional(),
+    receiptUrl: z.string().url("Receipt URL must be a valid URL").optional(),
   })
   .refine(
     (data) =>
@@ -54,6 +55,7 @@ export const updateModSchema = z.object({
     .nonnegative("Odometer must be non-negative")
     .optional(),
   notes: z.string().optional(),
+  receiptUrl: z.string().url("Receipt URL must be a valid URL").optional(),
 });
 
 export type CreateModInput = z.infer<typeof createModSchema>;

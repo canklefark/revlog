@@ -55,6 +55,7 @@ export async function createMaintenance(
     notes: parseOptionalString(formData.get("notes")),
     nextDueDate: parseOptionalString(formData.get("nextDueDate")),
     nextDueMileage: parseOptionalNumber(formData.get("nextDueMileage")),
+    receiptUrl: parseOptionalString(formData.get("receiptUrl")),
   };
 
   const parsed = createMaintenanceSchema.safeParse(raw);
@@ -94,6 +95,7 @@ export async function createMaintenance(
       notes: parsed.data.notes,
       nextDueDate: nextDueDateValue,
       nextDueMileage: parsed.data.nextDueMileage,
+      receiptUrl: parsed.data.receiptUrl,
     },
   });
 
@@ -121,6 +123,7 @@ export async function updateMaintenance(
     notes: parseOptionalString(formData.get("notes")),
     nextDueDate: parseOptionalString(formData.get("nextDueDate")),
     nextDueMileage: parseOptionalNumber(formData.get("nextDueMileage")),
+    receiptUrl: parseOptionalString(formData.get("receiptUrl")),
   };
 
   const parsed = updateMaintenanceSchema.safeParse(raw);
@@ -177,6 +180,9 @@ export async function updateMaintenance(
       ...(nextDueDateValue !== undefined && { nextDueDate: nextDueDateValue }),
       ...(parsed.data.nextDueMileage !== undefined && {
         nextDueMileage: parsed.data.nextDueMileage,
+      }),
+      ...(parsed.data.receiptUrl !== undefined && {
+        receiptUrl: parsed.data.receiptUrl,
       }),
     },
   });
