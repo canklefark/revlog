@@ -125,16 +125,32 @@ export async function searchMsrCalendars(
   if (params.end) qs.set("end", params.end);
   if (params.country) qs.set("country", params.country);
 
+  const url = `/rest/calendars.json?${qs.toString()}`;
   const res = await msrFetch(
-    `/rest/calendars.json?${qs.toString()}`,
+    url,
     "GET",
     account.accessToken,
     account.accessTokenSecret,
   );
-  if (!res?.ok) return [];
+  if (!res?.ok) {
+    console.error(
+      `[msr-search] API error: ${res?.status} ${res?.statusText} — ${url}`,
+    );
+    if (res) {
+      const body = await res.text().catch(() => "");
+      console.error(`[msr-search] response body:`, body.slice(0, 500));
+    }
+    return [];
+  }
 
   const data: unknown = await res.json();
-  if (!isMsrSearchResponse(data)) return [];
+  if (!isMsrSearchResponse(data)) {
+    console.error(
+      `[msr-search] unexpected response shape:`,
+      JSON.stringify(data).slice(0, 500),
+    );
+    return [];
+  }
 
   const events = data.response?.events ?? [];
   if (!Array.isArray(events)) return [];

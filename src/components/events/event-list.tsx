@@ -1,7 +1,12 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { CalendarDaysIcon, CalendarPlusIcon, DownloadIcon } from "lucide-react";
+import {
+  CalendarDaysIcon,
+  CalendarPlusIcon,
+  DownloadIcon,
+  SearchIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -38,8 +43,8 @@ export function EventList({ events, total }: EventListProps) {
           </Button>
           <Button asChild variant="outline" size="sm">
             <Link href="/events/import">
-              <DownloadIcon className="size-4 mr-1.5" />
-              Import
+              <SearchIcon className="size-4 mr-1.5" />
+              Find Events
             </Link>
           </Button>
           <Button asChild size="sm">
