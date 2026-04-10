@@ -273,6 +273,47 @@ Dokploy VPS with Nixpacks auto-build (not Docker). Set `AUTH_URL` and `AUTH_TRUS
 
 ---
 
+## Phase 4.9 — Garage Overhaul (WS-B: Brake Tracking) ✅ COMPLETE
+
+**Completed:** 2026-04-10
+
+### Scope
+
+- [x] WS-B: Brake set tracking — full CRUD, heat cycles, wear status, run history, maintenance history
+
+### Workstreams
+
+| Workstream           | Status | Key files                                                                                                                                                                                                                                                                                 |
+| -------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| WS-B: Brake tracking | ✅     | `src/lib/constants/brake-positions.ts`, `src/lib/validations/brake-set.ts`, `src/lib/actions/brake-set.ts`, `src/lib/queries/brake-sets.ts`, `src/components/garage/brake-set-form.tsx`, `brake-set-list.tsx`, `brake-set-detail.tsx`, `src/app/(main)/garage/[carId]/brakes/` (5 routes) |
+
+### New files
+
+- `src/lib/constants/brake-positions.ts` — `BRAKE_POSITIONS` as const tuple; `BrakePosition` type
+- `src/lib/validations/brake-set.ts` — `createBrakeSetSchema` + `updateBrakeSetSchema` (zod); reuses `TIRE_STATUSES` for status enum
+- `src/lib/actions/brake-set.ts` — `createBrakeSet`, `updateBrakeSet`, `deleteBrakeSet`, `incrementBrakeHeatCycles` server actions
+- `src/lib/queries/brake-sets.ts` — `getBrakeSetsForCar` (grouped Active/Stored/Retired, Front-first order), `getBrakeSetDetail` (with runs + brake maintenance history)
+- `src/components/garage/brake-set-form.tsx` — Form with position, status, pad brand/compound, rotor brand/notes, wear %, purchase date, cost, notes
+- `src/components/garage/brake-set-list.tsx` — Grouped by status, card grid with `WearBar` (red/yellow/green), heat cycle count, dropdown (Edit, +1 Heat Cycle, Delete with AlertDialog)
+- `src/components/garage/brake-set-detail.tsx` — Header with +1 Heat Cycle button, Specs card, Wear Status card (large % indicator), Run History, Brake Maintenance History
+- `src/app/(main)/garage/[carId]/brakes/page.tsx` — List page
+- `src/app/(main)/garage/[carId]/brakes/loading.tsx` — Skeleton loading state
+- `src/app/(main)/garage/[carId]/brakes/new/page.tsx` — Create form
+- `src/app/(main)/garage/[carId]/brakes/[brakeSetId]/page.tsx` — Detail page
+- `src/app/(main)/garage/[carId]/brakes/[brakeSetId]/edit/page.tsx` — Edit form
+
+### Key decisions
+
+- Reused `TIRE_STATUSES` (Active/Stored/Retired) for brake status — same lifecycle semantics
+- `wearRemaining` is nullable — "Not measured" shown instead of a bar when null
+- Wear color thresholds: <20% red (critical), 20–50% yellow (moderate), >50% green (good)
+- Inline `WearBar` using `style` for dynamic color (shadcn `Progress` doesn't accept `indicatorClassName`)
+- Maintenance history on detail page fetches `serviceType IN ["Brake Pads", "Brake Rotors"]` for the same car
+- `incrementBrakeHeatCycles` revalidates the detail page path; create/update/delete revalidate the list path
+- All ownership checks use `findFirst` with `car: { userId }` join pattern (matching spec)
+
+---
+
 ## Phase 4.9 — Garage Overhaul (WS-D: Expense Tracking) ✅ COMPLETE
 
 **Completed:** 2026-04-10
