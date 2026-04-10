@@ -198,6 +198,39 @@ export async function getAccessToken(
 // ─── Signed API fetch ─────────────────────────────────────────────────────────
 
 /**
+ * Make an OAuth 1.0a request signed with consumer credentials only (no user token).
+ * Used for endpoints that accept app-level auth rather than user-delegated auth.
+ */
+export async function msrFetchAppOnly(
+  path: string,
+  method: "GET" | "POST" | "PUT" | "DELETE",
+  extraHeaders?: Record<string, string>,
+): Promise<Response | null> {
+  const oauth = makeOAuthClient();
+  if (!oauth) return null;
+
+  const url = path.startsWith("http") ? path : `${MSR_API_BASE}${path}`;
+
+  try {
+    const authHeader = oauth.toHeader(oauth.authorize({ url, method }));
+
+    const res = await fetch(url, {
+      method,
+      headers: {
+        ...authHeader,
+        Accept: "application/vnd.pukkasoft+json",
+        ...extraHeaders,
+      },
+      signal: AbortSignal.timeout(15000),
+    });
+
+    return res;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Make a signed OAuth 1.0a request to the MSR API.
  * Returns Response or null on any error. Never throws.
  */

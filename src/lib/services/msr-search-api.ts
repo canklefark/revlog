@@ -3,10 +3,13 @@
 // Returns empty array on any error — never throws.
 import "server-only";
 
-import { msrCredsPresent, msrFetch } from "@/lib/services/msr-oauth";
+import {
+  msrCredsPresent,
+  msrFetch,
+  msrFetchAppOnly,
+} from "@/lib/services/msr-oauth";
 import {
   getMsrAccount,
-  fetchMyProfile,
   type MsrAccount,
   type MsrEventResult,
 } from "@/lib/services/msr-authenticated-api";
@@ -126,31 +129,9 @@ export async function searchMsrCalendars(
   if (params.end) qs.set("end", params.end);
   if (params.country) qs.set("country", params.country);
 
-  // /rest/calendars requires X-Organization-Id even with OAuth.
-  // Fetch the user's first org membership to satisfy this requirement.
-  const profile = await fetchMyProfile(userId);
-  console.log(
-    `[msr-search] profile orgs raw:`,
-    JSON.stringify(profile?.orgs).slice(0, 500),
-  );
-  const orgId = profile?.orgs[0]?.id;
-  const extraHeaders: Record<string, string> = orgId
-    ? { "X-Organization-Id": orgId }
-    : {};
-  if (orgId) {
-    console.log(`[msr-search] using org ID: ${orgId}`);
-  } else {
-    console.warn(`[msr-search] no org ID found — request may fail`);
-  }
-
   const url = `/rest/calendars.json?${qs.toString()}`;
-  const res = await msrFetch(
-    url,
-    "GET",
-    account.accessToken,
-    account.accessTokenSecret,
-    extraHeaders,
-  );
+  // Try consumer-only auth — this endpoint may not accept user-delegated OAuth tokens.
+  const res = await msrFetchAppOnly(url, "GET");
   if (!res?.ok) {
     console.error(
       `[msr-search] API error: ${res?.status} ${res?.statusText} — ${url}`,
