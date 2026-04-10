@@ -1,9 +1,9 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireAuth } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 import { getBrakeSetsForCar } from "@/lib/queries/brake-sets";
 import { BrakesPageClient } from "@/components/garage/brakes-page-client";
+import { BackLink } from "@/components/shared/back-link";
 
 export default async function BrakesPage({
   params,
@@ -21,14 +21,9 @@ export default async function BrakesPage({
 
   return (
     <main className="w-full">
+      <BackLink href={`/garage/${carId}`} label={displayName} />
       <div className="flex items-center justify-between mb-6 gap-4">
         <div>
-          <Link
-            href={`/garage/${carId}`}
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-          >
-            {displayName}
-          </Link>
           <h1 className="text-2xl font-semibold">Brakes</h1>
         </div>
       </div>

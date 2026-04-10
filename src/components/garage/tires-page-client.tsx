@@ -16,7 +16,6 @@ import type { GroupedTireSets } from "@/lib/queries/tire-sets";
 
 interface TiresPageClientProps extends GroupedTireSets {
   carId: string;
-  displayName: string;
 }
 
 export function TiresPageClient({
@@ -24,7 +23,6 @@ export function TiresPageClient({
   stored,
   retired,
   carId,
-  displayName,
 }: TiresPageClientProps) {
   const [addOpen, setAddOpen] = useState(false);
   const total = active.length + stored.length + retired.length;
@@ -33,7 +31,6 @@ export function TiresPageClient({
     <>
       <div className="flex items-center justify-between mb-6 gap-4">
         <div>
-          <p className="text-xs text-muted-foreground">{displayName}</p>
           <h1 className="text-2xl font-semibold">Tires</h1>
           {total > 0 && (
             <p className="text-sm text-muted-foreground mt-0.5">

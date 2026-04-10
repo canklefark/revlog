@@ -3,6 +3,7 @@ import { requireAuth } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 import { getTireSetsForCar } from "@/lib/queries/tire-sets";
 import { TiresPageClient } from "@/components/garage/tires-page-client";
+import { BackLink } from "@/components/shared/back-link";
 
 export default async function TiresPage({
   params,
@@ -20,12 +21,12 @@ export default async function TiresPage({
 
   return (
     <main className="w-full">
+      <BackLink href={`/garage/${carId}`} label={displayName} />
       <TiresPageClient
         active={active}
         stored={stored}
         retired={retired}
         carId={carId}
-        displayName={displayName}
       />
     </main>
   );

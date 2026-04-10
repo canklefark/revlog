@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  PencilIcon,
   Disc,
   Gauge,
   Sliders,
@@ -17,6 +16,7 @@ import {
 } from "lucide-react";
 import { BackLink } from "@/components/shared/back-link";
 import { DeleteCarButton } from "@/components/garage/delete-car-button";
+import { EditCarButton } from "@/components/garage/edit-car-button";
 import { getMaintenanceAlerts } from "@/lib/utils/maintenance-alerts";
 import { getTireSetsForCar } from "@/lib/queries/tire-sets";
 import { getBrakeSetsForCar } from "@/lib/queries/brake-sets";
@@ -140,12 +140,7 @@ export default async function CarDetailPage({
           )}
         </div>
         <div className="flex gap-2 shrink-0">
-          <Button asChild variant="outline" size="sm">
-            <Link href={`/garage/${carId}/edit`}>
-              <PencilIcon />
-              Edit
-            </Link>
-          </Button>
+          <EditCarButton car={car} />
           <DeleteCarButton carId={carId} displayName={displayName} />
         </div>
       </div>

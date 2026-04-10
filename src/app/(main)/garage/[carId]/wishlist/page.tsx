@@ -1,10 +1,10 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireAuth } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 import { getWishlistItems } from "@/lib/queries/wishlist";
 import { WishlistPageClient } from "@/components/garage/wishlist-page-client";
 import { ExportButton } from "@/components/shared/export-button";
+import { BackLink } from "@/components/shared/back-link";
 
 export default async function WishlistPage({
   params,
@@ -26,14 +26,9 @@ export default async function WishlistPage({
 
   return (
     <main className="max-w-3xl mx-auto w-full">
+      <BackLink href={`/garage/${carId}`} label={displayName} />
       <div className="flex items-center justify-between mb-6 gap-4">
         <div>
-          <Link
-            href={`/garage/${carId}`}
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-          >
-            {displayName}
-          </Link>
           <h1 className="text-2xl font-semibold">Wishlist</h1>
         </div>
         <ExportButton section="wishlist" carId={carId} />

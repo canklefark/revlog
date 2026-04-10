@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { getSetupsForCar } from "@/lib/queries/suspension-setups";
 import { SetupList } from "@/components/garage/setup-list";
 import { Button } from "@/components/ui/button";
+import { BackLink } from "@/components/shared/back-link";
 
 export default async function SetupsPage({
   params,
@@ -23,14 +24,9 @@ export default async function SetupsPage({
 
   return (
     <main className="w-full">
+      <BackLink href={`/garage/${carId}`} label={displayName} />
       <div className="flex items-center justify-between mb-6 gap-4">
         <div>
-          <Link
-            href={`/garage/${carId}`}
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-          >
-            {displayName}
-          </Link>
           <h1 className="text-2xl font-semibold">Suspension Setups</h1>
         </div>
         <Button asChild size="sm">
