@@ -273,6 +273,53 @@ Dokploy VPS with Nixpacks auto-build (not Docker). Set `AUTH_URL` and `AUTH_TRUS
 
 ---
 
+## Phase 4.9 — Garage Overhaul (WS-D: Expense Tracking) ✅ COMPLETE
+
+**Completed:** 2026-04-10
+
+### Scope
+
+- [x] WS-D: Per-car expense tracking — full CRUD, charts, CSV export
+
+### Workstreams
+
+| Workstream             | Status | Key files                                                                                                                                                                                                                                                                |
+| ---------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| WS-D: Expense tracking | ✅     | `src/lib/constants/expense-categories.ts`, `src/lib/validations/expense.ts`, `src/lib/actions/expense.ts`, `src/lib/queries/expenses.ts`, `src/components/garage/expense-form.tsx`, `expense-list.tsx`, `expense-summary.tsx`, `src/app/(main)/garage/[carId]/expenses/` |
+
+### New files
+
+- `src/lib/constants/expense-categories.ts` — 7 categories as const tuple
+- `src/lib/validations/expense.ts` — `createExpenseSchema` + `updateExpenseSchema` (zod)
+- `src/lib/actions/expense.ts` — `createExpense`, `updateExpense`, `deleteExpense` server actions
+- `src/lib/queries/expenses.ts` — `getExpensesForCar`, `getExpenseSummary` (JS aggregation: allTime, currentYear, byCategory, byMonth)
+- `src/components/garage/expense-form.tsx` — Category/date/amount/vendor/description/receiptUrl/notes form
+- `src/components/garage/expense-list.tsx` — Client component with category filter + delete confirmation dialog
+- `src/components/garage/expense-summary.tsx` — Stat cards + horizontal BarChart (by category) + LineChart (12-month trend)
+- `src/app/(main)/garage/[carId]/expenses/page.tsx` — Main expenses page
+- `src/app/(main)/garage/[carId]/expenses/loading.tsx` — Skeleton loading state
+- `src/app/(main)/garage/[carId]/expenses/new/page.tsx` — New expense page
+- `src/app/(main)/garage/[carId]/expenses/[expenseId]/edit/page.tsx` — Edit expense page
+
+### CSV export extended
+
+- `expensesToCSV()` added to `src/lib/services/csv-export.ts`
+- `expenses` case added to `src/app/api/export/[section]/route.ts`
+
+### Pre-existing test fix
+
+- `src/lib/services/csv-export.test.ts` — Updated Mod fixtures to include `receiptUrl: null` (Mod schema was extended in a previous phase; test was stale)
+
+### Key decisions
+
+- Monthly aggregation uses JS/TS (fetch all, aggregate in-memory) — appropriate at this scale, avoids raw SQL
+- `getExpenseSummary` returns both `expenses` and `summary` in a single call to avoid waterfall on the page
+- `byMonth` always returns 12 entries (oldest → newest) with 0 for months with no spend
+- Ownership verified via `car: { userId }` join on `Expense.findFirst` (matching the spec pattern)
+- Export button wired with existing `ExportButton` component (`section="expenses"`)
+
+---
+
 ## Phase 5 — Open Source Prep ⏳ NOT STARTED
 
 ### Pre-work required before starting
