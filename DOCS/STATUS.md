@@ -442,6 +442,30 @@ MSR_CALLBACK_URL=https://yourdomain.com/api/msr/callback
 
 ---
 
+## Phase 5.1 — MSR Event Search ⏳ BLOCKED
+
+### Scope
+
+- [x] `GET /rest/calendars.json` search UI — postal code, radius, from-date, checkbox selection, bulk import as Interested
+- [x] `MsrSearch` component + `searchMsrEvents` server action + `msr-search-api.ts` service
+- [x] `bulkCreateEvents` extended to dedup by `msrEventId`
+- [x] "Find Events" button in events list header (replaces "Import")
+- [ ] **BLOCKED: global calendar search returns 401**
+
+### Blocker
+
+`GET /rest/calendars.json` requires an API tier that our consumer key does not have access to. Both user-delegated OAuth tokens and consumer-only signing return `401 Unauthorized` with an empty body. The endpoint is listed under "Requires Authentication" (not "Requires OAuth Authentication") in the MSR docs — it likely requires org-admin credentials or explicit API approval from MSR.
+
+The MSR website calendar SPA (`motorsportreg.com/calendar`) calls the same API base but authenticates via session cookies from a logged-in MSR session, which can't be replicated server-side. The SPA results are also loaded dynamically by Vue — not scrapeable with Cheerio.
+
+**To unblock:** Contact MSR (developer program) to request global calendar access for the RevLog consumer key.
+
+### Current state
+
+The Search MSR tab is live as a placeholder. It shows the search form but returns "No events found" because the API call fails. The Import from Org tab continues to work normally.
+
+---
+
 ## Phase 5 — Open Source Prep ⏳ NOT STARTED
 
 ### Pre-work required before starting
@@ -507,11 +531,12 @@ Upload exported session files → parse → auto-create Runs (and Event if no ma
 
 ## Open Questions
 
-| #   | Question                                               | Blocking                 |
-| --- | ------------------------------------------------------ | ------------------------ |
-| 1   | MotorsportReg API availability (authenticated)         | ✅ Resolved in Phase 5.0 |
-| 2   | PWA depth: promote to full offline sync queue?         | Phase 5                  |
-| 3   | Mapping library for GPS track maps (Leaflet vs Mapbox) | Phase 7 Tier 2           |
+| #   | Question                                               | Blocking                                                          |
+| --- | ------------------------------------------------------ | ----------------------------------------------------------------- |
+| 1   | MotorsportReg API availability (authenticated)         | ✅ Resolved in Phase 5.0                                          |
+| 4   | MSR global calendar search (`/rest/calendars`) access  | Phase 5.1 — needs MSR developer program approval for consumer key |
+| 2   | PWA depth: promote to full offline sync queue?         | Phase 5                                                           |
+| 3   | Mapping library for GPS track maps (Leaflet vs Mapbox) | Phase 7 Tier 2                                                    |
 
 ---
 
