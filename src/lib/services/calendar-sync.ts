@@ -1,6 +1,7 @@
 // Server-only — never import this from client components.
 // All functions no-op (return null) if GOOGLE_CLIENT_ID or
 // GOOGLE_CLIENT_SECRET are not set.
+import "server-only";
 
 import { prisma } from "@/lib/prisma";
 

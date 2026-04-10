@@ -40,7 +40,10 @@ export async function scrapeEventUrl(
     }
   }
 
-  // 2. Generic scraper for any event URL.
+  // 2. Generic scraper — HTTPS only to prevent SSRF against internal services.
+  if (parsedUrl.protocol !== "https:") {
+    return { error: "Only HTTPS URLs are supported." };
+  }
   const genericData = await fetchAndParseGenericUrl(url.trim());
   if (genericData && Object.keys(genericData).length > 0) {
     return { data: withInferredType(genericData) };

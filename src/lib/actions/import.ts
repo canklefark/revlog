@@ -103,31 +103,47 @@ export async function bulkCreateEvents(
     return { error: "No events to import." };
   }
 
-  // Collect registrationUrls from selected events so we can deduplicate
-  const inputUrls: string[] = parsed
-    .map((e: unknown) => {
-      if (typeof e === "object" && e !== null) {
-        const obj = e as Record<string, unknown>;
-        return typeof obj.registrationUrl === "string"
-          ? obj.registrationUrl
-          : null;
-      }
-      return null;
-    })
-    .filter((u): u is string => u !== null && u.length > 0);
+  // Collect registrationUrls and msrEventIds for deduplication
+  const inputUrls: string[] = [];
+  const inputMsrIds: string[] = [];
+  for (const e of parsed) {
+    if (typeof e === "object" && e !== null) {
+      const obj = e as Record<string, unknown>;
+      if (typeof obj.registrationUrl === "string" && obj.registrationUrl)
+        inputUrls.push(obj.registrationUrl);
+      if (typeof obj.msrEventId === "string" && obj.msrEventId)
+        inputMsrIds.push(obj.msrEventId);
+    }
+  }
 
-  // Find already-imported events by registrationUrl (scoped to user)
+  // Single query to find already-imported events by either registrationUrl or msrEventId.
+  const existingRows =
+    inputUrls.length > 0 || inputMsrIds.length > 0
+      ? await prisma.event.findMany({
+          where: {
+            userId,
+            OR: [
+              ...(inputUrls.length > 0
+                ? [{ registrationUrl: { in: inputUrls } }]
+                : []),
+              ...(inputMsrIds.length > 0
+                ? [{ msrEventId: { in: inputMsrIds } }]
+                : []),
+            ],
+          },
+          select: { registrationUrl: true, msrEventId: true },
+        })
+      : [];
+
   const existingUrls = new Set(
-    inputUrls.length > 0
-      ? (
-          await prisma.event.findMany({
-            where: { userId, registrationUrl: { in: inputUrls } },
-            select: { registrationUrl: true },
-          })
-        )
-          .map((e) => e.registrationUrl)
-          .filter((u): u is string => u !== null)
-      : [],
+    existingRows
+      .map((e) => e.registrationUrl)
+      .filter((u): u is string => u !== null),
+  );
+  const existingMsrIds = new Set(
+    existingRows
+      .map((e) => e.msrEventId)
+      .filter((id): id is string => id !== null),
   );
 
   // Validate and build create payloads
@@ -146,6 +162,7 @@ export async function bulkCreateEvents(
     registrationDeadline: Date | null;
     entryFee?: number | null;
     registrationUrl?: string | null;
+    msrEventId?: string | null;
     runGroup?: string | null;
     notes?: string | null;
     carId?: string | null;
@@ -162,10 +179,11 @@ export async function bulkCreateEvents(
 
     const obj = item as Record<string, unknown>;
 
-    // Skip already-imported events
+    // Skip already-imported events (by registrationUrl or msrEventId)
     if (
-      typeof obj.registrationUrl === "string" &&
-      existingUrls.has(obj.registrationUrl)
+      (typeof obj.registrationUrl === "string" &&
+        existingUrls.has(obj.registrationUrl)) ||
+      (typeof obj.msrEventId === "string" && existingMsrIds.has(obj.msrEventId))
     ) {
       skipped++;
       continue;
@@ -186,6 +204,8 @@ export async function bulkCreateEvents(
       registrationDeadline: obj.registrationDeadline || undefined,
       entryFee: obj.entryFee,
       registrationUrl: obj.registrationUrl || undefined,
+      msrEventId:
+        typeof obj.msrEventId === "string" ? obj.msrEventId : undefined,
     });
 
     if (!validated.success) {
@@ -211,6 +231,7 @@ export async function bulkCreateEvents(
         : null,
       entryFee: d.entryFee ?? null,
       registrationUrl: d.registrationUrl || null,
+      msrEventId: d.msrEventId ?? null,
       runGroup: null,
       notes: null,
       carId: null,

@@ -1,6 +1,7 @@
 // Server-only — never import this from client components.
 // Wraps the unauthenticated MotorsportReg organization calendar API.
 // Returns empty array / null on any error — never throws.
+import "server-only";
 
 import type { ScrapedEventData } from "./motorsportreg-scraper";
 import { inferEventType } from "@/lib/utils/infer-event-type";

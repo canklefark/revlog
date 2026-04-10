@@ -1,6 +1,7 @@
 // Server-only — never import this from client components.
 // Authenticated MSR API client — requires user to have connected their MSR account.
 // All functions return null/[] on failure — never throw.
+import "server-only";
 
 import { prisma } from "@/lib/prisma";
 import { msrCredsPresent, msrFetch } from "@/lib/services/msr-oauth";
@@ -93,7 +94,7 @@ function toTimeStr(raw: string): string | undefined {
 
 // ─── Internal: get stored MSR tokens for a user ───────────────────────────────
 
-interface MsrAccount {
+export interface MsrAccount {
   accessToken: string;
   accessTokenSecret: string;
   profileId: string;

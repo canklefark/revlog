@@ -162,7 +162,8 @@ export async function updateCalendarSettings(
 ): Promise<CalendarSettingsState> {
   const userId = await requireAuth();
 
-  const calendarProvider = formData.get("calendarProvider");
+  const calendarProviderRaw = formData.get("calendarProvider");
+  const calendarProvider = calendarProviderRaw === "google" ? "google" : null;
   const calendarId = formData.get("calendarId");
   const calendarSyncEnabled = formData.get("calendarSyncEnabled");
 
@@ -170,8 +171,7 @@ export async function updateCalendarSettings(
     await prisma.user.update({
       where: { id: userId },
       data: {
-        calendarProvider:
-          typeof calendarProvider === "string" ? calendarProvider : null,
+        calendarProvider,
         calendarId:
           typeof calendarId === "string" && calendarId.length > 0
             ? calendarId

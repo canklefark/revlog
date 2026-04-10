@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { format } from "date-fns";
 import {
   LineChart,
@@ -34,17 +34,14 @@ interface ProgressChartProps {
 
 export function ProgressChart({ data, modMarkers }: ProgressChartProps) {
   // Unique event types present in data, preserving first-seen order
-  const eventTypes = useMemo(() => {
-    const seen = new Set<string>();
-    const types: string[] = [];
-    for (const d of data) {
-      if (!seen.has(d.eventType)) {
-        seen.add(d.eventType);
-        types.push(d.eventType);
-      }
+  const eventTypesSeen = new Set<string>();
+  const eventTypes: string[] = [];
+  for (const d of data) {
+    if (!eventTypesSeen.has(d.eventType)) {
+      eventTypesSeen.add(d.eventType);
+      eventTypes.push(d.eventType);
     }
-    return types;
-  }, [data]);
+  }
 
   const [selectedType, setSelectedType] = useState<string>(
     () => eventTypes[0] ?? "",
@@ -55,47 +52,39 @@ export function ProgressChart({ data, modMarkers }: ProgressChartProps) {
     ? selectedType
     : (eventTypes[0] ?? "");
 
-  const filtered = useMemo(
-    () => data.filter((d) => d.eventType === activeType),
-    [data, activeType],
-  );
+  const filtered = data.filter((d) => d.eventType === activeType);
 
   // Collect car labels in first-seen order for the filtered set
-  const carLabels = useMemo(() => {
-    const seen = new Set<string>();
-    const labels: string[] = [];
-    for (const d of filtered) {
-      if (!seen.has(d.carLabel)) {
-        seen.add(d.carLabel);
-        labels.push(d.carLabel);
-      }
+  const carLabelsSeen = new Set<string>();
+  const carLabels: string[] = [];
+  for (const d of filtered) {
+    if (!carLabelsSeen.has(d.carLabel)) {
+      carLabelsSeen.add(d.carLabel);
+      carLabels.push(d.carLabel);
     }
-    return labels;
-  }, [filtered]);
+  }
 
   // Build chart rows keyed by ISO date
-  const chartData = useMemo(() => {
-    const rowMap = new Map<string, ChartRow>();
-    for (const point of filtered) {
-      const dateKey =
-        point.startDate instanceof Date
-          ? point.startDate.toISOString()
-          : new Date(point.startDate).toISOString();
-      const existing = rowMap.get(dateKey) ?? { eventDate: dateKey };
-      existing[point.carLabel] = point.bestAdjustedTime;
-      rowMap.set(dateKey, existing);
-    }
-    return Array.from(rowMap.values()).sort(
-      (a, b) =>
-        new Date(a.eventDate as string).getTime() -
-        new Date(b.eventDate as string).getTime(),
-    );
-  }, [filtered]);
+  const rowMap = new Map<string, ChartRow>();
+  for (const point of filtered) {
+    const dateKey =
+      point.startDate instanceof Date
+        ? point.startDate.toISOString()
+        : new Date(point.startDate).toISOString();
+    const existing = rowMap.get(dateKey) ?? { eventDate: dateKey };
+    existing[point.carLabel] = point.bestAdjustedTime;
+    rowMap.set(dateKey, existing);
+  }
+  const chartData = Array.from(rowMap.values()).sort(
+    (a, b) =>
+      new Date(a.eventDate as string).getTime() -
+      new Date(b.eventDate as string).getTime(),
+  );
 
-  const relevantMarkers = useMemo(() => {
-    const labelSet = new Set(carLabels);
-    return (modMarkers ?? []).filter((m) => labelSet.has(m.carLabel));
-  }, [modMarkers, carLabels]);
+  const labelSet = new Set(carLabels);
+  const relevantMarkers = (modMarkers ?? []).filter((m) =>
+    labelSet.has(m.carLabel),
+  );
 
   if (data.length === 0) return null;
 

@@ -61,7 +61,7 @@ export async function createRun(
   let runNumber = runNumberRaw;
   if (!runNumber || runNumber === 0) {
     const maxRun = await prisma.run.findFirst({
-      where: { eventId },
+      where: { eventId, event: { userId } },
       orderBy: { runNumber: "desc" },
       select: { runNumber: true },
     });

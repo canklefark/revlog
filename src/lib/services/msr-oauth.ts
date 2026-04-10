@@ -1,6 +1,7 @@
 // Server-only — never import this from client components.
 // OAuth 1.0a signing client for MotorsportReg.com.
 // All functions return null on failure — never throw.
+import "server-only";
 
 import crypto from "crypto";
 import OAuth from "oauth-1.0a";

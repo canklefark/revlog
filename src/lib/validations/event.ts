@@ -31,6 +31,7 @@ export const createEventSchema = z.object({
     .url("Must be a valid URL")
     .optional()
     .or(z.literal("")),
+  msrEventId: z.string().max(128).optional(),
   runGroup: z.string().optional(),
   notes: z.string().optional(),
   carId: z.string().optional(),

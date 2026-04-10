@@ -12,15 +12,11 @@ function verifyCookieValue(signed: string): string | null {
   const value = signed.slice(0, lastDot);
   const sig = signed.slice(lastDot + 1);
   const secret = process.env.AUTH_SECRET ?? "";
-  const expected = crypto
-    .createHmac("sha256", secret)
-    .update(value)
-    .digest("base64url");
-  // Constant-time comparison to prevent timing attacks
-  if (sig.length !== expected.length) return null;
-  const sigBuf = Buffer.from(sig);
-  const expBuf = Buffer.from(expected);
-  if (!crypto.timingSafeEqual(sigBuf, expBuf)) return null;
+  // Compare raw digest bytes (always 32 bytes) to avoid length-based timing leak.
+  const expected = crypto.createHmac("sha256", secret).update(value).digest(); // Buffer — 32 bytes constant
+  const sigBuf = Buffer.from(sig, "base64url");
+  if (sigBuf.length !== 32) return null; // 32 is a constant, not attacker-controlled
+  if (!crypto.timingSafeEqual(sigBuf, expected)) return null;
   return value;
 }
 

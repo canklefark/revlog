@@ -1,5 +1,6 @@
 // Server-only — never import this from client components.
 // All calls are guarded by GOOGLE_MAPS_API_KEY presence check.
+import "server-only";
 
 interface DistanceValue {
   value: number; // metres
