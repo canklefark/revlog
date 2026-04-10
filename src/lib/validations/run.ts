@@ -16,6 +16,9 @@ export const createRunSchema = z.object({
   penalties: z.array(penaltyItemSchema).default([]),
   conditions: z.array(z.string()).default([]),
   tireSetup: z.string().optional(),
+  tireSetId: z.string().optional(),
+  brakeSetId: z.string().optional(),
+  setupId: z.string().optional(),
   notes: z.string().optional(),
   isDnf: z.boolean().default(false),
 });
@@ -31,6 +34,9 @@ export const updateRunSchema = z.object({
   penalties: z.array(penaltyItemSchema).optional(),
   conditions: z.array(z.string()).optional(),
   tireSetup: z.string().optional(),
+  tireSetId: z.string().optional(),
+  brakeSetId: z.string().optional(),
+  setupId: z.string().optional(),
   notes: z.string().optional(),
   isDnf: z.boolean().optional(),
 });

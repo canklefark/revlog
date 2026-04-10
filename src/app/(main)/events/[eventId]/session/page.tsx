@@ -13,6 +13,9 @@ import { AddRunSheet } from "@/components/times/add-run-sheet";
 import { VenueHistory } from "@/components/times/venue-history";
 import { TypeBadge } from "@/components/events/type-badge";
 import { getVenueHistory } from "@/lib/queries/venue-history";
+import { getTireSetsForCar } from "@/lib/queries/tire-sets";
+import { getBrakeSetsForCar } from "@/lib/queries/brake-sets";
+import { getSetupsForCar } from "@/lib/queries/suspension-setups";
 
 export default async function SessionPage({
   params,
@@ -34,10 +37,22 @@ export default async function SessionPage({
         conditions: lastRun.conditions,
         penalties: lastRun.penalties,
         tireSetup: lastRun.tireSetup,
+        tireSetId: lastRun.tireSetId ?? undefined,
+        brakeSetId: lastRun.brakeSetId ?? undefined,
+        setupId: lastRun.setupId ?? undefined,
       }
     : undefined;
 
   const nextRunNumber = (lastRun?.runNumber ?? 0) + 1;
+
+  // Fetch equipment options for the car (only if carId exists)
+  const [activeTireSets, activeBrakeSets, setups] = event.carId
+    ? await Promise.all([
+        getTireSetsForCar(event.carId, userId).then((g) => g.active),
+        getBrakeSetsForCar(event.carId, userId).then((g) => g.active),
+        getSetupsForCar(event.carId, userId),
+      ])
+    : [[], [], []];
 
   if (runs.length === 0) {
     return (
@@ -71,6 +86,9 @@ export default async function SessionPage({
             eventId={eventId}
             carId={event.carId}
             nextRunNumber={1}
+            tireSets={activeTireSets}
+            brakeSets={activeBrakeSets}
+            suspensionSetups={setups}
           />
         )}
       </main>
@@ -195,11 +213,10 @@ export default async function SessionPage({
           eventId={eventId}
           carId={event.carId}
           nextRunNumber={nextRunNumber}
-          sessionDefaults={
-            sessionDefaults as Parameters<
-              typeof AddRunSheet
-            >[0]["sessionDefaults"]
-          }
+          sessionDefaults={sessionDefaults}
+          tireSets={activeTireSets}
+          brakeSets={activeBrakeSets}
+          suspensionSetups={setups}
         />
       )}
     </main>

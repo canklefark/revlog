@@ -35,6 +35,9 @@ export async function createRun(
   const penaltiesStr = formData.get("penalties");
   const conditionsStr = formData.get("conditions") as string | null;
   const tireSetup = parseOptionalString(formData.get("tireSetup"));
+  const tireSetId = parseOptionalString(formData.get("tireSetId"));
+  const brakeSetId = parseOptionalString(formData.get("brakeSetId"));
+  const setupId = parseOptionalString(formData.get("setupId"));
   const notes = parseOptionalString(formData.get("notes"));
   const isDnfStr = formData.get("isDnf");
   const isDnf = isDnfStr === "true";
@@ -73,6 +76,9 @@ export async function createRun(
     penalties,
     conditions,
     tireSetup,
+    tireSetId,
+    brakeSetId,
+    setupId,
     notes,
     isDnf,
   };
@@ -100,19 +106,40 @@ export async function createRun(
     parsed.data.isDnf,
   );
 
-  const run = await prisma.run.create({
-    data: {
-      eventId: parsed.data.eventId,
-      carId: parsed.data.carId,
-      runNumber: parsed.data.runNumber,
-      rawTime: parsed.data.rawTime,
-      penalties: parsed.data.penalties,
-      adjustedTime: adjustedTime ?? undefined,
-      isDnf: parsed.data.isDnf,
-      conditions: parsed.data.conditions,
-      tireSetup: parsed.data.tireSetup,
-      notes: parsed.data.notes,
-    },
+  const run = await prisma.$transaction(async (tx) => {
+    const created = await tx.run.create({
+      data: {
+        eventId: parsed.data.eventId,
+        carId: parsed.data.carId,
+        runNumber: parsed.data.runNumber,
+        rawTime: parsed.data.rawTime,
+        penalties: parsed.data.penalties,
+        adjustedTime: adjustedTime ?? undefined,
+        isDnf: parsed.data.isDnf,
+        conditions: parsed.data.conditions,
+        tireSetup: parsed.data.tireSetup,
+        tireSetId: parsed.data.tireSetId,
+        brakeSetId: parsed.data.brakeSetId,
+        setupId: parsed.data.setupId,
+        notes: parsed.data.notes,
+      },
+    });
+
+    if (parsed.data.tireSetId) {
+      await tx.tireSet.update({
+        where: { id: parsed.data.tireSetId, car: { userId } },
+        data: { heatCycles: { increment: 1 } },
+      });
+    }
+
+    if (parsed.data.brakeSetId) {
+      await tx.brakeSet.update({
+        where: { id: parsed.data.brakeSetId, car: { userId } },
+        data: { heatCycles: { increment: 1 } },
+      });
+    }
+
+    return created;
   });
 
   revalidatePath(`/events/${eventId}/runs`);
@@ -152,6 +179,9 @@ export async function updateRun(
   const penaltiesStr = formData.get("penalties");
   const conditionsStr = formData.get("conditions") as string | null;
   const tireSetup = parseOptionalString(formData.get("tireSetup"));
+  const tireSetId = parseOptionalString(formData.get("tireSetId"));
+  const brakeSetId = parseOptionalString(formData.get("brakeSetId"));
+  const setupId = parseOptionalString(formData.get("setupId"));
   const notes = parseOptionalString(formData.get("notes"));
   const isDnfStr = formData.get("isDnf");
   const runNumberRaw = formData.get("runNumber");
@@ -191,6 +221,9 @@ export async function updateRun(
     penalties,
     conditions,
     tireSetup,
+    tireSetId,
+    brakeSetId,
+    setupId,
     notes,
     isDnf,
     runNumber,
@@ -227,28 +260,98 @@ export async function updateRun(
     newIsDnf,
   );
 
-  const run = await prisma.run.update({
-    where: { id: parsed.data.runId, event: { userId } },
-    data: {
-      ...(parsed.data.rawTime !== undefined && {
-        rawTime: parsed.data.rawTime,
-      }),
-      ...(parsed.data.penalties !== undefined && {
-        penalties: parsed.data.penalties,
-      }),
-      ...(parsed.data.conditions !== undefined && {
-        conditions: parsed.data.conditions,
-      }),
-      ...(parsed.data.tireSetup !== undefined && {
-        tireSetup: parsed.data.tireSetup,
-      }),
-      ...(parsed.data.notes !== undefined && { notes: parsed.data.notes }),
-      ...(parsed.data.runNumber !== undefined && {
-        runNumber: parsed.data.runNumber,
-      }),
-      ...(parsed.data.isDnf !== undefined && { isDnf: parsed.data.isDnf }),
-      adjustedTime: adjustedTime,
-    },
+  const tireSetIdChanged =
+    parsed.data.tireSetId !== undefined &&
+    parsed.data.tireSetId !== (existing.tireSetId ?? undefined);
+  const brakeSetIdChanged =
+    parsed.data.brakeSetId !== undefined &&
+    parsed.data.brakeSetId !== (existing.brakeSetId ?? undefined);
+
+  const run = await prisma.$transaction(async (tx) => {
+    // Handle tireSet heat cycle transfer
+    if (tireSetIdChanged) {
+      const oldTireSetId = existing.tireSetId;
+      const newTireSetId = parsed.data.tireSetId;
+
+      if (oldTireSetId) {
+        const old = await tx.tireSet.findUnique({
+          where: { id: oldTireSetId },
+          select: { heatCycles: true },
+        });
+        if (old && old.heatCycles > 0) {
+          await tx.tireSet.update({
+            where: { id: oldTireSetId, car: { userId } },
+            data: { heatCycles: { decrement: 1 } },
+          });
+        }
+      }
+
+      if (newTireSetId) {
+        await tx.tireSet.update({
+          where: { id: newTireSetId, car: { userId } },
+          data: { heatCycles: { increment: 1 } },
+        });
+      }
+    }
+
+    // Handle brakeSet heat cycle transfer
+    if (brakeSetIdChanged) {
+      const oldBrakeSetId = existing.brakeSetId;
+      const newBrakeSetId = parsed.data.brakeSetId;
+
+      if (oldBrakeSetId) {
+        const old = await tx.brakeSet.findUnique({
+          where: { id: oldBrakeSetId },
+          select: { heatCycles: true },
+        });
+        if (old && old.heatCycles > 0) {
+          await tx.brakeSet.update({
+            where: { id: oldBrakeSetId, car: { userId } },
+            data: { heatCycles: { decrement: 1 } },
+          });
+        }
+      }
+
+      if (newBrakeSetId) {
+        await tx.brakeSet.update({
+          where: { id: newBrakeSetId, car: { userId } },
+          data: { heatCycles: { increment: 1 } },
+        });
+      }
+    }
+
+    return tx.run.update({
+      where: { id: parsed.data.runId, event: { userId } },
+      data: {
+        ...(parsed.data.rawTime !== undefined && {
+          rawTime: parsed.data.rawTime,
+        }),
+        ...(parsed.data.penalties !== undefined && {
+          penalties: parsed.data.penalties,
+        }),
+        ...(parsed.data.conditions !== undefined && {
+          conditions: parsed.data.conditions,
+        }),
+        ...(parsed.data.tireSetup !== undefined && {
+          tireSetup: parsed.data.tireSetup,
+        }),
+        ...(parsed.data.tireSetId !== undefined && {
+          tireSetId: parsed.data.tireSetId || null,
+        }),
+        ...(parsed.data.brakeSetId !== undefined && {
+          brakeSetId: parsed.data.brakeSetId || null,
+        }),
+        ...(parsed.data.setupId !== undefined && {
+          setupId: parsed.data.setupId || null,
+        }),
+        ...(parsed.data.notes !== undefined && { notes: parsed.data.notes }),
+        ...(parsed.data.runNumber !== undefined && {
+          runNumber: parsed.data.runNumber,
+        }),
+        ...(parsed.data.isDnf !== undefined && { isDnf: parsed.data.isDnf }),
+        adjustedTime: adjustedTime,
+      },
+    });
   });
 
   revalidatePath(`/events/${existing.event.id}/runs`);
@@ -276,8 +379,36 @@ export async function deleteRun(
     return { error: "Not found" };
   }
 
-  await prisma.run.delete({
-    where: { id: runId, event: { userId } },
+  await prisma.$transaction(async (tx) => {
+    if (existing.tireSetId) {
+      const tireSet = await tx.tireSet.findUnique({
+        where: { id: existing.tireSetId },
+        select: { heatCycles: true },
+      });
+      if (tireSet && tireSet.heatCycles > 0) {
+        await tx.tireSet.update({
+          where: { id: existing.tireSetId, car: { userId } },
+          data: { heatCycles: { decrement: 1 } },
+        });
+      }
+    }
+
+    if (existing.brakeSetId) {
+      const brakeSet = await tx.brakeSet.findUnique({
+        where: { id: existing.brakeSetId },
+        select: { heatCycles: true },
+      });
+      if (brakeSet && brakeSet.heatCycles > 0) {
+        await tx.brakeSet.update({
+          where: { id: existing.brakeSetId, car: { userId } },
+          data: { heatCycles: { decrement: 1 } },
+        });
+      }
+    }
+
+    await tx.run.delete({
+      where: { id: runId, event: { userId } },
+    });
   });
 
   revalidatePath(`/events/${existing.event.id}/runs`);

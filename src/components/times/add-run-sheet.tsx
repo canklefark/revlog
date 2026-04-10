@@ -10,14 +10,28 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { RunForm } from "@/components/times/run-form";
+import type {
+  TireSetOption,
+  BrakeSetOption,
+  SuspensionSetupOption,
+} from "@/components/times/run-form";
 import { createRun } from "@/lib/actions/run";
 import type { Run } from "@prisma/client";
+
+type SessionDefaults = Pick<Run, "conditions" | "penalties" | "tireSetup"> & {
+  tireSetId?: string | null;
+  brakeSetId?: string | null;
+  setupId?: string | null;
+};
 
 interface AddRunSheetProps {
   eventId: string;
   carId: string;
   nextRunNumber: number;
-  sessionDefaults?: Pick<Run, "conditions" | "penalties" | "tireSetup">;
+  sessionDefaults?: SessionDefaults;
+  tireSets?: TireSetOption[];
+  brakeSets?: BrakeSetOption[];
+  suspensionSetups?: SuspensionSetupOption[];
 }
 
 export function AddRunSheet({
@@ -25,6 +39,9 @@ export function AddRunSheet({
   carId,
   nextRunNumber,
   sessionDefaults,
+  tireSets,
+  brakeSets,
+  suspensionSetups,
 }: AddRunSheetProps) {
   const [open, setOpen] = useState(false);
 
@@ -48,7 +65,10 @@ export function AddRunSheet({
             eventId={eventId}
             carId={carId}
             defaultRunNumber={nextRunNumber}
-            defaultValues={sessionDefaults}
+            defaultValues={sessionDefaults ?? undefined}
+            tireSets={tireSets}
+            brakeSets={brakeSets}
+            suspensionSetups={suspensionSetups}
             onSuccess={() => setOpen(false)}
           />
         </SheetContent>

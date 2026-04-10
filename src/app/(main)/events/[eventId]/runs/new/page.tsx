@@ -4,6 +4,9 @@ import { requireAuth } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 import { RunForm } from "@/components/times/run-form";
 import { createRun } from "@/lib/actions/run";
+import { getTireSetsForCar } from "@/lib/queries/tire-sets";
+import { getBrakeSetsForCar } from "@/lib/queries/brake-sets";
+import { getSetupsForCar } from "@/lib/queries/suspension-setups";
 
 export default async function NewRunPage({
   params,
@@ -23,6 +26,9 @@ export default async function NewRunPage({
           conditions: true,
           penalties: true,
           tireSetup: true,
+          tireSetId: true,
+          brakeSetId: true,
+          setupId: true,
         },
         orderBy: { runNumber: "desc" },
         take: 1,
@@ -39,8 +45,19 @@ export default async function NewRunPage({
         conditions: lastRun.conditions,
         penalties: lastRun.penalties,
         tireSetup: lastRun.tireSetup,
+        tireSetId: lastRun.tireSetId ?? undefined,
+        brakeSetId: lastRun.brakeSetId ?? undefined,
+        setupId: lastRun.setupId ?? undefined,
       }
     : undefined;
+
+  const carId = event.car.id;
+
+  const [activeTireSets, activeBrakeSets, setups] = await Promise.all([
+    getTireSetsForCar(carId, userId).then((g) => g.active),
+    getBrakeSetsForCar(carId, userId).then((g) => g.active),
+    getSetupsForCar(carId, userId),
+  ]);
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -54,9 +71,12 @@ export default async function NewRunPage({
       <RunForm
         action={createRun}
         eventId={eventId}
-        carId={event.car.id}
+        carId={carId}
         defaultRunNumber={nextRunNumber}
         defaultValues={sessionDefaults}
+        tireSets={activeTireSets}
+        brakeSets={activeBrakeSets}
+        suspensionSetups={setups}
       />
     </div>
   );

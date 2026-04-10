@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { CollapsibleSection } from "@/components/ui/collapsible-section";
 import { PENALTY_TYPES } from "@/lib/constants/penalty-types";
 import { RUN_CONDITIONS } from "@/lib/constants/run-conditions";
 import {
@@ -42,11 +43,34 @@ const formSchema = z.object({
   penalties: z.array(penaltyRowSchema).optional(),
   conditions: z.array(z.string()).optional(),
   tireSetup: z.string().optional(),
+  tireSetId: z.string().optional(),
+  brakeSetId: z.string().optional(),
+  setupId: z.string().optional(),
   notes: z.string().optional(),
   isDnf: z.boolean().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
+
+export interface TireSetOption {
+  id: string;
+  brand: string;
+  model: string;
+  size: string;
+}
+
+export interface BrakeSetOption {
+  id: string;
+  position: string;
+  padBrand: string | null;
+  padCompound: string | null;
+}
+
+export interface SuspensionSetupOption {
+  id: string;
+  name: string;
+  isActive: boolean;
+}
 
 interface RunFormProps {
   action: (
@@ -57,6 +81,9 @@ interface RunFormProps {
   carId: string;
   defaultRunNumber?: number;
   defaultValues?: Partial<Run>;
+  tireSets?: TireSetOption[];
+  brakeSets?: BrakeSetOption[];
+  suspensionSetups?: SuspensionSetupOption[];
   onSuccess?: () => void;
 }
 
@@ -68,6 +95,9 @@ export function RunForm({
   carId,
   defaultRunNumber = 1,
   defaultValues,
+  tireSets,
+  brakeSets,
+  suspensionSetups,
   onSuccess,
 }: RunFormProps) {
   const router = useRouter();
@@ -91,12 +121,18 @@ export function RunForm({
     ? defaultValues.adjustedTime === null && defaultValues.rawTime != null
     : false;
 
+  // Determine whether the equipment section should open by default
+  const hasEquipmentDefaults = !!(
+    defaultValues?.tireSetId ||
+    defaultValues?.brakeSetId ||
+    defaultValues?.setupId
+  );
+
   const {
     register,
     control,
     handleSubmit,
     watch,
-    setValue,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -108,6 +144,9 @@ export function RunForm({
       penalties: defaultPenalties,
       conditions: defaultValues?.conditions ?? [],
       tireSetup: defaultValues?.tireSetup ?? "",
+      tireSetId: defaultValues?.tireSetId ?? "",
+      brakeSetId: defaultValues?.brakeSetId ?? "",
+      setupId: defaultValues?.setupId ?? "",
       notes: defaultValues?.notes ?? "",
       isDnf: defaultIsDnf,
     },
@@ -153,9 +192,12 @@ export function RunForm({
     fd.set("rawTime", String(rawTime));
     fd.set("penalties", JSON.stringify(values.penalties ?? []));
     fd.set("conditions", (values.conditions ?? []).join(","));
-    fd.set("tireSetup", values.tireSetup ?? "");
     fd.set("notes", values.notes ?? "");
     fd.set("isDnf", String(values.isDnf ?? false));
+    // Equipment FKs — send empty string so server can treat it as undefined
+    fd.set("tireSetId", values.tireSetId ?? "");
+    fd.set("brakeSetId", values.brakeSetId ?? "");
+    fd.set("setupId", values.setupId ?? "");
     if (isEdit && defaultValues?.id) fd.set("runId", defaultValues.id);
     startTransition(() => dispatch(fd));
   }
@@ -163,6 +205,11 @@ export function RunForm({
   // Derive live parse state for rawTimeStr feedback
   const rawTimeStr = watchedValues.rawTimeStr ?? "";
   const parsedRawTime = parseLapTime(rawTimeStr);
+
+  const hasEquipmentOptions =
+    (tireSets && tireSets.length > 0) ||
+    (brakeSets && brakeSets.length > 0) ||
+    (suspensionSetups && suspensionSetups.length > 0);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
@@ -381,14 +428,104 @@ export function RunForm({
         </div>
       </div>
 
-      <div className="space-y-1.5">
-        <Label htmlFor="tireSetup">Tire Setup</Label>
-        <Input
-          id="tireSetup"
-          {...register("tireSetup")}
-          placeholder="e.g. 245/40R17 Hankook RS4"
-        />
-      </div>
+      {hasEquipmentOptions && (
+        <CollapsibleSection
+          title="Equipment (optional)"
+          defaultOpen={hasEquipmentDefaults}
+        >
+          {tireSets && tireSets.length > 0 && (
+            <div className="space-y-1.5">
+              <Label htmlFor="tireSetId">Tire Set</Label>
+              <Controller
+                name="tireSetId"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    value={field.value ?? ""}
+                    onValueChange={field.onChange}
+                  >
+                    <SelectTrigger id="tireSetId" className="w-full">
+                      <SelectValue placeholder="No tire set" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">None</SelectItem>
+                      {tireSets.map((t) => (
+                        <SelectItem key={t.id} value={t.id}>
+                          {t.brand} {t.model} – {t.size}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {defaultValues?.tireSetup && !defaultValues.tireSetId && (
+                <p className="text-sm text-muted-foreground">
+                  Legacy: {defaultValues.tireSetup}
+                </p>
+              )}
+            </div>
+          )}
+
+          {brakeSets && brakeSets.length > 0 && (
+            <div className="space-y-1.5">
+              <Label htmlFor="brakeSetId">Brake Set</Label>
+              <Controller
+                name="brakeSetId"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    value={field.value ?? ""}
+                    onValueChange={field.onChange}
+                  >
+                    <SelectTrigger id="brakeSetId" className="w-full">
+                      <SelectValue placeholder="No brake set" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">None</SelectItem>
+                      {brakeSets.map((b) => (
+                        <SelectItem key={b.id} value={b.id}>
+                          {b.position}
+                          {b.padBrand ? ` – ${b.padBrand}` : ""}
+                          {b.padCompound ? ` ${b.padCompound}` : ""}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </div>
+          )}
+
+          {suspensionSetups && suspensionSetups.length > 0 && (
+            <div className="space-y-1.5">
+              <Label htmlFor="setupId">Suspension Setup</Label>
+              <Controller
+                name="setupId"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    value={field.value ?? ""}
+                    onValueChange={field.onChange}
+                  >
+                    <SelectTrigger id="setupId" className="w-full">
+                      <SelectValue placeholder="No setup" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">None</SelectItem>
+                      {suspensionSetups.map((s) => (
+                        <SelectItem key={s.id} value={s.id}>
+                          {s.name}
+                          {s.isActive ? " (active)" : ""}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </div>
+          )}
+        </CollapsibleSection>
+      )}
 
       <div className="space-y-1.5">
         <Label htmlFor="notes">Notes</Label>
