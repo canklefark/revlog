@@ -11,29 +11,24 @@ interface OilWeightInputProps {
   className?: string;
 }
 
-// Eagerly inserts W- after the first digit group
-// "5"    → "5W-"
-// "5W-3" → "5W-30"
-// "10"   → "10W-"
-// "10W-4"→ "10W-40"
+// Valid cold-viscosity grades: 0W, 5W (1 digit) and 10W, 15W, 20W, 25W (2 digits).
+// Digits starting with 1 or 2 need a second digit before W- is inserted.
+//
+// Examples:
+//   "0"  → "0W-"      "5"  → "5W-"
+//   "1"  → "1"        "10" → "10W-"   "15" → "15W-"
+//   "2"  → "2"        "20" → "20W-"   "25" → "25W-"
+//   "530"→ "5W-30"    "1040"→ "10W-40"
 function applyMask(digits: string): string {
-  // Viscosity grades: 0, 5, 10, 15, 20 (first group, 1-2 digits)
-  // then W- then 2-digit number
-  const d = digits.slice(0, 4); // max "1040" → "10W-40"
-  if (d.length === 0) return "";
-  // First group: up to 2 digits before the W
-  // Common cold grades: 0, 5, 10, 15, 20 — all 1–2 digits
-  const firstGroupLen =
-    d.length >= 2 &&
-    Number(d.slice(0, 2)) % 5 === 0 &&
-    Number(d.slice(0, 2)) <= 25
-      ? 2
-      : 1;
-  const cold = d.slice(0, firstGroupLen);
-  if (d.length <= firstGroupLen)
-    return cold.length === firstGroupLen ? `${cold}W-` : cold;
-  const hot = d.slice(firstGroupLen, firstGroupLen + 2);
-  return `${cold}W-${hot}`;
+  if (digits.length === 0) return "";
+  const d = digits.slice(0, 4); // max 4 digits: "1040" → "10W-40"
+  const firstDigit = Number(d[0]);
+  // Grades starting with 1 or 2 are two-digit cold grades (10, 15, 20, 25)
+  const coldLen = firstDigit === 1 || firstDigit === 2 ? 2 : 1;
+  const cold = d.slice(0, coldLen);
+  if (d.length < coldLen) return cold; // still typing the cold grade — no W- yet
+  const hot = d.slice(coldLen, coldLen + 2);
+  return hot.length === 0 ? `${cold}W-` : `${cold}W-${hot}`;
 }
 
 export function OilWeightInput({
@@ -50,10 +45,11 @@ export function OilWeightInput({
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key !== "Backspace") return;
     const atEnd = e.currentTarget.selectionStart === value.length;
+    // When cursor is at end right after "W-", backspace removes just the "W-"
+    // so the user stays in the cold-grade portion: "5W-" → "5", "10W-" → "10"
     if (atEnd && value.endsWith("W-")) {
       e.preventDefault();
-      const digits = value.replace(/\D/g, "");
-      setValue(applyMask(digits.slice(0, -1)));
+      setValue(value.slice(0, -2)); // strip "W-"
     }
   }
 
