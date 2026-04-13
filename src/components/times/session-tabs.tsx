@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { PlusIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -28,12 +29,10 @@ export function SessionTabs({
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [newLabel, setNewLabel] = useState("");
 
-  function navigate(session: string | null) {
-    const url =
-      session === null
-        ? `/events/${eventId}/session`
-        : `/events/${eventId}/session?session=${encodeURIComponent(session)}`;
-    router.push(url);
+  function sessionHref(session: string | null) {
+    return session === null
+      ? `/events/${eventId}/session`
+      : `/events/${eventId}/session?session=${encodeURIComponent(session)}`;
   }
 
   function handleAdd(e: React.FormEvent) {
@@ -42,7 +41,7 @@ export function SessionTabs({
     if (!label) return;
     setPopoverOpen(false);
     setNewLabel("");
-    navigate(label);
+    router.push(sessionHref(label));
   }
 
   const tabs = [
@@ -54,12 +53,11 @@ export function SessionTabs({
     <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-1">
       <div className="flex items-end gap-0 border-b border-border flex-1 min-w-0">
         {tabs.map(({ key, label }) => (
-          <button
+          <Link
             key={key ?? "__all__"}
-            type="button"
-            onClick={() => navigate(key)}
+            href={sessionHref(key)}
             className={cn(
-              "relative px-3 py-2 text-sm font-medium transition-colors cursor-pointer whitespace-nowrap flex-shrink-0",
+              "relative px-3 py-2 text-sm font-medium transition-colors whitespace-nowrap flex-shrink-0",
               activeSession === key
                 ? "text-foreground"
                 : "text-muted-foreground hover:text-foreground",
@@ -69,7 +67,7 @@ export function SessionTabs({
             {activeSession === key && (
               <span className="absolute bottom-0 left-0 right-0 h-0.5 rounded-t-full bg-primary" />
             )}
-          </button>
+          </Link>
         ))}
       </div>
 

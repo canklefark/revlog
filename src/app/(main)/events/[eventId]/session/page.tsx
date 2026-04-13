@@ -121,10 +121,6 @@ export default async function SessionPage({
     .map((r) => r.adjustedTime)
     .filter((t): t is number => t !== null);
   const bestTime = allValidTimes.length > 0 ? Math.min(...allValidTimes) : null;
-  const bestRun =
-    bestTime !== null
-      ? (allRuns.find((r) => r.adjustedTime === bestTime) ?? null)
-      : null;
   const consistency = calculateConsistency(
     allRuns.map((r) => r.adjustedTime ?? null),
   );
@@ -164,26 +160,25 @@ export default async function SessionPage({
       })
     : [];
 
-  // Narrative: previous best at this event type / venue
-  const previousBest = await prisma.run.findFirst({
-    where: {
-      isDnf: false,
-      adjustedTime: { not: null },
-      event: {
-        userId,
-        type: event.type,
-        ...(event.venueName ? { venueName: event.venueName } : {}),
-        NOT: { id: eventId },
+  const [previousBest, venueHistory] = await Promise.all([
+    prisma.run.findFirst({
+      where: {
+        isDnf: false,
+        adjustedTime: { not: null },
+        event: {
+          userId,
+          type: event.type,
+          ...(event.venueName ? { venueName: event.venueName } : {}),
+          NOT: { id: eventId },
+        },
       },
-    },
-    orderBy: { adjustedTime: "asc" },
-    select: { adjustedTime: true },
-  });
-
-  // Venue history
-  const venueHistory = event.venueName
-    ? await getVenueHistory(userId, event.venueName, eventId)
-    : null;
+      orderBy: { adjustedTime: "asc" },
+      select: { adjustedTime: true },
+    }),
+    event.venueName
+      ? getVenueHistory(userId, event.venueName, eventId)
+      : Promise.resolve(null),
+  ]);
 
   // Best run ID in display set (for highlighting in table)
   const displayValidTimes = displayRuns
@@ -231,7 +226,7 @@ export default async function SessionPage({
       />
 
       {/* Per-session breakdown (only shown when sessions exist) */}
-      {hasSessions && sessionBreakdown.length > 0 && (
+      {hasSessions && (
         <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
           {sessionBreakdown.map(
             ({ label, runCount, bestTime: sessionBest }) => (
