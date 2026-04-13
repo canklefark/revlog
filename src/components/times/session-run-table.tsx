@@ -92,8 +92,13 @@ export function SessionRunTable({ runs, bestRunId }: SessionRunTableProps) {
                     </Badge>
                   )}
                 </div>
-                {run.conditions.length > 0 && (
-                  <div className="flex gap-1 mt-0.5 flex-wrap">
+                {(run.sessionLabel || run.conditions.length > 0) && (
+                  <div className="flex gap-1 mt-0.5 flex-wrap items-center">
+                    {run.sessionLabel && (
+                      <span className="text-xs font-medium text-primary/80 bg-primary/10 rounded px-1.5 py-0.5">
+                        {run.sessionLabel}
+                      </span>
+                    )}
                     {run.conditions.map((c) => (
                       <span key={c} className="text-xs text-muted-foreground">
                         {c}

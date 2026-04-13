@@ -264,13 +264,11 @@ export default async function SessionPage({
           </Link>
         </div>
 
-        {hasSessions && (
-          <SessionTabs
-            eventId={eventId}
-            sessionLabels={sessionLabels}
-            activeSession={activeSession ?? null}
-          />
-        )}
+        <SessionTabs
+          eventId={eventId}
+          sessionLabels={sessionLabels}
+          activeSession={activeSession ?? null}
+        />
 
         <SessionRunTable runs={displayRuns} bestRunId={displayBestRunId} />
       </div>

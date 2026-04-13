@@ -46,6 +46,7 @@ const formSchema = z.object({
   tireSetId: z.string().optional(),
   brakeSetId: z.string().optional(),
   setupId: z.string().optional(),
+  sessionLabel: z.string().optional(),
   notes: z.string().optional(),
   isDnf: z.boolean().optional(),
 });
@@ -150,6 +151,8 @@ export function RunForm({
       tireSetId: defaultValues?.tireSetId ?? "",
       brakeSetId: defaultValues?.brakeSetId ?? "",
       setupId: defaultValues?.setupId ?? "",
+      // When editing, preserve existing label. When adding, inherit active session.
+      sessionLabel: defaultValues?.sessionLabel ?? sessionLabel ?? "",
       notes: defaultValues?.notes ?? "",
       isDnf: defaultIsDnf,
     },
@@ -201,7 +204,7 @@ export function RunForm({
     fd.set("tireSetId", values.tireSetId ?? "");
     fd.set("brakeSetId", values.brakeSetId ?? "");
     fd.set("setupId", values.setupId ?? "");
-    if (sessionLabel) fd.set("sessionLabel", sessionLabel);
+    if (values.sessionLabel) fd.set("sessionLabel", values.sessionLabel);
     if (isEdit && defaultValues?.id) fd.set("runId", defaultValues.id);
     startTransition(() => dispatch(fd));
   }
@@ -533,6 +536,18 @@ export function RunForm({
           )}
         </CollapsibleSection>
       )}
+
+      <div className="space-y-1.5">
+        <Label htmlFor="sessionLabel">Session</Label>
+        <Input
+          id="sessionLabel"
+          {...register("sessionLabel")}
+          placeholder="e.g. Morning Heat"
+        />
+        <p className="text-xs text-muted-foreground">
+          Group runs into sessions (e.g. heats with different track configs).
+        </p>
+      </div>
 
       <div className="space-y-1.5">
         <Label htmlFor="notes">Notes</Label>
