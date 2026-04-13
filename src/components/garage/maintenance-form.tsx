@@ -22,6 +22,7 @@ import {
 } from "@/lib/constants/maintenance-types";
 import type { MaintenanceActionState } from "@/lib/actions/maintenance";
 import type { MaintenanceEntry } from "@prisma/client";
+import { OilWeightInput } from "@/components/garage/oil-weight-input";
 
 interface MaintenanceFormProps {
   action: (
@@ -225,13 +226,21 @@ export function MaintenanceForm({
 
         <div className="space-y-1.5">
           <Label htmlFor="productSpec">Product Spec / Weight</Label>
-          <Input
-            id="productSpec"
-            name="productSpec"
-            type="text"
-            placeholder="5W-30"
-            defaultValue={defaultValues?.productSpec ?? ""}
-          />
+          {serviceType === "Oil Change" ? (
+            <OilWeightInput
+              id="productSpec"
+              name="productSpec"
+              defaultValue={defaultValues?.productSpec ?? ""}
+            />
+          ) : (
+            <Input
+              id="productSpec"
+              name="productSpec"
+              type="text"
+              placeholder="5W-30"
+              defaultValue={defaultValues?.productSpec ?? ""}
+            />
+          )}
         </div>
       </div>
 

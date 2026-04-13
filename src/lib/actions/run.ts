@@ -38,6 +38,7 @@ export async function createRun(
   const tireSetId = parseOptionalString(formData.get("tireSetId"));
   const brakeSetId = parseOptionalString(formData.get("brakeSetId"));
   const setupId = parseOptionalString(formData.get("setupId"));
+  const sessionLabel = parseOptionalString(formData.get("sessionLabel"));
   const notes = parseOptionalString(formData.get("notes"));
   const isDnfStr = formData.get("isDnf");
   const isDnf = isDnfStr === "true";
@@ -79,6 +80,7 @@ export async function createRun(
     tireSetId,
     brakeSetId,
     setupId,
+    sessionLabel,
     notes,
     isDnf,
   };
@@ -121,6 +123,7 @@ export async function createRun(
         tireSetId: parsed.data.tireSetId,
         brakeSetId: parsed.data.brakeSetId,
         setupId: parsed.data.setupId,
+        sessionLabel: parsed.data.sessionLabel,
         notes: parsed.data.notes,
       },
     });
@@ -182,6 +185,7 @@ export async function updateRun(
   const tireSetId = parseOptionalString(formData.get("tireSetId"));
   const brakeSetId = parseOptionalString(formData.get("brakeSetId"));
   const setupId = parseOptionalString(formData.get("setupId"));
+  const sessionLabel = parseOptionalString(formData.get("sessionLabel"));
   const notes = parseOptionalString(formData.get("notes"));
   const isDnfStr = formData.get("isDnf");
   const runNumberRaw = formData.get("runNumber");
@@ -224,6 +228,7 @@ export async function updateRun(
     tireSetId,
     brakeSetId,
     setupId,
+    sessionLabel,
     notes,
     isDnf,
     runNumber,
@@ -343,6 +348,9 @@ export async function updateRun(
         }),
         ...(parsed.data.setupId !== undefined && {
           setupId: parsed.data.setupId || null,
+        }),
+        ...(parsed.data.sessionLabel !== undefined && {
+          sessionLabel: parsed.data.sessionLabel || null,
         }),
         ...(parsed.data.notes !== undefined && { notes: parsed.data.notes }),
         ...(parsed.data.runNumber !== undefined && {

@@ -82,6 +82,7 @@ interface RunFormProps {
   carId: string;
   defaultRunNumber?: number;
   defaultValues?: Partial<Run>;
+  sessionLabel?: string;
   tireSets?: TireSetOption[];
   brakeSets?: BrakeSetOption[];
   suspensionSetups?: SuspensionSetupOption[];
@@ -96,6 +97,7 @@ export function RunForm({
   carId,
   defaultRunNumber = 1,
   defaultValues,
+  sessionLabel,
   tireSets,
   brakeSets,
   suspensionSetups,
@@ -199,6 +201,7 @@ export function RunForm({
     fd.set("tireSetId", values.tireSetId ?? "");
     fd.set("brakeSetId", values.brakeSetId ?? "");
     fd.set("setupId", values.setupId ?? "");
+    if (sessionLabel) fd.set("sessionLabel", sessionLabel);
     if (isEdit && defaultValues?.id) fd.set("runId", defaultValues.id);
     startTransition(() => dispatch(fd));
   }

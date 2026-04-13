@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireAuth } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
@@ -7,6 +6,7 @@ import { createRun } from "@/lib/actions/run";
 import { getTireSetsForCar } from "@/lib/queries/tire-sets";
 import { getBrakeSetsForCar } from "@/lib/queries/brake-sets";
 import { getSetupsForCar } from "@/lib/queries/suspension-setups";
+import { BackLink } from "@/components/shared/back-link";
 
 export default async function NewRunPage({
   params,
@@ -24,7 +24,6 @@ export default async function NewRunPage({
         select: {
           runNumber: true,
           conditions: true,
-          penalties: true,
           tireSetup: true,
           tireSetId: true,
           brakeSetId: true,
@@ -43,7 +42,6 @@ export default async function NewRunPage({
   const sessionDefaults = lastRun
     ? {
         conditions: lastRun.conditions,
-        penalties: lastRun.penalties,
         tireSetup: lastRun.tireSetup,
         tireSetId: lastRun.tireSetId ?? undefined,
         brakeSetId: lastRun.brakeSetId ?? undefined,
@@ -61,13 +59,11 @@ export default async function NewRunPage({
 
   return (
     <div className="max-w-2xl mx-auto">
-      <Link
+      <BackLink
         href={`/events/${eventId}/runs`}
-        className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-      >
-        {event.name} / Runs
-      </Link>
-      <h1 className="text-2xl font-semibold mb-6 mt-1">Add Run</h1>
+        label={`${event.name} / Runs`}
+      />
+      <h1 className="text-2xl font-semibold mb-6">Add Run</h1>
       <RunForm
         action={createRun}
         eventId={eventId}

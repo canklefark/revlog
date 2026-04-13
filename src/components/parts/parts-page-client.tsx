@@ -236,7 +236,7 @@ export function PartsPageClient({ parts, carId }: PartsPageClientProps) {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-end gap-0 border-b border-border mb-5">
+      <div className="flex items-end gap-0 border-b border-border mb-5 overflow-x-auto">
         {TABS.map(({ key, label }) => (
           <button
             key={key}
@@ -309,7 +309,7 @@ export function PartsPageClient({ parts, carId }: PartsPageClientProps) {
       </div>
 
       {/* Table */}
-      <div className="rounded-lg border border-border overflow-hidden">
+      <div className="rounded-lg border border-border overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border bg-muted/30">

@@ -96,9 +96,9 @@ export function EditPartModal({
             value={category === "none" ? "" : category}
           />
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Part Name */}
-            <div className="col-span-2 space-y-1.5">
+            <div className="col-span-1 sm:col-span-2 space-y-1.5">
               <Label htmlFor="edit-name">
                 Part Name <span className="text-destructive">*</span>
               </Label>
@@ -174,7 +174,7 @@ export function EditPartModal({
             </div>
 
             {/* Description */}
-            <div className="col-span-2 space-y-1.5">
+            <div className="col-span-1 sm:col-span-2 space-y-1.5">
               <Label htmlFor="edit-description">Description</Label>
               <Textarea
                 id="edit-description"

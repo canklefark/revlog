@@ -18,7 +18,7 @@ import type {
 import { createRun } from "@/lib/actions/run";
 import type { Run } from "@prisma/client";
 
-type SessionDefaults = Pick<Run, "conditions" | "penalties" | "tireSetup"> & {
+type SessionDefaults = Pick<Run, "conditions" | "tireSetup"> & {
   tireSetId?: string | null;
   brakeSetId?: string | null;
   setupId?: string | null;
@@ -29,6 +29,7 @@ interface AddRunSheetProps {
   carId: string;
   nextRunNumber: number;
   sessionDefaults?: SessionDefaults;
+  sessionLabel?: string;
   tireSets?: TireSetOption[];
   brakeSets?: BrakeSetOption[];
   suspensionSetups?: SuspensionSetupOption[];
@@ -39,6 +40,7 @@ export function AddRunSheet({
   carId,
   nextRunNumber,
   sessionDefaults,
+  sessionLabel,
   tireSets,
   brakeSets,
   suspensionSetups,
@@ -66,6 +68,7 @@ export function AddRunSheet({
             carId={carId}
             defaultRunNumber={nextRunNumber}
             defaultValues={sessionDefaults ?? undefined}
+            sessionLabel={sessionLabel}
             tireSets={tireSets}
             brakeSets={brakeSets}
             suspensionSetups={suspensionSetups}

@@ -75,9 +75,9 @@ export function AddPartModal({ open, onOpenChange, carId }: AddPartModalProps) {
             value={category === "none" ? "" : category}
           />
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Part Name */}
-            <div className="col-span-2 space-y-1.5">
+            <div className="col-span-1 sm:col-span-2 space-y-1.5">
               <Label htmlFor="part-name">
                 Part Name <span className="text-destructive">*</span>
               </Label>
@@ -149,7 +149,7 @@ export function AddPartModal({ open, onOpenChange, carId }: AddPartModalProps) {
             </div>
 
             {/* Description */}
-            <div className="col-span-2 space-y-1.5">
+            <div className="col-span-1 sm:col-span-2 space-y-1.5">
               <Label htmlFor="description">Description</Label>
               <Textarea
                 id="description"

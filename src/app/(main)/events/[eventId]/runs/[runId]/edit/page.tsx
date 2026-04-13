@@ -1,9 +1,9 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireAuth } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 import { RunForm } from "@/components/times/run-form";
 import { updateRun } from "@/lib/actions/run";
+import { BackLink } from "@/components/shared/back-link";
 
 export default async function EditRunPage({
   params,
@@ -24,13 +24,11 @@ export default async function EditRunPage({
 
   return (
     <main className="container mx-auto px-4 py-6 max-w-xl">
-      <Link
+      <BackLink
         href={`/events/${eventId}/runs`}
-        className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-      >
-        {run.event.name} / Runs
-      </Link>
-      <h1 className="text-2xl font-semibold mb-6 mt-1">Edit Run</h1>
+        label={`${run.event.name} / Runs`}
+      />
+      <h1 className="text-2xl font-semibold mb-6">Edit Run</h1>
       <RunForm
         action={updateRun}
         eventId={eventId}

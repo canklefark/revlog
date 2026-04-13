@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { getRunsForEvent } from "@/lib/queries/runs";
 import { RunList } from "@/components/times/run-list";
 import { Button } from "@/components/ui/button";
+import { BackLink } from "@/components/shared/back-link";
 
 export default async function EventRunsPage({
   params,
@@ -26,14 +27,9 @@ export default async function EventRunsPage({
 
   return (
     <main className="w-full">
+      <BackLink href={`/events/${eventId}`} label={event.name} />
       <div className="flex items-center justify-between mb-6 gap-4">
         <div>
-          <Link
-            href={`/events/${eventId}`}
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-          >
-            {event.name}
-          </Link>
           <h1 className="text-2xl font-semibold">Runs</h1>
         </div>
         {event.car && (

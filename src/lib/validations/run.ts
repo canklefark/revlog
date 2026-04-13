@@ -19,6 +19,7 @@ export const createRunSchema = z.object({
   tireSetId: z.string().optional(),
   brakeSetId: z.string().optional(),
   setupId: z.string().optional(),
+  sessionLabel: z.string().optional(),
   notes: z.string().optional(),
   isDnf: z.boolean().default(false),
 });
@@ -37,6 +38,7 @@ export const updateRunSchema = z.object({
   tireSetId: z.string().optional(),
   brakeSetId: z.string().optional(),
   setupId: z.string().optional(),
+  sessionLabel: z.string().optional(),
   notes: z.string().optional(),
   isDnf: z.boolean().optional(),
 });

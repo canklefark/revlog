@@ -56,7 +56,7 @@ export async function getBudgetSnapshot(userId: string) {
     where: {
       userId,
       startDate: { gte: startOfYear(now), lte: endOfYear(now) },
-      registrationStatus: "Registered",
+      registrationStatus: { in: ["Registered", "Completed"] },
     },
     include: {
       additionalCosts: { select: { amount: true } },

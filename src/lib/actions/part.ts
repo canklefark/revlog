@@ -159,7 +159,7 @@ export async function updatePart(
         productLink: parsed.data.productLink,
       }),
       ...(parsed.data.status !== undefined && { status: parsed.data.status }),
-      carId: parsed.data.carId ?? null,
+      ...(parsed.data.carId !== undefined && { carId: parsed.data.carId }),
       ...(parsed.data.price !== undefined && { price: parsed.data.price }),
       ...(parsed.data.purchaseDate !== undefined && {
         purchaseDate: new Date(parsed.data.purchaseDate),
